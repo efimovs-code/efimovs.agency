@@ -1,0 +1,157 @@
+/* =========================================
+   ИМПОРТ ЛОКАЛЬНЫХ ШРИФТОВ (FONTSOURCE)
+   ========================================= */
+/* Montserrat */
+@import '@fontsource/montserrat/300.css';
+@import '@fontsource/montserrat/400.css'; 
+@import '@fontsource/montserrat/500.css';
+@import '@fontsource/montserrat/700.css';
+@import '@fontsource/montserrat/900.css'; 
+
+/* Plus Jakarta Sans */
+@import '@fontsource/plus-jakarta-sans/400.css';
+@import '@fontsource/plus-jakarta-sans/500.css';
+@import '@fontsource/plus-jakarta-sans/600.css';
+@import '@fontsource/plus-jakarta-sans/700.css';
+@import '@fontsource/plus-jakarta-sans/800.css';
+
+/* =========================================
+   VARIABLES
+   ========================================= */
+$font-main: 'Montserrat', sans-serif;
+$color-text-main: #ffffff;
+$color-bg: #000000; /* Уведен в абсолютный черный для контраста со стеклом */
+
+html {
+  background-color: $color-bg;
+  scroll-behavior: auto !important;
+  /* Блокируем изменение масштаба при повороте экрана и появлении панелей */
+  -webkit-text-size-adjust: 100%;
+  
+  /* Убрали !important, чтобы JS модалки мог гибко управлять скроллом */
+  overflow-y: scroll; 
+  scrollbar-gutter: stable;
+}
+
+/* 🌟 ИСПРАВЛЕНО: Вернули правильную звёздочку для глобального сброса */
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: $color-bg;
+  color: $color-text-main;
+  font-family: $font-main;
+  width: 100%;
+  
+  /* Контент сам растянет высоту, жесткие рамки убраны для плавности анимаций */
+  padding-bottom: env(safe-area-inset-bottom);
+  
+  /* 🌟 ФИКС МОБИЛЬНОГО ТАПА: Разрешаем стандартную манипуляцию касаниями для всего тела страницы */
+  touch-action: manipulation; 
+
+  /* Принудительное кристальное сглаживание шрифтов для Apple Pro эстетики */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* =========================================
+   GLOBAL SECTION HEADERS (Typography & Layout)
+   ========================================= */
+
+.section-header,
+.pricing-header,
+.faq-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  margin-bottom: 32px;
+
+  @media (max-width: 767px) {
+    margin-bottom: 24px;
+    gap: 12px;
+  }
+}
+
+.kicker {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  color: #a1a1aa;
+  margin: 0;
+}
+
+.gradient-title {
+  font-size: 64px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  
+  /* ФИКС ОБРЕЗАНИЯ БУКВ: Внутренний отступ для хвостиков + компенсация внешним */
+  padding-bottom: 10px;
+  margin-bottom: -10px;
+  margin-top: 0;
+
+  background: linear-gradient(180deg, #ffffff 0%, #71717a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+
+  /* Идеальная плавная адаптивность для мобильных устройств */
+  @media (max-width: 767px) {
+    font-size: clamp(32px, 8.5vw, 42px);
+    padding-bottom: 8px;
+    margin-bottom: -8px;
+  }
+
+  @media (max-width: 380px) {
+    font-size: clamp(28px, 8vw, 36px);
+  }
+}
+
+/* =========================================
+   🚀 OPTIMIZATION & HARDWARE ACCELERATION
+   ========================================= */
+
+.opt-contain {
+  /* Строгая изоляция. Если меняется внутри - браузер не перерисовывает весь сайт */
+  contain: paint layout;
+}
+
+/* Применять ТОЛЬКО к мелким элементам (карточки, кнопки), НИКОГДА к целым секциям! */
+.opt-gpu {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  /* will-change удален из глобального класса, чтобы не жрать VRAM видеокарты на ПК */
+  backface-visibility: hidden;
+}
+
+/* =========================================
+   🚀 GLOBAL MODAL LOCK (Monolithic Glassmorphism)
+   ========================================= */
+
+/* Вместо исчезновения сайта мы просто намертво блокируем его под стеклом.
+   Это дает идеальный эффект преломления как на десктопе, так и на мобилках. */
+body.global-modal-open {
+  overflow: hidden !important;
+  touch-action: none !important;
+  overscroll-behavior: none !important;
+}
+
+body.global-modal-open .app-shell {
+  /* Убираем pointer-events, чтобы случайно не кликнуть по сайту сквозь оверлей */
+  pointer-events: none !important;
+  user-select: none !important;
+  /* Опционально: можно добавить легкое затемнение самого сайта, 
+     но фильтр самого оверлея в ContactModal.vue уже справляется с этим */
+  transition: filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
