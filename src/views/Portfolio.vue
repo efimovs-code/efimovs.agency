@@ -509,9 +509,9 @@ const checkDevice = () => {
   font-size: clamp(32px, 6.5vw, 96px); 
   font-weight: 800; 
   margin: 0px auto; 
-  letter-spacing: -0.5px; /* Корректный межбуквенный интервал */
-  word-spacing: 0.12em;   /* Аккуратный отступ между словами на десктопе */
-  line-height: 1.22;      /* Исключает срез нижних элементов букв (g, y, p) */
+  letter-spacing: -0.5px; 
+  word-spacing: 0.12em;   
+  line-height: 1.22;      
   background: linear-gradient(180deg, #ffffff 0px, #c0c0c0 50%, #555555 100%);
   -webkit-background-clip: text !important; 
   background-clip: text !important; 
@@ -525,7 +525,7 @@ const checkDevice = () => {
 .hero-line {
   display: block;
   white-space: nowrap;
-  padding-bottom: 0.08em; /* Выделение пространства под маску для нижних выносов букв */
+  padding-bottom: 0.08em; 
 }
 
 .pulse-dot { color: #d4af37; -webkit-text-fill-color: initial; display: inline-block; animation: pulseDot 2.5s ease-in-out infinite alternate; }
@@ -946,18 +946,19 @@ const checkDevice = () => {
   }
 }
 
+/* === 🌟 ИДЕАЛЬНАЯ КНОПКА СТРОГО ПОД ЧАТОМ 🌟 === */
 .scroll-top-btn {
   position: fixed;
-  bottom: 40px;
-  right: 40px;
+  bottom: 34px; /* Ровно 34px + 50px (кнопка) + 12px (зазор) = 96px (где начинается чат) */
+  right: 32px;  /* Строго одна ось с кнопкой чата */
   z-index: 100;
-  width: 56px;
-  height: 56px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  background: rgba(10, 10, 10, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  background: rgba(10, 10, 10, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -965,41 +966,36 @@ const checkDevice = () => {
   color: #ffffff;
   outline: none;
   -webkit-tap-highlight-color: transparent;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  transition: transform 0.25s ease, border-color 0.25s ease;
   transform: translateZ(0);
 }
 
 .scroll-top-btn svg {
-  width: 22px;
-  height: 22px;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s ease;
+  width: 20px;
+  height: 20px;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .scroll-top-btn:hover {
-    background: #e5e4e2; 
-    border-color: #ffffff;
-    box-shadow: none; 
-  }
-  
-  .scroll-top-btn:hover svg {
-    color: #000000;
+    transform: scale(1.06);
+    border-color: rgba(255, 255, 255, 0.4);
   }
 }
 
 .scroll-fade-enter-active, 
 .scroll-fade-leave-active {
-  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .scroll-fade-enter-from, 
 .scroll-fade-leave-to {
   opacity: 0;
-  transform: translateY(30px) scale(0.9);
+  transform: translateY(20px) scale(0.9);
 }
 
 /* === АДАПТИВНОСТЬ === */
-
 @media (max-width: 1024px) {
   .hero-nav { left: 40px; top: 40px; }
   .case-title { font-size: 42px; }
@@ -1025,7 +1021,6 @@ const checkDevice = () => {
   }
 }
 
-/* МОБИЛЬНЫЕ СТИЛИ (НЕ ТРОГАЛИСЬ) */
 @media (max-width: 768px) {
   .premium-hero { 
     height: auto;
@@ -1177,12 +1172,5 @@ const checkDevice = () => {
   }
   
   .socials-row { gap: 25px; }
-
-  .scroll-top-btn {
-    bottom: 25px;
-    right: 25px;
-    width: 50px;
-    height: 50px;
-  }
 }
 </style>

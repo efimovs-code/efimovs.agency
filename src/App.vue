@@ -27,6 +27,7 @@
 
       <Footer v-show="deferHeavyComponents && !isPortfolioPage" @openModal="openWithStack(null)" />
 
+      <!-- Здесь лежат модалки и виджеты (поверх всего сайта) -->
       <Teleport to="body">
         <ContactModal
           :isOpen="isModalOpen"
@@ -35,6 +36,9 @@
           :initial-service="selectedService"
           initial-plan=""
         />
+        
+        <!-- НАШ ИИ-ВИДЖЕТ (Убрано ожидание headerVisible) -->
+        <ChatWidget v-if="!isStandalonePage" />
       </Teleport>
     </div>
 
@@ -50,20 +54,9 @@
       <div class="scene-depth-glow"></div>
       <div class="luxury-vignette"></div>
 
-      <div
-        ref="starLayerFar"
-        class="star-layer layer-far opt-gpu"
-      ></div>
-
-      <div
-        ref="starLayerMid"
-        class="star-layer layer-mid opt-gpu"
-      ></div>
-
-      <div
-        ref="starLayerNear"
-        class="star-layer layer-near opt-gpu"
-      ></div>
+      <div ref="starLayerFar" class="star-layer layer-far opt-gpu"></div>
+      <div ref="starLayerMid" class="star-layer layer-mid opt-gpu"></div>
+      <div ref="starLayerNear" class="star-layer layer-near opt-gpu"></div>
 
       <div class="shooting-star"></div>
       <div class="luxury-noise"></div>
@@ -92,6 +85,7 @@ import Header from "./components/Header.vue";
 
 const Footer = defineAsyncComponent(() => import("./components/Footer.vue"));
 const ContactModal = defineAsyncComponent(() => import("./components/ContactModal.vue"));
+const ChatWidget = defineAsyncComponent(() => import("./components/ChatWidget.vue"));
 
 const route = useRoute();
 const router = useRouter();
@@ -331,6 +325,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style>
+/* Твои оригинальные стили App.vue остаются здесь */
 body.global-modal-open .header {
   opacity: 0 !important;
   pointer-events: none !important;
