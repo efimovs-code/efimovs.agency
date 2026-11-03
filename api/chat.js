@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@supabase/supabase-js';
 
 const systemPrompt = `[УСТАНОВКА ЛИЧНОСТИ]
@@ -23,6 +22,7 @@ const systemPrompt = `[УСТАНОВКА ЛИЧНОСТИ]
 - Если клиент скинул контакт (email, phone, @tg), ответь строго: "Благодарю. Ваши данные переданы команде. Артур Ефимов свяжется с вами в ближайшее время."`;
 
 export default async function handler(req, res) {
+  // CORS-заголовки
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -36,32 +36,69 @@ export default async function handler(req, res) {
       throw new Error('Ключ GEMINI_API_KEY не найден в настройках Vercel');
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
     const { messages } = req.body;
-
     if (!messages || !messages.length) {
       throw new Error('Пустой массив сообщений');
     }
 
-    const formattedHistory = messages.map(m => 
-      `${m.role === 'assistant' ? 'Ассистент' : 'Клиент'}: ${m.content}`
-    ).join('\n');
+    // Подготовка истории диалога под формат Gemini API (вырезаем стартовое приветствие ассистента)
+    const contents = messages
+      .filter((m, i) => !(i === 0 && m.role === 'assistant'))
+      .map(m => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }]
+      }));
 
-    const finalPrompt = `История диалога:\n${formattedHistory}\n\nПроанализируй диалог и напиши следующий ответ Ассистента (только сам текст ответа, без префиксов).`;
+    // Список доступных моделей для автоматического фолбэка
+    const modelsToTry = [
+      'gemini-2.5-flash',
+      'gemini-2.0-flash',
+      'gemini-1.5-flash',
+      'gemini-1.5-pro'
+    ];
 
-    // ИСПРАВЛЕНИЕ: Переключили с проблемного flash на стабильную PRO модель
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-pro', 
-      systemInstruction: systemPrompt,
-    });
+    let aiReply = null;
+    let lastError = null;
 
-    const result = await model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: finalPrompt }] }],
-      generationConfig: { maxOutputTokens: 200, temperature: 0.6 }
-    });
+    // Прямой REST-запрос без сторонних SDK с заголовком x-goog-api-key для поддержки AQ-ключей
+    for (const modelName of modelsToTry) {
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey
+          },
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: systemPrompt }]
+            },
+            contents: contents,
+            generationConfig: {
+              temperature: 0.6,
+              maxOutputTokens: 200
+            }
+          })
+        });
 
-    const aiReply = result.response.text();
+        const data = await response.json();
 
+        if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+          aiReply = data.candidates[0].content.parts[0].text;
+          break; // Модель успешно ответила — выходим из цикла
+        } else {
+          lastError = data.error?.message || `Ошибка ${response.status} на модели ${modelName}`;
+        }
+      } catch (err) {
+        lastError = err.message;
+      }
+    }
+
+    if (!aiReply) {
+      throw new Error(`Google API: ${lastError}`);
+    }
+
+    // Запись лидов в Supabase
     const lastUserMsg = messages[messages.length - 1].content;
     const contactRegex = /(@[A-Za-z0-9_]{3,}|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|\+?\d{7,15}|t\.me\/[A-Za-z0-9_]+|wa\.me\/\d+)/ig;
     const foundContacts = lastUserMsg.match(contactRegex);
