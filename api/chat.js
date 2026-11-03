@@ -32,7 +32,7 @@ export default async function handler(req, res) {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error('Ключ GEMINI_API_KEY не найден в переменных окружения');
+      throw new Error('Ключ GEMINI_API_KEY не найден в переменных окружения Vercel');
     }
 
     const { messages } = req.body;
@@ -40,6 +40,32 @@ export default async function handler(req, res) {
       throw new Error('Пустой массив сообщений');
     }
 
+    // 1. Динамически запрашиваем у Google список всех доступных моделей
+    const modelsRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    const modelsData = await modelsRes.json();
+
+    if (!modelsRes.ok) {
+      throw new Error(`Ошибка получения списка моделей: ${modelsData.error?.message || modelsRes.statusText}`);
+    }
+
+    // Фильтруем модели, поддерживающие генерацию текста
+    const validModels = (modelsData.models || []).filter(m => 
+      m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent')
+    );
+
+    if (!validModels.length) {
+      throw new Error('На вашем аккаунте нет активных моделей с поддержкой generateContent');
+    }
+
+    // Автоматический выбор лучшей доступной модели (Flash -> Pro -> Любая доступная)
+    const selectedModelObj = 
+      validModels.find(m => m.name.includes('flash')) ||
+      validModels.find(m => m.name.includes('pro')) ||
+      validModels[0];
+
+    const modelPath = selectedModelObj.name; // Полный путь модели от Google (например: models/gemini-2.5-flash)
+
+    // 2. Формируем историю чата
     const contents = messages
       .filter((m, i) => !(i === 0 && m.role === 'assistant'))
       .map(m => ({
@@ -47,47 +73,34 @@ export default async function handler(req, res) {
         parts: [{ text: m.content }]
       }));
 
-    const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash'];
-    let aiReply = null;
-    let lastError = null;
-
-    for (const modelName of modelsToTry) {
-      try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            systemInstruction: {
-              parts: [{ text: systemPrompt }]
-            },
-            contents: contents,
-            generationConfig: {
-              temperature: 0.6,
-              maxOutputTokens: 200
-            }
-          })
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
-          aiReply = data.candidates[0].content.parts[0].text;
-          break;
-        } else {
-          lastError = data.error?.message || `Ошибка ${response.status} (${modelName})`;
+    // 3. Запрос к автоматически выбранной модели
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${modelPath}:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [{ text: systemPrompt }]
+        },
+        contents: contents,
+        generationConfig: {
+          temperature: 0.6,
+          maxOutputTokens: 200
         }
-      } catch (err) {
-        lastError = err.message;
-      }
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error?.message || `Ошибка генерации (${response.status})`);
     }
 
+    const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!aiReply) {
-      throw new Error(`Google API: ${lastError}`);
+      throw new Error('Нейросеть вернула пустой ответ');
     }
 
-    // Запись лидов в Supabase
+    // 4. Запись лидов в Supabase
     const lastUserMsg = messages[messages.length - 1].content;
     const contactRegex = /(@[A-Za-z0-9_]{3,}|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|\+?\d{7,15}|t\.me\/[A-Za-z0-9_]+|wa\.me\/\d+)/ig;
     const foundContacts = lastUserMsg.match(contactRegex);
