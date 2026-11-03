@@ -23,7 +23,6 @@ const systemPrompt = `[УСТАНОВКА ЛИЧНОСТИ]
 - Если клиент скинул контакт (email, phone, @tg), ответь строго: "Благодарю. Ваши данные переданы команде. Артур Ефимов свяжется с вами в ближайшее время."`;
 
 export default async function handler(req, res) {
-  // Настройка CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -32,7 +31,6 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Метод не разрешен' });
 
   try {
-    // Безопасная инициализация ИИ
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       throw new Error('Ключ GEMINI_API_KEY не найден в настройках Vercel');
@@ -45,15 +43,15 @@ export default async function handler(req, res) {
       throw new Error('Пустой массив сообщений');
     }
 
-    // ИСПРАВЛЕНИЕ: Обходим жесткие лимиты startChat, передавая историю текстом
     const formattedHistory = messages.map(m => 
       `${m.role === 'assistant' ? 'Ассистент' : 'Клиент'}: ${m.content}`
     ).join('\n');
 
     const finalPrompt = `История диалога:\n${formattedHistory}\n\nПроанализируй диалог и напиши следующий ответ Ассистента (только сам текст ответа, без префиксов).`;
 
+    // ИСПРАВЛЕНИЕ: Используем точный тег latest для модели
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-1.5-flash-latest', 
       systemInstruction: systemPrompt,
     });
 
@@ -64,7 +62,6 @@ export default async function handler(req, res) {
 
     const aiReply = result.response.text();
 
-    // Безопасная инициализация Supabase
     const lastUserMsg = messages[messages.length - 1].content;
     const contactRegex = /(@[A-Za-z0-9_]{3,}|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|\+?\d{7,15}|t\.me\/[A-Za-z0-9_]+|wa\.me\/\d+)/ig;
     const foundContacts = lastUserMsg.match(contactRegex);
@@ -85,7 +82,6 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('SERVER ERROR:', error);
-    // Отправляем РЕАЛЬНУЮ причину сбоя на фронтенд
     return res.status(500).json({ error: error.message || 'Внутренняя ошибка сервера' });
   }
 }
