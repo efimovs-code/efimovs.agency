@@ -1,7 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@supabase/supabase-js';
 
-// Инициализация Gemini и Supabase
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const supabase = createClient(
@@ -9,16 +8,15 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY
 );
 
-// Системный промпт
 const systemPrompt = `[УСТАНОВКА ЛИЧНОСТИ]
 Ты — AI Discovery Manager в IT-агентстве "Efimovs Agency" (efimovs.agency). 
-Твой стиль: премиальный, уверенный, лаконичный (в стиле McKinsey, Apple и топовых IT-консалтингов). Без воды, извинений и эмодзи.
-Ты общаешься строго на том же языке, на котором пишет клиент (RU, EN, UA, TR, DE, FR, ES).
+Твой стиль: премиальный, уверенный, лаконичный. Без воды, извинений и эмодзи.
+Ты общаешься строго на том же языке, на котором пишет клиент.
 
 [ИНФОРМАЦИЯ ОБ АГЕНТСТВЕ]
 - Основатель и главный инженер: Artur Efimov.
 - Наш стек: Vue.js (плавные анимации, Glassmorphic UI) для фронтенда и Laravel (PHP) / Supabase для бэкенда.
-- Наши кейсы (упоминай их, если это уместно): AiMA Platform (SaaS), Shortlyst (SaaS ИИ-аналитика), QR Cafe (веб-приложение для HoReCa), Geometriya (корпоративный сайт).
+- Наши кейсы: AiMA Platform (SaaS), Shortlyst (SaaS ИИ-аналитика), QR Cafe (веб-приложение для HoReCa), Geometriya (корпоративный сайт).
 - Цены: От $1,000. Точных цен нет — только кастомная архитектура под бизнес.
 
 [ТВОЯ ГЛАВНАЯ ЦЕЛЬ - ВОРОНКА ПРОДАЖ]
@@ -32,7 +30,6 @@ const systemPrompt = `[УСТАНОВКА ЛИЧНОСТИ]
 - Если клиент скинул контакт (email, phone, @tg), ответь строго: "Благодарю. Ваши данные переданы команде. Артур Ефимов свяжется с вами в ближайшее время."`;
 
 export default async function handler(req, res) {
-  // Настройка CORS для Vercel
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -53,13 +50,17 @@ export default async function handler(req, res) {
 
     const lastUserMsg = messages[messages.length - 1].content;
 
-    // Конвертация истории чата в формат Gemini ('user' / 'model')
-    const history = messages.slice(0, messages.length - 1).map(msg => ({
+    // ИСПРАВЛЕНИЕ: Вырезаем первое приветствие бота, чтобы история для Gemini начиналась с user
+    const rawHistory = messages.slice(0, messages.length - 1);
+    const filteredHistory = rawHistory.filter((msg, index) => {
+        return !(index === 0 && msg.role === 'assistant');
+    });
+
+    const history = filteredHistory.map(msg => ({
       role: msg.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: msg.content }],
     }));
 
-    // Правильный вызов метода SDK: getGenerativeModel
     const model = genAI.getGenerativeModel({
       model: 'gemini-1.5-flash',
       systemInstruction: systemPrompt,
@@ -76,11 +77,11 @@ export default async function handler(req, res) {
     const result = await chat.sendMessage(lastUserMsg);
     const aiReply = result.response.text();
 
-    // CRM-логика записи лидов в Supabase
     const contactRegex = /(@[A-Za-z0-9_]{3,}|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|\+?\d{7,15}|t\.me\/[A-Za-z0-9_]+|wa\.me\/\d+)/ig;
     const foundContacts = lastUserMsg.match(contactRegex);
 
-    if (foundContacts) {
+    // Безопасная проверка на наличие ключей Supabase перед записью лида
+    if (foundContacts && process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
       await supabase
         .from('agency_leads')
         .insert([
