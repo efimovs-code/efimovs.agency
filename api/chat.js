@@ -59,7 +59,8 @@ export default async function handler(req, res) {
       parts: [{ text: msg.content }],
     }));
 
-    const model = genAI.getGenerativeAIModel({
+    // Правильный вызов метода SDK: getGenerativeModel
+    const model = genAI.getGenerativeModel({
       model: 'gemini-1.5-flash',
       systemInstruction: systemPrompt,
     });
