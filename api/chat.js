@@ -49,9 +49,9 @@ export default async function handler(req, res) {
 
     const finalPrompt = `История диалога:\n${formattedHistory}\n\nПроанализируй диалог и напиши следующий ответ Ассистента (только сам текст ответа, без префиксов).`;
 
-    // ИСПРАВЛЕНИЕ: Используем точный тег latest для модели
+    // ИСПРАВЛЕНИЕ: Переключили с проблемного flash на стабильную PRO модель
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash-latest', 
+      model: 'gemini-1.5-pro', 
       systemInstruction: systemPrompt,
     });
 
