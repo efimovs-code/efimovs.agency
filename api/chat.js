@@ -22,7 +22,6 @@ const systemPrompt = `[УСТАНОВКА ЛИЧНОСТИ]
 - Если клиент скинул контакт (email, phone, @tg), ответь строго: "Благодарю. Ваши данные переданы команде. Артур Ефимов свяжется с вами в ближайшее время."`;
 
 export default async function handler(req, res) {
-  // CORS-заголовки
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -33,7 +32,7 @@ export default async function handler(req, res) {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error('Ключ GEMINI_API_KEY не найден в настройках Vercel');
+      throw new Error('Ключ GEMINI_API_KEY не найден в переменных окружения');
     }
 
     const { messages } = req.body;
@@ -41,7 +40,6 @@ export default async function handler(req, res) {
       throw new Error('Пустой массив сообщений');
     }
 
-    // Подготовка истории диалога под формат Gemini API (вырезаем стартовое приветствие ассистента)
     const contents = messages
       .filter((m, i) => !(i === 0 && m.role === 'assistant'))
       .map(m => ({
@@ -49,25 +47,16 @@ export default async function handler(req, res) {
         parts: [{ text: m.content }]
       }));
 
-    // Список доступных моделей для автоматического фолбэка
-    const modelsToTry = [
-      'gemini-2.5-flash',
-      'gemini-2.0-flash',
-      'gemini-1.5-flash',
-      'gemini-1.5-pro'
-    ];
-
+    const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash'];
     let aiReply = null;
     let lastError = null;
 
-    // Прямой REST-запрос без сторонних SDK с заголовком x-goog-api-key для поддержки AQ-ключей
     for (const modelName of modelsToTry) {
       try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'x-goog-api-key': apiKey
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             systemInstruction: {
@@ -85,9 +74,9 @@ export default async function handler(req, res) {
 
         if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
           aiReply = data.candidates[0].content.parts[0].text;
-          break; // Модель успешно ответила — выходим из цикла
+          break;
         } else {
-          lastError = data.error?.message || `Ошибка ${response.status} на модели ${modelName}`;
+          lastError = data.error?.message || `Ошибка ${response.status} (${modelName})`;
         }
       } catch (err) {
         lastError = err.message;
