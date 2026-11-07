@@ -48,6 +48,15 @@
         </div>
       </div>
 
+      <!-- 🌟 Кнопка вызова действия (Один в один как в Expertise) -->
+      <div class="faq-action">
+        <button class="btn-silver-wrapper" @click="$emit('open-contact')">
+          <div class="btn-solid-silver-inner">
+            <span class="btn-text">{{ t('btn_discuss') }}</span>
+          </div>
+        </button>
+      </div>
+
     </div>
   </section>
 </template>
@@ -56,9 +65,10 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { t, currentLang } from "../composables/useLanguage";
 
+defineEmits(['open-contact']);
+
 const faqDict = {
   EN: [
-    { question: "Unsure which architectural level to choose?", answer: "<b>Precision over templates.</b><br><br>We do not utilize standardized markups. The development cost is discussed and calculated exclusively by our technical manager.<br><br>Simply select the architectural level that currently fits your goals, and we will tailor the final solution and budget entirely to your project's scope." },
     { question: "How do we start, and what are the payment terms?", answer: "The project kicks off after a <b>50% deposit</b> is made. Our lead developers are frequently booked with large-scale projects, so this deposit securely reserves the next available slot in our team's production schedule.<br><br>For smaller projects, the remaining balance is paid prior to the final deployment of the ready solution to your servers. If the project is large-scale and requires extensive development time, we divide the payment into transparent development milestones. The final payment structure is always determined strictly on an individual basis with our manager during a call." },
     { question: "How is communication and development control structured?", answer: "We value your time, which is why we build a fully transparent yet unobtrusive process. A dedicated personal manager is assigned to your project for the entire development period.<br><br>If any questions arise during the work process, you can confidently reach out to them during their working hours. We highly respect our team's personal time, therefore, <b>outside of working hours, the manager is offline and will not respond to messages</b>, but will absolutely get back to you first thing at the start of the next business day." },
     { question: "What if we want to add a new feature during the development process?", answer: "Brilliant ideas often emerge during development. If a new feature (e.g., a complex integration system or a new section) was not included in the initial technical specification, we process it as a <b>Change Request</b>.<br><br>We transparently estimate the cost of adding the new feature to the project before proceeding with implementation. This process is always discussed individually with the manager." },
@@ -67,7 +77,6 @@ const faqDict = {
     { question: "Do you sign an NDA (Non-Disclosure Agreement)?", answer: "Certainly. The confidentiality of your business idea, trade secrets, and client databases is our absolute priority. We are ready to sign a strict Non-Disclosure Agreement (NDA) even before our first introductory call." }
   ],
   RU: [
-    { question: "Не уверены, какой архитектурный уровень выбрать?", answer: "<b>Точность вместо шаблонов.</b><br><br>Мы не используем стандартные наценки. Стоимость разработки обсуждается и рассчитывается исключительно нашим техническим менеджером.<br><br>Просто выберите уровень, который соответствует вашим целям, и мы адаптируем итоговое решение и бюджет полностью под ваш проект." },
     { question: "Как мы начинаем работу и каковы условия оплаты?", answer: "Проект стартует после внесения <b>предоплаты 50%</b>. Наши ведущие разработчики часто заняты крупными проектами, поэтому этот депозит надежно бронирует следующий доступный слот в графике команды.<br><br>Для небольших проектов остаток оплачивается перед финальным развертыванием готового решения на ваших серверах. Если проект масштабный и требует длительной разработки, мы делим оплату на прозрачные этапы. Итоговая структура оплаты всегда определяется строго индивидуально с менеджером на созвоне." },
     { question: "Как выстроена коммуникация и контроль разработки?", answer: "Мы ценим ваше время, поэтому выстраиваем полностью прозрачный, но ненавязчивый процесс. На весь период разработки за вашим проектом закрепляется персональный менеджер.<br><br>Если в процессе работы возникают вопросы, вы можете смело обращаться к нему в рабочие часы. Мы очень уважаем личное время нашей команды, поэтому <b>в нерабочее время менеджер находится офлайн и не отвечает на сообщения</b>, но обязательно свяжется с вами первым делом в начале следующего рабочего дня." },
     { question: "Что если мы захотим добавить новую функцию в процессе разработки?", answer: "Блестящие идеи часто появляются во время разработки. Если новая функция (например, сложная интеграция или новый раздел) не была включена в первоначальное ТЗ, мы оформляем ее как <b>Запрос на изменение (Change Request)</b>.<br><br>Мы прозрачно оцениваем стоимость добавления новой функции в проект перед тем, как приступить к реализации. Этот процесс всегда обсуждается индивидуально с менеджером." },
@@ -76,7 +85,6 @@ const faqDict = {
     { question: "Подписываете ли вы NDA (Соглашение о неразглашении)?", answer: "Конечно. Конфиденциальность вашей бизнес-идеи, коммерческой тайны и баз данных клиентов — наш абсолютный приоритет. Мы готовы подписать строгое Соглашение о неразглашении (NDA) еще до нашего первого ознакомительного звонка." }
   ],
   UA: [
-    { question: "Не впевнені, який архітектурний рівень обрати?", answer: "<b>Точність замість шаблонів.</b><br><br>Ми не використовуємо стандартні націнки. Вартість розробки обговорюється і розраховується виключно нашим технічним менеджером.<br><br>Просто виберіть рівень, який відповідає вашим цілям, і ми адаптуємо підсумкове рішення та бюджет повністю під ваш проєкт." },
     { question: "Як ми розпочинаємо роботу та які умови оплати?", answer: "Проєкт стартує після внесення <b>передоплати 50%</b>. Наші провідні розробники часто зайняті великими проєктами, тому цей депозит надійно бронює наступний доступний слот у графіку команди.<br><br>Для невеликих проєктів залишок оплачується перед фінальним розгортанням готового рішення на ваших серверах. Якщо проєкт масштабний і вимагає тривалої розробки, ми ділимо оплату на прозорі етапи. Підсумкова структура оплати завжди визначається суворо індивідуально з менеджером під час дзвінка." },
     { question: "Як побудована комунікація та контроль розробки?", answer: "Ми цінуємо ваш час, тому вибудовуємо повністю прозорий, але ненав'язливий процес. На весь період розробки за вашим проєктом закріплюється персональний менеджер.<br><br>Якщо в процесі роботи виникають питання, ви можете сміливо звертатися до нього в робочі години. Ми дуже поважаємо особистий час нашої команди, тому <b>в неробочий час менеджер знаходиться офлайн і не відповідає на повідомлення</b>, але обов'язково зв'яжеться з вами в першу чергу на початку наступного робочого дня." },
     { question: "Що як ми захочемо додати нову функцію в процесі розробки?", answer: "Блискучі ідеї часто з'являються під час розробки. Якщо нова функція (наприклад, складна інтеграція або новий розділ) не була включена в початкове ТЗ, ми оформлюємо її як <b>Запит на зміну (Change Request)</b>.<br><br>Ми прозоро оцінюємо вартість додавання нової функції в проєкт перед тим, як приступити до реалізації. Цей процес завжди обговорюється індивідуально з менеджером." },
@@ -85,7 +93,6 @@ const faqDict = {
     { question: "Чи підписуєте ви NDA (Угоду про нерозголошення)?", answer: "Звісно. Конфіденційність вашої бізнес-ідеї, комерційної таємниці та баз даних клієнтів — наш абсолютний пріоритет. Ми готові підписати сувору Угоду про нерозголошення (NDA) ще до нашого першого ознайомчого дзвінка." }
   ],
   TR: [
-    { question: "Hangi mimari seviyeyi seçeceğinizden emin değil misiniz?", answer: "<b>Şablonlar yerine hassasiyet.</b><br><br>Standart fiyat artışları kullanmıyoruz. Geliştirme maliyeti yalnızca teknik yöneticimiz tarafından görüşülür ve hesaplanır.<br><br>Sadece şu anki hedeflerinize uyan mimari seviyeyi seçin; nihai çözümü ve bütçeyi tamamen projenizin kapsamına göre uyarlayalım." },
     { question: "Nasıl başlıyoruz ve ödeme koşulları nelerdir?", answer: "Proje, <b>%50 ön ödeme</b> yapıldıktan sonra başlar. Kıdemli yazılımcılarımız genellikle büyük projelerle meşgul olduğundan, bu ön ödeme ekibimizin üretim programındaki bir sonraki uygun zaman dilimini güvenle rezerve eder.<br><br>Daha küçük projeler için kalan bakiye, hazır çözümün sunucularınıza nihai kurulumundan önce ödenir. Proje büyük ölçekliyse ve uzun geliştirme süresi gerektiriyorsa, ödemeyi şeffaf aşamalara böleriz. Nihai ödeme yapısı, her zaman yöneticimizle yapılan görüşmede bireysel olarak belirlenir." },
     { question: "İletişim ve geliştirme kontrolü nasıl yapılandırılır?", answer: "Zamanınıza değer veriyoruz, bu nedenle tamamen şeffaf ancak rahatsız etmeyen bir süreç inşa ediyoruz. Tüm geliştirme süreci boyunca projenize özel bir kişisel yönetici atanır.<br><br>Çalışma sürecinde herhangi bir soru ortaya çıkarsa, çalışma saatleri içinde yöneticinizle rahatça iletişime geçebilirsiniz. Ekibimizin kişisel zamanına son derece saygı duyuyoruz, bu nedenle <b>mesai saatleri dışında yönetici çevrim dışıdır ve mesajlara yanıt vermez</b>, ancak bir sonraki iş gününün başında ilk iş olarak size geri dönecektir." },
     { question: "Geliştirme sürecinde yeni bir özellik eklemek istersek ne olur?", answer: "Harika fikirler genellikle geliştirme sırasında ortaya çıkar. Yeni bir özellik (örneğin karmaşık bir entegrasyon sistemi veya yeni bir bölüm) ilk teknik şartnameye dahil edilmediyse, bunu bir <b>Değişiklik Talebi (Change Request)</b> olarak işleriz.<br><br>Uygulamaya geçmeden önce yeni özelliği projeye eklemenin maliyetini şeffaf bir şekilde değerlendiririz. Bu süreç her zaman yönetici ile bireysel olarak görüşülür." },
@@ -94,7 +101,6 @@ const faqDict = {
     { question: "Gizlilik Sözleşmesi (NDA) imzalıyor musunuz?", answer: "Elbette. İş fikrinizin, ticari sırlarınızın ve müşteri veritabanlarınızın gizliliği mutlak önceliğimizdir. İlk tanıtım görüşmemizden önce bile katı bir Gizlilik Sözleşmesi (NDA) imzalamaya hazırız." }
   ],
   DE: [
-    { question: "Unsicher, welche Architekturstufe Sie wählen sollen?", answer: "<b>Präzision statt Vorlagen.</b><br><br>Wir verwenden keine Standardaufschläge. Die Entwicklungskosten werden ausschließlich von unserem technischen Manager besprochen und berechnet.<br><br>Wählen Sie einfach die Stufe, die zu Ihren Zielen passt, und wir passen die Lösung und das Budget vollständig an Ihr Projekt an." },
     { question: "Wie starten wir und wie sind die Zahlungsbedingungen?", answer: "Das Projekt startet nach einer <b>Anzahlung von 50%</b>. Dies reserviert zuverlässig den nächsten freien Platz im Produktionsplan unseres Teams.<br><br>Bei kleineren Projekten wird der Restbetrag vor dem finalen Deployment bezahlt. Bei Großprojekten teilen wir die Zahlung in transparente Meilensteine auf. Die Struktur wird immer individuell besprochen." },
     { question: "Wie ist die Kommunikation und Kontrolle strukturiert?", answer: "Wir schätzen Ihre Zeit und bauen einen transparenten Prozess auf. Für die gesamte Entwicklungszeit wird Ihnen ein persönlicher Manager zugewiesen.<br><br><b>Außerhalb der Arbeitszeiten ist der Manager offline</b>, wird sich aber am nächsten Werktag sofort bei Ihnen melden." },
     { question: "Was ist, wenn wir während der Entwicklung eine neue Funktion hinzufügen möchten?", answer: "Wenn eine neue Funktion nicht im ursprünglichen Lastenheft enthalten war, bearbeiten wir sie als <b>Change Request</b>.<br><br>Wir schätzen transparent die Kosten für das Hinzufügen der neuen Funktion, bevor wir mit der Umsetzung beginnen." },
@@ -103,7 +109,6 @@ const faqDict = {
     { question: "Unterschreiben Sie ein NDA (Geheimhaltungsvereinbarung)?", answer: "Sicherlich. Die Vertraulichkeit Ihrer Geschäftsidee ist unsere Priorität. Wir sind bereit, noch vor unserem ersten Gespräch ein strenges NDA zu unterzeichnen." }
   ],
   FR: [
-    { question: "Incertain du niveau architectural à choisir ?", answer: "<b>La précision avant les modèles.</b><br><br>Nous n'utilisons pas de marges standardisées. Le coût de développement est calculé exclusivement par notre responsable technique.<br><br>Sélectionnez simplement le niveau qui correspond à vos objectifs, et nous adapterons la solution et le budget à votre projet." },
     { question: "Comment commençons-nous et quelles sont les conditions de paiement ?", answer: "Le projet démarre après un <b>acompte de 50%</b>. Cela réserve en toute sécurité le prochain créneau disponible dans le planning de notre équipe.<br><br>Pour les petits projets, le solde est payé avant le déploiement final. Pour les grands projets, nous divisons le paiement en étapes transparentes." },
     { question: "Comment la communication est-elle structurée ?", answer: "Nous valorisons votre temps. Un manager personnel est assigné à votre projet pour toute la période de développement.<br><br><b>En dehors des heures de travail, le manager est hors ligne</b>, mais vous recontactera dès le début du jour ouvrable suivant." },
     { question: "Et si nous voulons ajouter une nouvelle fonctionnalité ?", answer: "Si une nouvelle fonctionnalité n'était pas incluse dans les spécifications initiales, nous la traitons comme une <b>Demande de changement (Change Request)</b>.<br><br>Nous estimons de manière transparente le coût avant de procéder à la mise en œuvre." },
@@ -112,7 +117,6 @@ const faqDict = {
     { question: "Signez-vous un NDA (Accord de non-divulgation) ?", answer: "Certainement. La confidentialité de votre idée est notre priorité absolue. Nous sommes prêts à signer un NDA strict avant même notre premier appel." }
   ],
   ES: [
-    { question: "¿No está seguro de qué nivel arquitectónico elegir?", answer: "<b>Precisión sobre plantillas.</b><br><br>No utilizamos márgenes estandarizados. El costo es calculado exclusivamente por nuestro gerente técnico.<br><br>Simplemente seleccione el nivel que se ajuste a sus objetivos y adaptaremos la solución y el presupuesto por completo a su proyecto." },
     { question: "¿Cómo empezamos y cuáles son las condiciones de pago?", answer: "El proyecto arranca tras un <b>depósito del 50%</b>. Esto reserva de forma segura el próximo espacio disponible en el calendario de nuestro equipo.<br><br>Para proyectos pequeños, el saldo se paga antes del despliegue final. Para grandes proyectos, dividimos el pago en hitos transparentes." },
     { question: "¿Cómo se estructura la comunicación y el control?", answer: "Valoramos su tiempo. Se asigna un gerente personal a su proyecto durante todo el período de desarrollo.<br><br><b>Fuera del horario laboral, el gerente está desconectado</b>, pero se pondrá en contacto con usted a primera hora del siguiente día hábil." },
     { question: "¿Qué pasa si queremos añadir una nueva función?", answer: "Si no se incluyó una nueva función en la especificación inicial, la procesamos como una <b>Solicitud de Cambio (Change Request)</b>.<br><br>Estimamos de forma transparente el costo antes de proceder con la implementación." },
@@ -204,6 +208,35 @@ onBeforeUnmount(() => {
   padding: 0px 40px; 
   position: relative; 
   z-index: 10; 
+}
+
+.section-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 60px;
+}
+
+.kicker {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: #a1a1aa;
+  margin-bottom: 20px;
+}
+
+.gradient-title {
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 800;
+  margin: 0px 0px 24px 0px;
+  letter-spacing: -1px;
+  background: linear-gradient(180deg, #ffffff 0%, #a1a1aa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
 }
 
 .section-subtitle { 
@@ -321,6 +354,50 @@ onBeforeUnmount(() => {
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/* 🌟 СТИЛИ КНОПКИ "ОБСУДИТЬ ПРОЕКТ" (Как в Expertise) */
+.faq-action {
+  display: flex;
+  justify-content: center;
+  margin-top: 60px;
+}
+
+.btn-silver-wrapper {
+  display: inline-block;
+  background: transparent;
+  border: none;
+  padding: 0px;
+  cursor: pointer;
+  outline: none;
+  border-radius: 100px;
+}
+
+.btn-solid-silver-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5e4e2;
+  color: #000000;
+  padding: 20px 50px;
+  border-radius: 100px;
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-family: inherit;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  transform: translateZ(0px);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-silver-wrapper:hover .btn-solid-silver-inner {
+    background: #ffffff;
+    transform: translateY(-3px) translateZ(0px);
+  }
+}
+
+/* 🌟 АДАПТИВНОСТЬ */
 @media (min-width: 768px) and (max-width: 1023px) {
   .gradient-title {
     font-size: clamp(36px, 5vw, 48px) !important;
@@ -332,7 +409,6 @@ onBeforeUnmount(() => {
   .faq-luxury { padding: 80px 0px; }
   .container { padding: 0px 20px; }
   
-  /* ИСПРАВЛЕНИЕ: Разрешаем гибкий перенос заголовка на мобильных для длинных турецких слов */
   .gradient-title {
     font-size: clamp(20px, 6vw, 28px);
     white-space: normal;
@@ -351,5 +427,12 @@ onBeforeUnmount(() => {
   .icon-cross { width: 18px; height: 18px; }
   .line.horizontal { top: 8px; width: 18px; left: 0px; }
   .line.vertical { left: 8px; height: 18px; top: 0px; }
+
+  .faq-action { margin-top: 40px; }
+  .btn-solid-silver-inner {
+    padding: 14px 32px;
+    font-size: 13px;
+    letter-spacing: 1.5px;
+  }
 }
 </style>

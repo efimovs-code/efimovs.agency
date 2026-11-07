@@ -37,23 +37,22 @@
         </div>
 
         <div class="actions hero-anim-btns">
-          <!-- 🌟 ИСПРАВЛЕНО: Добавлены смарт-обработчики скролла (touchstart, touchmove, touchend) -->
+          <!-- 🌟 ИСПРАВЛЕНО: Добавлены модификаторы .passive для идеального скролла на мобильных -->
           <button 
             class="btn-pill btn-platinum" 
             @click="$emit('open-contact')"
-            @touchstart="handleTouchStart"
-            @touchmove="handleTouchMove"
+            @touchstart.passive="handleTouchStart"
+            @touchmove.passive="handleTouchMove"
             @touchend="handleSmartClick(() => $emit('open-contact'), $event)"
           >
           <span class="btn-text">{{ t('btn_scale') }}</span>
           </button>
           
-          <!-- 🌟 ИСПРАВЛЕНО: Заменили router-link на тег <a> для полного контроля над тапами -->
           <a 
             class="btn-pill btn-dark"
             @click.prevent="navigateToPortfolio"
-            @touchstart="handleTouchStart"
-            @touchmove="handleTouchMove"
+            @touchstart.passive="handleTouchStart"
+            @touchmove.passive="handleTouchMove"
             @touchend="handleSmartClick(navigateToPortfolio, $event)"
           >
             <span class="btn-text">{{ t('btn_cases') }}</span>
@@ -96,6 +95,8 @@ const router = useRouter();
 const heroSection = ref(null);
 const isVisible = ref(true);
 const hasIntroDelay = ref(true); 
+
+// 1. ИСПРАВЛЕНИЕ OBSERVER: Храним инстанс локально и правильно очищаем
 let observer = null;
 
 // Функция для навигации
@@ -104,8 +105,9 @@ const navigateToPortfolio = () => {
 };
 
 // ==========================================
-// 🌟 SMART TAP ЛОГИКА ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ
+// 🌟 ОПТИМИЗИРОВАННАЯ SMART TAP ЛОГИКА
 // ==========================================
+// Вынесли переменные, чтобы не нагружать реактивность Vue
 let touchStartY = 0;
 let touchStartX = 0;
 let isDragging = false;
@@ -113,25 +115,26 @@ let isDragging = false;
 const handleTouchStart = (e) => {
   touchStartY = e.touches[0].clientY;
   touchStartX = e.touches[0].clientX;
-  isDragging = false; // Сбрасываем статус при новом касании
+  isDragging = false; 
 };
 
 const handleTouchMove = (e) => {
-  const touchY = e.touches[0].clientY;
-  const touchX = e.touches[0].clientX;
-  // Если палец сдвинулся больше чем на 10px по любой оси — это скролл
-  if (Math.abs(touchY - touchStartY) > 10 || Math.abs(touchX - touchStartX) > 10) {
-    isDragging = true;
+  // Вычисляем только если мы еще не знаем, что это драг (экономит CPU)
+  if (!isDragging) {
+      const touchY = e.touches[0].clientY;
+      const touchX = e.touches[0].clientX;
+      if (Math.abs(touchY - touchStartY) > 10 || Math.abs(touchX - touchStartX) > 10) {
+        isDragging = true;
+      }
   }
 };
 
 const handleSmartClick = (actionFn, e) => {
-  // Если палец не двигался (или двигался меньше 10px), выполняем действие
   if (!isDragging) {
-    if (e && e.cancelable) e.preventDefault(); // Предотвращаем "фантомный" клик от браузера
+    if (e && e.cancelable) e.preventDefault();
     actionFn();
   }
-  isDragging = false; // Очищаем статус
+  isDragging = false; 
 };
 // ==========================================
 
@@ -140,10 +143,13 @@ onMounted(() => {
     hasIntroDelay.value = false;
   }
 
+  // Создаем обзервер внутри хука, чтобы сборщик мусора его очистил
   observer = new IntersectionObserver(
     (entries) => {
-      const entry = entries[0];
-      isVisible.value = entry.isIntersecting;
+      // Исключаем лишние реактивные пересчеты, если значение не изменилось
+      if (isVisible.value !== entries[0].isIntersecting) {
+          isVisible.value = entries[0].isIntersecting;
+      }
     },
     { 
       rootMargin: "0px 0px -100px 0px", 
@@ -157,7 +163,11 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  if (observer) observer.disconnect();
+  if (observer) {
+      if (heroSection.value) observer.unobserve(heroSection.value); // Очищаем конкретный элемент
+      observer.disconnect(); // Убиваем сам обзервер
+      observer = null; // Удаляем ссылку из памяти
+  }
 });
 </script>
 

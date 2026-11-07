@@ -15,37 +15,33 @@
 
           <div class="m-content custom-scroll-hidden">
             
-            <div class="m-header" v-if="step < 7">
+            <div class="m-header" v-if="step < 5">
               <div class="m-progress-track">
-                <div class="m-progress-bar" :style="{ transform: `scaleX(${step / 6})` }">
+                <div class="m-progress-bar" :style="{ transform: `scaleX(${step / 4})` }">
                   <div class="bar-flare"></div>
                 </div>
               </div>
               
               <div class="m-meta">
-                <span class="step-count">{{ t('mod_step') || 'ШАГ' }} 0{{ step }} <span class="dim">/ 06</span></span>
+                <span class="step-count">{{ t('mod_step') || 'КРОК' }} 0{{ step }} <span class="dim">/ 04</span></span>
               </div>
 
               <Transition name="fade" mode="out-in">
                 <div :key="step" class="header-titles">
                   
-                  <h2 class="m-headline" v-if="step === 1" v-html="formatHeadline(t('mod_choose_dir') || 'Выберите направление')"></h2>
+                  <h2 class="m-headline" v-if="step === 1" v-html="formatHeadline(t('mod_choose_design') || 'Яке рішення вам підходить?')"></h2>
                   
-                  <h2 class="m-headline" v-else-if="step === 2" v-html="formatHeadline(t('mod_req_service') || 'Какая услуга нужна?')"></h2>
-                  
-                  <div v-else-if="step === 3">
-                    <h2 class="m-headline" v-html="formatHeadline(t('mod_sel_plan') || 'Масштаб задачи')"></h2>
-                    <p class="sub-text">{{ t('mod_cust_setup') || 'Детализация для:' }} <b>{{ t(serviceKeyMap[form.service]) || form.service }}</b></p>
+                  <div v-else-if="step === 2">
+                    <h2 class="m-headline" v-html="formatHeadline(t('mod_sel_plan') || 'Масштаб задачі')"></h2>
+                    <p class="sub-text">{{ t('mod_cust_setup') || 'Деталізація для:' }} <b>{{ selectedDesignLabel }}</b></p>
                   </div>
                   
-                  <h2 class="m-headline" v-else-if="step === 4" v-html="formatHeadline(t('mod_proj_det') || 'Детали проекта')"></h2>
+                  <h2 class="m-headline" v-else-if="step === 3" v-html="formatHeadline(t('mod_proj_det') || 'Деталі проєкту')"></h2>
                   
-                  <h2 class="m-headline" v-else-if="step === 5" v-html="formatHeadline(t('mod_targ_inv') || 'Ориентировочный бюджет')"></h2>
-                  
-                  <div v-else-if="step === 6">
-                    <h2 class="m-headline" v-html="formatHeadline(t('mod_fin_touch') || 'Финальный штрих')"></h2>
+                  <div v-else-if="step === 4">
+                    <h2 class="m-headline" v-html="formatHeadline(t('mod_fin_touch') || 'Фінальний штрих')"></h2>
                     <div class="summary-chip" v-if="form.plan">
-                      {{ t('mod_sel_plan_chip') || 'Выбрано:' }} <span class="silver-text">{{ t(serviceKeyMap[form.service]) || form.service }} / {{ selectedPlanLabel }}</span>
+                      {{ t('mod_sel_plan_chip') || 'Обрано:' }} <span class="silver-text">{{ selectedPlanLabel }} / {{ selectedDesignLabel }}</span>
                     </div>
                   </div>
                 </div>
@@ -54,43 +50,31 @@
 
             <div class="m-body">
               <Transition name="fade" mode="out-in">
-                <div :key="step" class="step-container" :class="{ 'is-step-4': step === 4 }">
+                <div :key="step" class="step-container" :class="{ 'is-step-3': step === 3 }">
                   
-                  <!-- ШАГ 1: Выбор глобального направления -->
+                  <!-- ШАГ 1: Выбор типа разработки -->
                   <div v-if="step === 1">
-                    <div class="m-grid-cards">
+                    <div class="m-grid-cards design-grid">
                       <div
-                        v-for="s in stacks"
-                        :key="s"
-                        @click="setStack(s)"
-                        :class="['luxury-card', { active: form.stack === s }]"
+                        v-for="opt in designOptions"
+                        :key="opt.key"
+                        @click="form.designType = opt.key"
+                        :class="['luxury-card', 'design-card', { active: form.designType === opt.key }]"
                         role="button"
                       >
-                        <span class="card-text">{{ t(stackKeyMap[s]) || s }}</span>
+                        <div class="card-text-wrapper">
+                          <span class="card-title">{{ t(opt.titleKey) || opt.defTitle }}</span>
+                          <span class="card-desc">{{ t(opt.descKey) || opt.defDesc }}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <!-- ШАГ 2: Выбор конкретной услуги -->
+                  <!-- ШАГ 2: Выбор масштаба/тарифа (ЦЕНЫ ДИНАМИЧЕСКИЕ) -->
                   <div v-else-if="step === 2">
-                    <div class="m-grid-cards">
-                      <div
-                        v-for="item in services[form.stack]"
-                        :key="item"
-                        @click="setService(item)"
-                        :class="['luxury-card', 'white-theme', { active: form.service === item }]"
-                        role="button"
-                      >
-                        <span class="card-text">{{ t(serviceKeyMap[item]) || item }}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- ШАГ 3: Выбор масштаба/тарифа -->
-                  <div v-else-if="step === 3">
                     <div class="m-plans-list">
                       <div
-                        v-for="(plan, idx) in currentServicePlans"
+                        v-for="(plan, idx) in computedPlans"
                         :key="plan.name"
                         @click="selectPlan(plan)"
                         :class="['plan-card-large', { active: form.plan === plan.name }]"
@@ -102,87 +86,28 @@
                           <span class="plan-title">{{ t(plan.nameKey) }}</span>
                         </div>
                         <div class="plan-quote">
-                          <span class="quote-main">{{ t('pr_quote') || 'ОБСУДИТЬ' }}</span>
+                          <span class="quote-main">{{ plan.priceRange }}</span>
                         </div>
                         <div class="card-glow"></div>
                       </div>
                     </div>
                   </div>
 
-                  <!-- ШАГ 4: Специфичные вопросы по B2B (Сайты, Автоматизация, ИИ) -->
-                  <div v-else-if="step === 4" class="step-4-wrapper">
-                    
-                    <div class="step-4-top">
-                      <!-- Вопрос для Конверсионных сайтов -->
-                      <div v-if="isWebStack" class="input-group" style="margin-bottom: 0;">
-                        <label>{{ t('mod_have_design') || 'Есть ли у вас дизайн (макет в Figma)?' }}</label>
-                        <div class="m-grid-cards">
-                          <div v-for="opt in webDesignOptions" 
-                               :key="opt.key" @click="form.webDesignStatus = opt.key" 
-                               :class="['luxury-card', { active: form.webDesignStatus === opt.key }]" role="button">
-                            <span class="card-text">{{ t(opt.key) || opt.def }}</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <!-- Вопрос для Автоматизации CRM -->
-                      <div v-else-if="isAutoStack" class="input-group" style="margin-bottom: 0;">
-                        <label>{{ t('mod_crm_base') || 'Где сейчас ведете базу клиентов?' }}</label>
-                        <div class="m-grid-cards">
-                          <div v-for="opt in crmOptions" 
-                               :key="opt.key" @click="form.crmStatus = opt.key" 
-                               :class="['luxury-card', { active: form.crmStatus === opt.key }]" role="button">
-                            <span class="card-text">{{ t(opt.key) || opt.def }}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Вопрос для AI-Ассистентов -->
-                      <div v-else-if="isAIStack" class="input-group" style="margin-bottom: 0;">
-                        <label>{{ t('mod_ai_data') || 'Есть ли готовые скрипты / база знаний для ИИ?' }}</label>
-                        <div class="m-grid-cards">
-                          <div v-for="opt in aiOptions" 
-                               :key="opt.key" @click="form.aiDataStatus = opt.key" 
-                               :class="['luxury-card', { active: form.aiDataStatus === opt.key }]" role="button">
-                            <span class="card-text">{{ t(opt.key) || opt.def }}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div class="input-group step-4-bottom">
-                      <label for="refLinkInput">{{ t('mod_ref_link') || 'Ссылка на текущий сайт / соцсеть (необязательно)' }}</label>
+                  <!-- ШАГ 3: Детали проекта (Ссылка) -->
+                  <div v-else-if="step === 3" class="step-4-wrapper">
+                    <div class="input-group step-4-bottom" style="margin-top: 10px;">
+                      <label for="refLinkInput">{{ t('mod_ref_link') || 'Посилання на поточний сайт / референс (необов\'язково)' }}</label>
                       <div class="input-wrapper">
-                        <input id="refLinkInput" v-model="form.refLink" type="text" placeholder="https://instagram.com/..." autocomplete="off" class="luxury-input" />
-                        <div class="input-line"></div>
-                      </div>
-                    </div>
-
-                  </div>
-
-                  <!-- ШАГ 5: Бюджет -->
-                  <div v-else-if="step === 5">
-                    <div class="input-group budget-group" style="margin-bottom: 0;">
-                      <div class="input-header-flex">
-                        <label>{{ t('mod_inv_range') || 'Комфортный бюджет проекта' }}</label>
-                        <div class="currency-switcher">
-                          <button type="button" :class="{ active: form.currency === 'USD' }" @click="form.currency = 'USD'">USD</button>
-                          <button type="button" :class="{ active: form.currency === 'EUR' }" @click="form.currency = 'EUR'">EUR</button>
-                        </div>
-                      </div>
-
-                      <div class="budget-wrapper luxury-input-group">
-                        <span class="currency-symbol">{{ currencySymbol }}</span>
-                        <input type="text" id="budgetInput" v-model="displayBudget" @input="handleBudgetInput" required placeholder="500" autocomplete="off" class="luxury-input budget-input" />
+                        <input id="refLinkInput" v-model="form.refLink" type="text" placeholder="https://..." autocomplete="off" class="luxury-input" />
                         <div class="input-line"></div>
                       </div>
                     </div>
                   </div>
 
-                  <!-- ШАГ 6: Контакты -->
-                  <div v-else-if="step === 6">
+                  <!-- ШАГ 4: Контакты (бывший шаг 5) -->
+                  <div v-else-if="step === 4">
                     <div class="messenger-selector">
-                      <label class="selector-label">{{ t('mod_pref_msgr') || 'Куда прислать расчет?' }}</label>
+                      <label class="selector-label">{{ t('mod_pref_msgr') || 'Куди надіслати розрахунок?' }}</label>
                       <div class="messenger-grid">
                         <div v-for="(ms, idx) in messengers" :key="ms.name" @click="selectMessenger(ms.name)" :class="['ms-card', 'color-variant-' + idx, { active: form.messenger === ms.name }]" role="button">
                           <div class="ms-content">
@@ -197,9 +122,9 @@
 
                     <div class="form-row">
                       <div class="input-group half">
-                        <label for="userNameInput">{{ t('mod_ph_name') || 'Ваше имя' }}</label>
+                        <label for="userNameInput">{{ t('mod_ph_name') || 'Ваше ім\'я' }}</label>
                         <div class="input-wrapper fixed-height">
-                          <input id="userNameInput" v-model="form.name" type="text" placeholder="Иван" autocomplete="off" class="luxury-input" />
+                          <input id="userNameInput" v-model="form.name" type="text" placeholder="Іван" autocomplete="off" class="luxury-input" />
                           <div class="input-line"></div>
                         </div>
                       </div>
@@ -242,30 +167,26 @@
                           <input id="userContactInput" v-model="form.contact" type="text" :placeholder="contactPlaceholder" autocomplete="off" class="luxury-input" @input="handleContactInput" @blur="validateEmailOnBlur" />
                           <div class="input-line"></div>
                           <Transition name="fade">
-                            <span v-if="form.messenger === 'Telegram' && form.contact.length > 0 && !form.contact.startsWith('@')" class="input-error">{{ t('mod_err_at') || 'Нужен символ @' }}</span>
+                            <span v-if="form.messenger === 'Telegram' && form.contact.length > 0 && !form.contact.startsWith('@')" class="input-error">{{ t('mod_err_at') || 'Потрібен символ @' }}</span>
                           </Transition>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <!-- ШАГ 7: Финиш -->
-                  <div v-else-if="step === 7" class="success-screen step-wrapper center">
+                  <!-- ШАГ 5: Финиш (бывший шаг 6) -->
+                  <div v-else-if="step === 5" class="success-screen step-wrapper center">
                     <div class="success-circle">
                       <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
                       <div class="circle-pulse"></div>
                     </div>
-                    <h2 class="m-headline small">{{ t('mod_succ_title') || 'Заявка принята' }}</h2>
-                    <p class="success-msg">{{ t('mod_succ_desc') || 'Мы скоро свяжемся с вами через' }} <span class="silver-text">{{ form.messenger }}</span> {{ t('mod_succ_desc2') || 'для обсуждения деталей.' }}</p>
+                    <h2 class="m-headline small">{{ t('mod_succ_title') || 'Заявка прийнята' }}</h2>
+                    <p class="success-msg">{{ t('mod_succ_desc') || 'Ми скоро зв\'яжемося з вами через' }} <span class="silver-text">{{ form.messenger }}</span> {{ t('mod_succ_desc2') || 'для обговорення деталей.' }}</p>
                     
                     <div class="m-receipt">
-                      <div class="receipt-header">{{ t('mod_rec_head') || 'Детали запроса' }}</div>
-                      <div class="receipt-row"><span class="label">{{ t('mod_rec_srv') || 'Услуга' }}</span><span class="value">{{ t(serviceKeyMap[form.service]) || form.service }}</span></div>
+                      <div class="receipt-header">{{ t('mod_rec_head') || 'Деталі запиту' }}</div>
+                      <div class="receipt-row"><span class="label">{{ t('mod_rec_srv') || 'Тип' }}</span><span class="value">{{ selectedDesignLabel }}</span></div>
                       <div class="receipt-row highlight"><span class="label">{{ t('mod_rec_plan') || 'Тариф' }}</span><span class="value silver">{{ selectedPlanLabel }}</span></div>
-                      <div class="receipt-row highlight">
-                        <span class="label">{{ t('mod_rec_budg') || 'Бюджет' }}</span>
-                        <span class="value silver">{{ displayBudget ? displayBudget + ' ' + form.currency : (t('mod_tbd') || 'По согласованию') }}</span>
-                      </div>
                     </div>
                   </div>
 
@@ -273,11 +194,11 @@
               </Transition>
             </div>
 
-            <div class="m-footer" v-if="step < 7">
+            <div class="m-footer" v-if="step < 5">
               <button v-if="step > startStep" @click="goBack" class="btn-text-back">{{ t('mod_btn_back') || 'НАЗАД' }}</button>
               <div v-else></div>
               <button @click="handleNext" :disabled="!isValid || loading" class="btn-silver-action">
-                <span class="btn-text">{{ step === 6 ? (loading ? (t('mod_btn_proc') || 'ОТПРАВКА...') : (t('mod_btn_sched') || 'ПОЛУЧИТЬ РАСЧЕТ')) : (t('mod_btn_next') || 'ДАЛЕЕ') }}</span>
+                <span class="btn-text">{{ step === 4 ? (loading ? (t('mod_btn_proc') || 'ВІДПРАВКА...') : (t('mod_btn_sched') || 'ОТРИМАТИ РОЗРАХУНОК')) : (t('mod_btn_next') || 'ДАЛІ') }}</span>
                 <div class="btn-shine-wrap"><div class="btn-shine"></div></div>
               </button>
             </div>
@@ -294,9 +215,14 @@ import { t } from '../composables/useLanguage';
 
 const props = defineProps({
   isOpen: Boolean,
-  initialStack: String,
-  initialService: String,
-  initialPlan: String
+  initialDesignType: {
+    type: String,
+    default: ""
+  },
+  initialPlan: {
+    type: String,
+    default: ""
+  }
 });
 
 const emit = defineEmits(["close"]);
@@ -320,13 +246,9 @@ const searchQuery = ref("");
 const selectedCountry = ref({ name: "Ukraine", dial_code: "+380", code: "UA" });
 const searchInput = ref(null);
 
-const displayBudget = ref("");
-const rawBudget = ref("");
-
 const emailError = ref(false);
 let unlockTimeout = null;
 
-// Сокращенный список стран
 const countries = [
   { name: "Australia", dial_code: "+61", code: "AU" }, { name: "Austria", dial_code: "+43", code: "AT" },
   { name: "Canada", dial_code: "+1", code: "CA" }, { name: "France", dial_code: "+33", code: "FR" },
@@ -337,62 +259,29 @@ const countries = [
   { name: "United Kingdom", dial_code: "+44", code: "GB" }, { name: "United States", dial_code: "+1", code: "US" }
 ];
 
-// --- МАППИНГ КЛЮЧЕЙ ДЛЯ ПЕРЕВОДА ---
-const stackKeyMap = {
-  "Conversion Websites": "exp_card1_title",
-  "Lead Automation": "exp_card2_title",
-  "AI Assistants": "exp_card3_title"
-};
-
-const serviceKeyMap = {
-  "Landing Page": "srv_opt_web_1",
-  "Corporate Website": "srv_opt_web_2",
-  "E-commerce": "srv_opt_web_3",
-  "Social & CRM": "srv_opt_crm_1",
-  "CRM from Scratch": "srv_opt_crm_2",
-  "CRM Enhancement": "srv_opt_crm_3",
-  "24/7 Bot": "srv_opt_ai_1",
-  "AI Comm Bot": "srv_opt_ai_2",
-  "Custom AI Solutions": "srv_opt_ai_3"
-};
-
-// --- Опции 4-го шага с оригинальными русскими фоллбеками ---
-const webDesignOptions = [
-  { key: 'mod_opt_figma', def: 'Да, готов к верстке' },
-  { key: 'mod_opt_ref', def: 'Есть только референсы' },
-  { key: 'mod_opt_scratch', def: 'Нужен дизайн с нуля' }
+const designOptions = [
+  { 
+    key: 'custom', 
+    titleKey: 'mod_opt_custom_title', defTitle: 'Проєкт під ключ',
+    descKey: 'mod_opt_custom_desc', defDesc: 'Від унікального дизайну до необхідного вам функціоналу. Рішення для нестандартних завдань.'
+  },
+  { 
+    key: 'template', 
+    titleKey: 'mod_opt_template_title', defTitle: 'Шаблонна розробка',
+    descKey: 'mod_opt_template_desc', defDesc: 'Беремо перевірений шаблон, який продає, та адаптуємо під ваш бізнес.'
+  },
+  { 
+    key: 'layout', 
+    titleKey: 'mod_opt_layout_title', defTitle: 'За вашим макетом',
+    descKey: 'mod_opt_layout_desc', defDesc: 'У вас вже є готовий макет сайту. Ми напишемо чистий код, додамо функціонал та оживимо його.'
+  }
 ];
 
-const crmOptions = [
-  { key: 'mod_crm_none', def: 'Нигде / В тетрадке / Excel' },
-  { key: 'mod_crm_exist', def: 'Есть CRM, нужна донастройка' },
-  { key: 'mod_crm_custom', def: 'Самописная система' }
-];
-
-const aiOptions = [
-  { key: 'mod_ai_ready', def: 'Да, всё прописано' },
-  { key: 'mod_ai_partial', def: 'Есть частично (FAQ)' },
-  { key: 'mod_ai_none', def: 'Нужно собирать с нуля' }
-];
-
-// --- СТРУКТУРА ДАННЫХ B2B ---
-const stacks = ["Conversion Websites", "Lead Automation", "AI Assistants"];
-
-const services = {
-  "Conversion Websites": ["Landing Page", "Corporate Website", "E-commerce"],
-  "Lead Automation": ["Social & CRM", "CRM from Scratch", "CRM Enhancement"],
-  "AI Assistants": ["24/7 Bot", "AI Comm Bot", "Custom AI Solutions"]
-};
-
-// --- ТАРИФЫ ---
-const defaultPlans = [
+const basePlans = [
   { name: "Simple Project", labelKey: "pl_l_simp", nameKey: "pl_n_simp" }, 
   { name: "Medium Project", labelKey: "pl_l_med", nameKey: "pl_n_med" }, 
-  { name: "Complex Project", labelKey: "pl_l_comp", nameKey: "pl_n_comp" },
-  { name: "Large-Scale Project", labelKey: "pl_l_large", nameKey: "pl_n_large" }
+  { name: "Complex Project", labelKey: "pl_l_comp", nameKey: "pl_n_comp" }
 ];
-
-const plansDatabase = { default: defaultPlans };
 
 const messengers = [
   { name: "Telegram", icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.13-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>' },
@@ -401,24 +290,34 @@ const messengers = [
 ];
 
 const form = reactive({
-  stack: "", service: "", plan: "", budget: "",
-  webDesignStatus: "", crmStatus: "", aiDataStatus: "", refLink: "",
-  contact: "@", name: "", messenger: "Telegram",
-  currency: "USD"
+  designType: "", plan: "", refLink: "",
+  contact: "@", name: "", messenger: "Telegram"
 });
 
-// Проверки для 4 шага
-const isWebStack = computed(() => form.stack === "Conversion Websites");
-const isAutoStack = computed(() => form.stack === "Lead Automation");
-const isAIStack = computed(() => form.stack === "AI Assistants");
+const computedPlans = computed(() => {
+  const type = form.designType || 'template';
+  
+  const pricingData = {
+    template: ["$300 - $600", "$700 - $1,200", "$1,400 - $2,500+"],
+    layout:   ["$400 - $800", "$900 - $1,800", "$2,000 - $4,000+"],
+    custom:   ["$800 - $1,500", "$1,500 - $3,500", "$3,500 - $6,000+"]
+  };
+  
+  return basePlans.map((plan, index) => ({
+    ...plan,
+    priceRange: pricingData[type][index]
+  }));
+});
 
-const contactLabel = computed(() => form.messenger === 'WhatsApp' ? (t('mod_ph_phone') || 'Номер телефона') : (t('mod_ph_contact') || 'Ваш контакт'));
+const mapPlanToBudget = (planName) => {
+  if (planName === "Simple Project") return "< $1,000";
+  if (planName === "Medium Project") return "$1,000 — $3,000";
+  if (planName === "Complex Project") return "$3,000 — $6,000";
+  return "Більше $6,000";
+};
+
+const contactLabel = computed(() => form.messenger === 'WhatsApp' ? (t('mod_ph_phone') || 'Номер телефону') : (t('mod_ph_contact') || 'Ваш контакт'));
 const contactPlaceholder = computed(() => form.messenger === "Telegram" ? "@username" : "email@example.com");
-
-const currencySymbol = computed(() => {
-  if (form.currency === 'EUR') return '€';
-  return '$';
-});
 
 const limitedCountries = computed(() => {
   const query = searchQuery.value.toLowerCase();
@@ -427,18 +326,15 @@ const limitedCountries = computed(() => {
 
 const isEmailValid = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contact));
 
-const currentServicePlans = computed(() => plansDatabase[form.service] || plansDatabase["default"]);
-
 const selectedPlanLabel = computed(() => {
-  const planObj = currentServicePlans.value.find(p => p.name === form.plan);
+  const planObj = basePlans.find(p => p.name === form.plan);
   return planObj ? (t(planObj.nameKey) || form.plan) : form.plan;
 });
 
-const handleBudgetInput = (e) => {
-  let val = e.target.value.replace(/\D/g, "");
-  rawBudget.value = val;
-  displayBudget.value = val ? new Intl.NumberFormat("en-US").format(val) : "";
-};
+const selectedDesignLabel = computed(() => {
+  const dsObj = designOptions.find(d => d.key === form.designType);
+  return dsObj ? (t(dsObj.titleKey) || dsObj.defTitle) : form.designType;
+});
 
 const toggleCountryDropdown = () => {
   isCountryOpen.value = !isCountryOpen.value;
@@ -480,17 +376,12 @@ watch(() => form.messenger, (newVal) => {
   emailError.value = false;
 });
 
-const setStack = (s) => form.stack = s;
-const setService = (s) => form.service = s;
-
 const selectPlan = (plan) => {
   form.plan = plan.name;
-  displayBudget.value = "";
-  rawBudget.value = "";
 };
 
 const goBack = () => { if (step.value > startStep.value) step.value--; };
-const handleNext = () => step.value === 6 ? send() : step.value++;
+const handleNext = () => step.value === 4 ? send() : step.value++;
 const handleCloseClick = () => isCountryOpen.value = false;
 
 const lockTouch = (e) => {
@@ -526,6 +417,7 @@ onUnmounted(() => {
   toggleAppVisibility(false);
 });
 
+// --- ГЛАВНАЯ ЛОГИКА: ПЕРЕХВАТ ПРОПСОВ И ПРОПУСК ШАГОВ ---
 watch(() => props.isOpen, (open) => {
   if (unlockTimeout) {
     clearTimeout(unlockTimeout);
@@ -543,20 +435,20 @@ watch(() => props.isOpen, (open) => {
     toggleAppVisibility(true);
     document.addEventListener('touchmove', lockTouch, { passive: false });
 
-    // Reset Form
-    Object.assign(form, { webDesignStatus: "", crmStatus: "", aiDataStatus: "", refLink: "", name: "", currency: "USD" });
-    phoneBody.value = ""; displayBudget.value = ""; rawBudget.value = ""; emailError.value = false;
+    Object.assign(form, { designType: "", plan: "", refLink: "", name: "" });
+    phoneBody.value = ""; emailError.value = false;
     form.contact = form.messenger === 'Telegram' ? "@" : "";
     
-    // Подхватываем данные напрямую
-    form.stack = props.initialStack || "";
-    form.service = props.initialService || "";
-    form.plan = props.initialPlan || "";
-
-    if (form.plan && form.service) { step.value = 4; startStep.value = 4; }
-    else if (form.service) { step.value = 3; startStep.value = 3; }
-    else if (form.stack) { step.value = 2; startStep.value = 2; }
-    else { step.value = 1; startStep.value = 1; }
+    if (props.initialDesignType && props.initialPlan) {
+      form.designType = props.initialDesignType;
+      form.plan = props.initialPlan;
+      
+      step.value = 3; 
+      startStep.value = 3;
+    } else {
+      step.value = 1;
+      startStep.value = 1;
+    }
 
   } else {
     toggleAppVisibility(false);
@@ -569,17 +461,11 @@ watch(() => props.isOpen, (open) => {
 }, { immediate: true });
 
 const isValid = computed(() => {
-  if (step.value === 1) return !!form.stack;
-  if (step.value === 2) return !!form.service;
-  if (step.value === 3) return !!form.plan;
-  if (step.value === 4) {
-    if (isWebStack.value) return !!form.webDesignStatus;
-    if (isAutoStack.value) return !!form.crmStatus;
-    if (isAIStack.value) return !!form.aiDataStatus;
-  }
-  if (step.value === 5) return rawBudget.value !== ""; 
+  if (step.value === 1) return !!form.designType;
+  if (step.value === 2) return !!form.plan;
+  if (step.value === 3) return true;
   
-  if (step.value === 6) {
+  if (step.value === 4) {
     if (!form.name || form.name.trim().length < 2) return false;
     if (form.messenger === 'WhatsApp') {
         const digitsOnly = phoneBody.value.replace(/\D/g, '');
@@ -592,27 +478,15 @@ const isValid = computed(() => {
   return true;
 });
 
-// Хелпер для Telegram-отправки (чтобы вытягивать русский текст, если перевода нет)
-const getFallback = (options, key) => {
-  const opt = options.find(o => o.key === key);
-  return opt ? opt.def : key;
-};
-
 const send = async () => {
   loading.value = true;
   
-  let techInfo = "";
-  if (isWebStack.value) techInfo = `📐 Дизайн: ${t(form.webDesignStatus) || getFallback(webDesignOptions, form.webDesignStatus)}`;
-  else if (isAutoStack.value) techInfo = `📊 База CRM: ${t(form.crmStatus) || getFallback(crmOptions, form.crmStatus)}`;
-  else if (isAIStack.value) techInfo = `🧠 Данные ИИ: ${t(form.aiDataStatus) || getFallback(aiOptions, form.aiDataStatus)}`;
-  
   let finalContact = form.messenger === 'WhatsApp' ? `${selectedCountry.value.dial_code} ${phoneBody.value}` : form.contact;
-  const finalBudgetVal = displayBudget.value ? `${displayBudget.value} ${form.currency}` : (t('mod_tbd') || "По согласованию");
+  const autoBudgetVal = mapPlanToBudget(form.plan);
   
-  const localizedStack = t(stackKeyMap[form.stack]) || form.stack;
-  const localizedService = t(serviceKeyMap[form.service]) || form.service;
+  const dsStr = selectedDesignLabel.value;
 
-  const text = `💎 *NEW B2B LEAD*\n--------------------\n👤 ${form.name}\n📞 ${finalContact} (${form.messenger})\n--------------------\n🛠 ${localizedStack}\n📌 ${localizedService}\n💎 Тариф: ${selectedPlanLabel.value} (${form.plan})\n💰 Ожидаемый бюджет: ${finalBudgetVal}\n${techInfo}\n🔗 Ссылка: ${form.refLink || 'Нет'}`;
+  const text = `💎 *NEW WEB LEAD*\n--------------------\n👤 ${form.name}\n📞 ${finalContact} (${form.messenger})\n--------------------\n🎨 Тип разработки: ${dsStr}\n💎 Тариф: ${selectedPlanLabel.value}\n💰 Ожидаемый бюджет: ${autoBudgetVal}\n🔗 Ссылка: ${form.refLink || 'Нет'}`;
                 
   try {
     const response = await fetch('/api/send-telegram', {
@@ -624,12 +498,12 @@ const send = async () => {
     const result = await response.json();
 
     if (response.ok && result.success) {
-      step.value = 7;
+      step.value = 5;
     } else {
       throw new Error(result.error || 'Failed to send');
     }
   } catch(e) {
-    alert("Ошибка соединения. Пожалуйста, попробуйте еще раз.");
+    alert("Помилка з'єднання. Будь ласка, спробуйте ще раз.");
   } finally { 
     loading.value = false; 
   }
@@ -637,7 +511,6 @@ const send = async () => {
 </script>
 
 <style scoped>
-/* ВЕСЬ СТИЛЬ ОСТАВЛЯЕМ БЕЗ ИЗМЕНЕНИЙ — ОН ИДЕАЛЕН */
 .m-window, .m-window * { -webkit-font-smoothing: antialiased !important; -moz-osx-font-smoothing: grayscale !important; text-rendering: optimizeLegibility !important; }
 .m-overlay { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; z-index: 999999; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; padding: 20px; -webkit-transform: translate3d(0, 0, 0); transform: translate3d(0, 0, 0); will-change: opacity; overscroll-behavior: none; }
 .m-window { width: 100%; max-width: 640px; background: #000000; border-radius: 32px; border: 1px solid rgba(255, 255, 255, 0.1); position: relative; overflow: hidden; padding: 40px 50px; font-family: "Plus Jakarta Sans", sans-serif; max-height: 95vh; display: flex; flex-direction: column; transform: translate3d(0, 0, 0); backface-visibility: hidden; min-height: 500px; }
@@ -646,7 +519,7 @@ const send = async () => {
 .m-content { overflow-y: auto; overflow-x: hidden; flex: 1; width: 100%; -webkit-overflow-scrolling: touch; scrollbar-gutter: stable; overscroll-behavior-y: contain; display: flex; flex-direction: column; }
 .m-content::-webkit-scrollbar { width: 0px; display: none; }
 .step-container { width: 100%; box-sizing: border-box; }
-.m-header { margin-top: auto; margin-bottom: 30px; position: relative; z-index: 2; flex-shrink: 0; padding-top: 15px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.m-header { margin-top: auto; margin-bottom: 25px; position: relative; z-index: 2; flex-shrink: 0; padding-top: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; }
 .m-progress-track { display: none; }
 .m-meta { display: flex; justify-content: center; margin-top: 0; margin-bottom: 8px; font-size: 13px; letter-spacing: 1.2px; text-transform: uppercase; font-weight: 700; color: #777; width: 100%; }
 .header-titles { margin-top: 4px; width: 100%; text-align: center; }
@@ -660,13 +533,19 @@ const send = async () => {
 .m-body { margin-bottom: auto; }
 .step-4-wrapper { display: flex; flex-direction: column; }
 .step-4-bottom { margin-top: 35px; }
-.m-grid-cards { display: grid; grid-template-columns: 1fr; gap: 16px; }
-.luxury-card { position: relative; padding: 25px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; cursor: pointer; transition: all 0.4s ease; display: flex; align-items: center; justify-content: center; transform: translate3d(0, 0, 0); backface-visibility: hidden; text-align: center; }
-.luxury-card .card-text { position: relative; z-index: 2; font-size: 18px; color: #E5E4E2; font-weight: 600; transition: 0.3s; }
+.m-grid-cards { display: grid; grid-template-columns: 1fr; gap: 12px; }
+
+/* КАРТОЧКИ ШАГА 1 */
+.design-card { padding: 18px 22px; text-align: center; }
+.design-card .card-text-wrapper { display: flex; flex-direction: column; gap: 6px; position: relative; z-index: 2; transition: 0.3s; }
+.design-card .card-title { font-size: 17px; color: #E5E4E2; font-weight: 700; }
+.design-card .card-desc { font-size: 13px; color: #888888; font-weight: 500; line-height: 1.4; }
+.luxury-card.active .card-title { color: #ffffff; }
+.luxury-card.active .card-desc { color: #bbbbbb; }
+
+.luxury-card { position: relative; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; cursor: pointer; transition: all 0.4s ease; display: flex; align-items: center; justify-content: center; transform: translate3d(0, 0, 0); backface-visibility: hidden; text-align: center; }
 .luxury-card.active { border-color: #ffffff; background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1), transparent 80%); }
-.luxury-card.active .card-text { color: #ffffff; font-weight: 700; }
-.luxury-card.white-theme.active { border-color: #ffffff; background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1), transparent 80%); }
-.luxury-card.white-theme.active .card-text { color: #ffffff; font-weight: 700; }
+
 .m-plans-list { display: flex; flex-direction: column; gap: 12px; }
 .plan-card-large { display: flex; justify-content: space-between; align-items: center; padding: 20px 25px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; cursor: pointer; position: relative; transition: 0.3s ease; transform: translate3d(0, 0, 0); backface-visibility: hidden; }
 .plan-card-large.active { border-color: #ffffff; background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1), transparent 80%); }
@@ -678,19 +557,6 @@ const send = async () => {
 .plan-badge { font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #E5E4E2; }
 .plan-title { font-size: 20px; font-weight: 700; color: #fff; }
 .card-glow { position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent); opacity: 0; transition: 0.5s; pointer-events: none; border-radius: inherit; }
-.input-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
-.input-header-flex label { margin-bottom: 0; }
-.currency-switcher { display: inline-flex; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 4px; gap: 2px; }
-.currency-switcher button { background: transparent; border: none; color: #888; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; padding: 8px 18px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; outline: none; }
-.currency-switcher button.active { background: rgba(255, 255, 255, 0.15); color: #ffffff; }
-.currency-switcher button:hover:not(.active) { color: #fff; background: rgba(255, 255, 255, 0.05); }
-.luxury-input-group { position: relative; width: 100%; display: flex; align-items: center; transform: translate3d(0, 0, 0); }
-.budget-wrapper { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 0 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
-.budget-wrapper:focus-within { border-color: rgba(255, 255, 255, 0.5); }
-.currency-symbol { width: 30px; font-size: 20px; color: #ffffff; font-weight: 700; display: flex; align-items: center; justify-content: center; }
-.budget-input { font-family: "Plus Jakarta Sans", sans-serif !important; font-size: 18px !important; font-weight: 600 !important; letter-spacing: 0.5px; color: #fff !important; border: none !important; padding: 14px 0 !important; flex: 1; }
-.budget-input:focus { border: none !important; }
-.budget-input::placeholder { color: rgba(255, 255, 255, 0.25) !important; font-weight: 400; font-family: "Plus Jakarta Sans", sans-serif; font-size: 16px;}
 .messenger-selector { margin-bottom: 35px; }
 .selector-label { display: block; font-size: 13px; text-transform: uppercase; color: #C4C4C4; letter-spacing: 1.2px; font-weight: 700; margin-bottom: 16px; }
 .messenger-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
@@ -745,7 +611,7 @@ const send = async () => {
 .c-name { flex: 1; font-size: 13px; color: #ccc; font-weight: 500; }
 .c-dial { color: #666; font-size: 12px; font-weight: 700; opacity: 0.8; }
 .no-results { padding: 20px; text-align: center; color: #555; font-size: 13px; }
-.m-footer { margin-top: 40px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; padding-bottom: 15px; transform: translate3d(0, 0, 0);}
+.m-footer { margin-top: 30px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; padding-bottom: 15px; transform: translate3d(0, 0, 0);}
 .btn-text-back { background: none; border: none; color: #E5E4E2; font-weight: 700; text-transform: uppercase; font-size: 14px; letter-spacing: 1.5px; cursor: pointer; transition: 0.3s; padding: 10px 20px; }
 .btn-silver-action { position: relative; background: linear-gradient(135deg, #ffffff, #a0a0a0); border: none; padding: 18px 42px; border-radius: 100px; cursor: pointer; transition: 0.4s; transform: translate3d(0, 0, 0);}
 .btn-silver-action .btn-text { color: #000; font-weight: 800; font-size: 15px; text-transform: uppercase; letter-spacing: 1.5px; position: relative; z-index: 2; }
@@ -796,10 +662,8 @@ const send = async () => {
   .ms-card { height: 75px !important; }
   .ms-icon-wrapper { width: 24px !important; height: 24px !important; }
   .input-group { margin-bottom: 18px !important;}
-  .currency-symbol { font-size: 18px !important;}
-  .budget-input { font-size: 18px !important; padding: 8px 0 !important;}
   .ms-icon-wrapper svg { width: 24px; height: 24px;}
-  .m-footer { margin-top: 25px !important; }
+  .m-footer { margin-top: 20px !important; }
   .btn-silver-action { padding: 15px 35px !important; }
 }
 
@@ -810,22 +674,24 @@ const send = async () => {
   .m-close-text .back-arrow { width: 16px !important; height: 16px !important; }
   .m-content { padding: 70px 20px 20px 20px !important; overflow-y: auto !important; display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; min-height: 0 !important; justify-content: flex-start !important; }
   .m-progress-track { display: none !important; }
-  .m-header { margin-top: auto !important; margin-bottom: 24px !important; padding-top: 0 !important; flex-shrink: 0; text-align: center !important; display: flex !important; flex-direction: column !important; align-items: center !important; }
+  .m-header { margin-top: auto !important; margin-bottom: 20px !important; padding-top: 0 !important; flex-shrink: 0; text-align: center !important; display: flex !important; flex-direction: column !important; align-items: center !important; }
   .m-meta { justify-content: center !important; margin-top: 0 !important; margin-bottom: 8px !important; width: 100% !important; }
   .header-titles { width: 100% !important; text-align: center !important; }
-  .m-headline { text-align: center !important; font-size: 28px !important; line-height: 1.1 !important; }
+  .m-headline { text-align: center !important; font-size: 26px !important; line-height: 1.1 !important; }
   .sub-text { text-align: center !important; font-size: 14px !important; margin-top: 8px !important; margin-bottom: 15px !important; }
   .summary-chip { text-align: center !important; display: flex !important; justify-content: center !important; flex-wrap: wrap !important; gap: 6px !important; }
-  .m-body { display: flex !important; flex-direction: column !important; flex: 0 0 auto !important; margin-bottom: auto !important; padding: 10px 0 !important; }
+  .m-body { display: flex !important; flex-direction: column !important; flex: 0 0 auto !important; margin-bottom: auto !important; padding: 5px 0 !important; }
   .step-container { width: 100% !important; display: flex !important; flex-direction: column !important; flex: 0 0 auto !important; justify-content: flex-start !important; }
-  .step-container.is-step-4 { justify-content: flex-start !important; }
   .step-4-wrapper { display: flex !important; flex-direction: column !important; flex: 0 0 auto !important; min-height: auto !important; }
-  .m-grid-cards { gap: 16px !important; }
-  .m-plans-list { gap: 16px !important; }
-  .luxury-card { padding: 18px !important; display: flex !important; align-items: center !important; justify-content: center !important; min-height: 60px !important; border-radius: 14px !important; background: rgba(255, 255, 255, 0.08) !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; }
-  .luxury-card .card-text { font-size: 15px !important; color: rgba(255, 255, 255, 0.75) !important; font-weight: 500 !important; }
-  .luxury-card.active, .luxury-card.white-theme.active, .plan-card-large.active { border: 1px solid #ffffff !important; background: #080808 !important; }
-  .luxury-card.active .card-text, .luxury-card.white-theme.active .card-text { color: #ffffff !important; font-weight: 700 !important; }
+  .m-grid-cards { gap: 10px !important; }
+  .design-card { padding: 16px 14px !important; }
+  .design-card .card-title { font-size: 15px !important; }
+  .design-card .card-desc { font-size: 12px !important; }
+  .m-plans-list { gap: 12px !important; }
+  .luxury-card { padding: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; min-height: 55px !important; border-radius: 14px !important; background: rgba(255, 255, 255, 0.08) !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; }
+  .luxury-card .card-text { font-size: 14px !important; color: rgba(255, 255, 255, 0.75) !important; font-weight: 500 !important; }
+  .luxury-card.active, .plan-card-large.active { border: 1px solid #ffffff !important; background: #080808 !important; }
+  .luxury-card.active .card-text { color: #ffffff !important; font-weight: 700 !important; }
   .plan-card-large { padding: 16px 20px !important; display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; background: rgba(255, 255, 255, 0.08) !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; border-radius: 14px !important; }
   .plan-info { gap: 2px !important; }
   .plan-title { font-size: 16px !important; }
@@ -837,12 +703,7 @@ const send = async () => {
   .input-group label { margin-bottom: 8px !important; font-size: 11px !important; }
   .form-row { flex-direction: column !important; gap: 24px !important; }
   .input-group.half { width: 100% !important; }
-  .input-group.step-4-bottom { margin-top: 35px !important; margin-bottom: 0 !important; }
-  .currency-switcher { width: 100%; display: flex; background: rgba(10, 10, 10, 0.95) !important; border: 1px solid rgba(255, 255, 255, 0.2) !important; }
-  .currency-switcher button { flex: 1; padding: 10px 0 !important; font-size: 13px !important; font-weight: 700 !important; color: rgba(255, 255, 255, 0.35) !important; transition: all 0.3s ease !important; }
-  .currency-switcher button.active { background: rgba(255, 255, 255, 0.15) !important; color: #ffffff !important; border-radius: 8px !important; }
-  .budget-wrapper { height: 48px !important; padding: 0 15px !important; background: rgba(10, 10, 10, 0.95) !important; border: 1px solid rgba(255, 255, 255, 0.2) !important; margin-top: 10px !important; }
-  .budget-wrapper:focus-within { border-color: rgba(255, 255, 255, 0.9) !important; }
+  .input-group.step-4-bottom { margin-top: 15px !important; margin-bottom: 0 !important; }
   .country-trigger { width: auto !important; min-width: 105px !important; height: 48px !important; padding: 0 12px !important; margin-bottom: 0 !important; background: rgba(10, 10, 10, 0.95) !important; border: 1px solid rgba(255, 255, 255, 0.2) !important; border-radius: 12px !important; }
   .country-trigger.active { border-color: rgba(255, 255, 255, 0.9) !important; }
   .messenger-grid { gap: 8px !important; }
@@ -850,12 +711,11 @@ const send = async () => {
   .ms-icon-wrapper svg { width: 20px !important; height: 20px !important; }
   .ms-name { font-size: 9px !important; letter-spacing: 1px; }
   .fixed-height { height: 48px !important; margin-bottom: 0 !important; flex-direction: row !important; align-items: flex-end !important; }
-  .luxury-input, .budget-input, .phone-input { font-size: 18px !important; padding-bottom: 12px !important; touch-action: manipulation !important; }
+  .luxury-input, .phone-input { font-size: 18px !important; padding-bottom: 12px !important; touch-action: manipulation !important; }
   .country-search { font-size: 16px !important; touch-action: manipulation !important; }
-  .currency-symbol { font-size: 18px !important; }
   .phone-smart-wrapper { width: 100%; gap: 10px !important; flex-direction: row !important; }
   .flag-text, .dial-code { font-size: 13px !important; }
-  .m-footer { flex-direction: column-reverse !important; gap: 10px !important; padding-bottom: 0 !important; margin-top: 0 !important; padding-top: 25px !important; flex-shrink: 0 !important; }
+  .m-footer { flex-direction: column-reverse !important; gap: 10px !important; padding-bottom: 0 !important; margin-top: 0 !important; padding-top: 20px !important; flex-shrink: 0 !important; }
   .btn-silver-action { width: 100% !important; text-align: center !important; padding: 15px !important; border-radius: 12px !important; }
   .btn-silver-action .btn-text { font-size: 14px !important; }
   .btn-text-back { width: 100% !important; text-align: center !important; padding: 12px !important; font-size: 13px !important; background: transparent !important; }
@@ -865,14 +725,15 @@ const send = async () => {
 @media (max-width: 767px) and (max-height: 700px) {
   .m-close-text { top: 18px !important; left: 16px !important; }
   .m-content { padding-top: 60px !important; }
-  .m-header { margin-bottom: 12px !important; }
-  .m-headline { font-size: 24px !important; }
-  .m-grid-cards, .m-plans-list { gap: 16px !important; }
+  .m-header { margin-bottom: 10px !important; }
+  .m-headline { font-size: 22px !important; }
+  .m-grid-cards { gap: 8px !important; }
+  .design-card { padding: 12px 10px !important; }
   .plan-card-large { padding: 10px 14px !important; }
   .ms-card { height: 55px !important; }
   .fixed-height { height: 48px !important; }
   .input-group { margin-bottom: 10px !important; }
   .btn-silver-action { padding: 12px !important; }
-  .m-footer { padding-top: 15px !important; gap: 8px !important; }
+  .m-footer { padding-top: 12px !important; gap: 8px !important; }
 }
 </style>

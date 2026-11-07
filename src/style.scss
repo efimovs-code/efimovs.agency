@@ -31,15 +31,25 @@ html {
   /* Убрали !important, чтобы JS модалки мог гибко управлять скроллом */
   overflow-y: scroll; 
   scrollbar-gutter: stable;
+
+  /* 🌟 ДОБАВЛЕНО: Блокируем "резинку" (pull-to-refresh) на iOS/Mac для плавности Lenis */
+  overscroll-behavior-y: none;
 }
 
-/* 🌟 ИСПРАВЛЕНО: Вернули правильную звёздочку для глобального сброса */
-* {
+/* 🌟 ИСПРАВЛЕНО: КРИТИЧЕСКАЯ ОШИБКА. 
+   Заменили "-" на правильную звездочку "*". Добавили ::before и ::after. */
+*, *::before, *::after {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* 🌟 ДОБАВЛЕНО: Блокировка Layout Shifts при рендере графики */
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
 }
 
 body {
@@ -51,13 +61,16 @@ body {
   /* Контент сам растянет высоту, жесткие рамки убраны для плавности анимаций */
   padding-bottom: env(safe-area-inset-bottom);
   
-  /* 🌟 ФИКС МОБИЛЬНОГО ТАПА: Разрешаем стандартную манипуляцию касаниями для всего тела страницы */
+  /* Разрешаем стандартную манипуляцию касаниями для всего тела страницы */
   touch-action: manipulation; 
 
   /* Принудительное кристальное сглаживание шрифтов для Apple Pro эстетики */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+
+  /* 🌟 ДОБАВЛЕНО: Дублируем для надежности в Safari */
+  overscroll-behavior-y: none;
 }
 
 /* =========================================
@@ -139,8 +152,6 @@ body {
    🚀 GLOBAL MODAL LOCK (Monolithic Glassmorphism)
    ========================================= */
 
-/* Вместо исчезновения сайта мы просто намертво блокируем его под стеклом.
-   Это дает идеальный эффект преломления как на десктопе, так и на мобилках. */
 body.global-modal-open {
   overflow: hidden !important;
   touch-action: none !important;
@@ -151,7 +162,5 @@ body.global-modal-open .app-shell {
   /* Убираем pointer-events, чтобы случайно не кликнуть по сайту сквозь оверлей */
   pointer-events: none !important;
   user-select: none !important;
-  /* Опционально: можно добавить легкое затемнение самого сайта, 
-     но фильтр самого оверлея в ContactModal.vue уже справляется с этим */
   transition: filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }

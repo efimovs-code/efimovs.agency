@@ -28,25 +28,21 @@
         :key="item.id + currentLang.code" 
         :id="item.id"
         class="editorial-section hypnotic-section"
-        :ref="(el) => { if (el && !projectRefs.includes(el)) projectRefs.push(el) }"
       >
         <div class="container">
           
           <div class="editorial-case">
             
             <div class="case-visual-hero hypnotic-item delay-1" :class="{'mobile-app-layout': item.category.includes('Mobile') || item.category.includes('Мобильная') || item.category.includes('Мобільна') || item.category.includes('Móvil') || item.category.includes('Mobil')}">
-              <transition-group name="cinematic-fade" tag="div" class="slider-wrapper">
+              <div class="slider-wrapper">
                 <img 
-                  v-for="(img, imgIndex) in item.images" 
-                  :key="img"
-                  v-show="activeSlides[item.id] === imgIndex"
-                  :src="img" 
+                  :src="item.images[0]" 
                   :alt="item.title" 
                   class="case-media absolute-img" 
                   loading="lazy" 
                   decoding="async" 
                 />
-              </transition-group>
+              </div>
               
               <div class="media-overlay"></div>
 
@@ -128,7 +124,7 @@
 
     </div>
     
-    <div class="container hypnotic-section" :ref="(el) => { if (el && !projectRefs.includes(el)) projectRefs.push(el) }">
+    <div class="container hypnotic-section">
       <div class="cta-section hypnotic-item delay-1">
         <h2 class="cta-title">{{ t('port_cta_title') }}</h2>
         <button class="btn-silver-wrapper" @click="openModal()">
@@ -164,7 +160,7 @@
         v-if="showScrollTop" 
         class="scroll-top-btn" 
         @mousedown="scrollToTop"
-        @touchstart="scrollToTop"
+        @touchstart.passive="scrollToTop"
         @click="scrollToTop"
         :aria-label="t('port_back')"
       >
@@ -290,25 +286,28 @@ const localizedCases = computed(() => {
 const visibleCount = ref(4); 
 const visibleCases = computed(() => localizedCases.value.slice(0, visibleCount.value));
 
-const loadMoreProjects = () => {
-  visibleCount.value += 4; 
-  nextTick(() => {
-    projectRefs.value.forEach((el) => {
-      if (el && observer) observer.observe(el);
-    });
+let observer = null;
+
+const observeSections = () => {
+  if (!observer) return;
+  document.querySelectorAll('.editorial-section, .hypnotic-section').forEach((el) => {
+    if (el) observer.observe(el);
   });
 };
 
-const initialSlides = {};
-baseCases.forEach(c => { initialSlides[c.id] = 0; });
-const activeSlides = ref(initialSlides);
+const loadMoreProjects = () => {
+  visibleCount.value += 4; 
+  nextTick(() => {
+    observeSections();
+  });
+};
 
-let sliderInterval;
-const projectRefs = ref([]);
-let observer = null;
-
+let scrollRafId = null;
 const handleScroll = () => {
-  showScrollTop.value = window.scrollY > 800;
+  if (scrollRafId) cancelAnimationFrame(scrollRafId);
+  scrollRafId = requestAnimationFrame(() => {
+    showScrollTop.value = window.scrollY > 800;
+  });
 };
 
 const scrollToTop = () => {
@@ -328,14 +327,6 @@ const scrollToTop = () => {
 };
 
 onMounted(() => {
-  sliderInterval = setInterval(() => {
-    visibleCases.value.forEach(c => {
-      if (c.images && c.images.length > 1) {
-        activeSlides.value[c.id] = (activeSlides.value[c.id] + 1) % c.images.length;
-      }
-    });
-  }, 3500); 
-  
   lastWidth = window.innerWidth;
   isDesktop.value = window.innerWidth >= 1024;
   
@@ -355,9 +346,7 @@ onMounted(() => {
   });
 
   nextTick(() => {
-    projectRefs.value.forEach((el) => {
-      if (el) observer.observe(el);
-    });
+    observeSections();
 
     setTimeout(() => {
       if (route.hash) {
@@ -373,9 +362,9 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  clearInterval(sliderInterval);
   window.removeEventListener("resize", checkDevice);
   window.removeEventListener("scroll", handleScroll); 
+  if (scrollRafId) cancelAnimationFrame(scrollRafId);
   if (observer) observer.disconnect();
 });
 
@@ -592,15 +581,6 @@ const checkDevice = () => {
   filter: grayscale(0) brightness(1.05);
   transform: scale(1.03) translateZ(0px);
   will-change: opacity;
-}
-
-.cinematic-fade-enter-active,
-.cinematic-fade-leave-active {
-  transition: opacity 0.8s ease-in-out; 
-}
-.cinematic-fade-enter-from,
-.cinematic-fade-leave-to {
-  opacity: 0;
 }
 
 .media-overlay {

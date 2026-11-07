@@ -57,10 +57,11 @@
           <img src="/icons/transparent.png" alt="Efimovs Agency" class="brand-logo-ea" />
         </div>
 
+        <!-- ОБНОВЛЕННЫЙ ПОРЯДОК: Services, Plans, Projects, Contacts -->
         <nav class="nav desktop-nav">
-          <a href="#" @click.prevent="scrollToSection('projects')" class="nav-link" :class="{ 'is-active': activeSection === 'projects' }"><span>{{ t('projects') }}</span></a>
           <a href="#" @click.prevent="scrollToSection('services')" class="nav-link" :class="{ 'is-active': activeSection === 'services' }"><span>{{ t('services') }}</span></a>
           <a href="#" @click.prevent="scrollToSection('plans')" class="nav-link" :class="{ 'is-active': activeSection === 'plans' }"><span>{{ t('packages') }}</span></a>
+          <a href="#" @click.prevent="scrollToSection('projects')" class="nav-link" :class="{ 'is-active': activeSection === 'projects' }"><span>{{ t('projects') }}</span></a>
           <a href="#" @click.prevent="scrollToSection('contacts')" class="nav-link" :class="{ 'is-active': activeSection === 'contacts' }"><span>{{ t('contacts') }}</span></a>
         </nav>
 
@@ -125,17 +126,18 @@
         <div class="mobile-drawer">
           <div class="mobile-scroll-container" data-lenis-prevent>
             <div class="mobile-menu-top">
+              <!-- ОБНОВЛЕННЫЙ ПОРЯДОК: Services, Plans, Projects, Contacts -->
               <nav class="mobile-nav-list">
-                <div class="mobile-nav-item" @click.prevent="handleMobileNav('projects')">
-                  <span class="nav-text">{{ t('projects') }}</span>
-                  <div class="nav-line" v-once><div class="line-fill"></div></div>
-                </div>
                 <div class="mobile-nav-item" @click.prevent="handleMobileNav('services')">
                   <span class="nav-text">{{ t('services') }}</span>
                   <div class="nav-line" v-once><div class="line-fill"></div></div>
                 </div>
                 <div class="mobile-nav-item" @click.prevent="handleMobileNav('plans')">
                   <span class="nav-text">{{ t('packages') }}</span>
+                  <div class="nav-line" v-once><div class="line-fill"></div></div>
+                </div>
+                <div class="mobile-nav-item" @click.prevent="handleMobileNav('projects')">
+                  <span class="nav-text">{{ t('projects') }}</span>
                   <div class="nav-line" v-once><div class="line-fill"></div></div>
                 </div>
                 <div class="mobile-nav-item" @click.prevent="handleMobileNav('contacts')">
@@ -191,7 +193,8 @@ const isProgrammaticScrolling = ref(false);
 let programmaticScrollTimeout = null; 
 let scrollRafId = null;
 
-const sections = ["projects", "services", "plans", "contacts"];
+// ОБНОВЛЕННЫЙ ПОРЯДОК для логики отслеживания скролла
+const sections = ["services", "plans", "projects", "contacts"];
 
 const handlePixelPerfectScroll = () => {
   if (isProgrammaticScrolling.value) return;

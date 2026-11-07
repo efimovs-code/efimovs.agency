@@ -108,42 +108,83 @@
 
 <script setup>
 import { onMounted, onBeforeUnmount, ref, computed } from "vue";
-import { t } from "../composables/useLanguage";
+import { t, currentLang } from "../composables/useLanguage";
 
-const featuredProjects = computed(() => [
-  {
-    id: 1,
-    link: "/portfolio#aima", 
-    title: t('proj1_title'),
-    category: t('cat_web'),
-    task: t('proj1_task'),
-    image: "/images/aima-1.png", 
-  },
-  {
-    id: 2,
-    link: "/portfolio#corporate-sports",
-    title: t('proj2_title'),
-    category: t('cat_mob'),
-    task: t('proj2_task'),
-    image: "/images/sports-1.png", 
-  },
-  {
-    id: 3,
-    link: "/portfolio#shortlyst",
-    title: t('proj3_title'),
-    category: t('cat_web'),
-    task: t('proj3_task'),
-    image: "/images/shortlyst-1.png", 
-  },
-  {
-    id: 4,
-    link: "/portfolio#vitolker",
-    title: t('proj4_title'),
-    category: t('cat_mob'),
-    task: t('proj4_task'),
-    image: "/images/vitolker-1.png", 
+const featuredProjects = computed(() => {
+  const isEn = currentLang.value?.code === 'EN' || !currentLang.value;
+  const isRu = currentLang.value?.code === 'RU';
+  const isUa = currentLang.value?.code === 'UA';
+  const isTr = currentLang.value?.code === 'TR';
+  const isDe = currentLang.value?.code === 'DE';
+  const isFr = currentLang.value?.code === 'FR';
+  const isEs = currentLang.value?.code === 'ES';
+
+  const getGeoTitle = () => 'Geometriya';
+  const getQrTitle = () => 'QR Cafe';
+
+  const getGeoTask = () => {
+    if (isRu) return "Разработали удобный сайт в одну страницу: добавили плавний текст, красивые фотографии и легкий способ связаться.";
+    if (isUa) return "Розробили зручний сайт в одну сторінку: додали плавний текст, красиві фотографії та легкий спосіб зв'язатися.";
+    if (isTr) return "Kullanıcı dostu tek sayfalık bir web sitesi geliştirdik: akıcı metinler, harika fotoğraflar ve kolay iletişim yolu ekledik.";
+    if (isDe) return "Entwickelten eine benutzerfreundliche Single-Page-Website: mit flüssigem Text, schönen Fotos und einer einfachen Kontaktmöglichkeit.";
+    if (isFr) return "Développement d'un site web d'une seule page convivial : ajout de texte fluide, de belles photos et d'un moyen simple de nous contacter.";
+    if (isEs) return "Desarrollamos un sitio web de una sola página fácil de usar: agregamos texto fluido, hermosas fotos y una forma fácil de contactar.";
+    return "Developed a user-friendly single-page website: added smooth text, beautiful photos, and an easy way to get in touch.";
+  };
+
+  const getQrTask = () => {
+    if (isRu) return "Создали удобный сайт с красивыми эффектами, индивидуальным онлайн меню и удобным бронированием.";
+    if (isUa) return "Створили зручний сайт з красивими ефектами, індивідуальним онлайн меню та зручним бронюванням.";
+    if (isTr) return "Etkileyici efektler, özel online menü ve pratik rezervasyon içeren kullanıcı dostu bir web sitesi oluşturduk.";
+    if (isDe) return "Erstellten eine benutzerfreundliche Website mit schönen Effekten, einem individuellen Online-Menü und bequemer Buchung.";
+    if (isFr) return "Création d'un site web convivial avec de superbes effets, un menu en ligne personnalisé et une réservation pratique.";
+    if (isEs) return "Creamos un sitio web fácil de usar con hermosos efectos, un menú en línea personalizado y reservas convenientes.";
+    return "Created a user-friendly website with beautiful effects, a custom online menu, and convenient booking.";
+  };
+  
+  const getCatWeb = () => {
+    if (isRu || isUa) return 'Веб-разработка';
+    if (isTr) return 'Web Geliştirme';
+    if (isDe) return 'Webentwicklung';
+    if (isFr || isEs) return 'Développement Web';
+    return 'Web Development';
   }
-]);
+
+  return [
+    {
+      id: 1,
+      link: "/portfolio#aima", 
+      title: t('proj1_title'),
+      category: t('cat_web') || getCatWeb(),
+      task: t('proj1_task'),
+      image: "/images/aima-1.png", 
+    },
+    {
+      id: 2,
+      link: "/portfolio#geometriya",
+      title: getGeoTitle(),
+      category: t('cat_web') || getCatWeb(),
+      task: getGeoTask(),
+      image: "/images/geometriya-1.png", 
+    },
+    {
+      id: 3,
+      link: "/portfolio#shortlyst",
+      title: t('proj3_title'),
+      category: t('cat_web') || getCatWeb(),
+      task: t('proj3_task'),
+      image: "/images/shortlyst-1.png", 
+    },
+    {
+      id: 4,
+      link: "/portfolio#qr-cafe",
+      title: getQrTitle(),
+      category: t('cat_web') || getCatWeb(),
+      task: getQrTask(),
+      image: "/images/qrcafe-1.png", 
+    }
+  ]
+});
 
 const isDesktop = ref(true);
 let lastWidth = 0;

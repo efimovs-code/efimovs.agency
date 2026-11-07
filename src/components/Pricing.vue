@@ -1,6 +1,6 @@
 <template>
   <section id="plans" class="pricing-luxury" :class="{ 'tg-safe-mode': isTelegram }">
-    <!-- 🚀 ФИКС: Убрали blur() из свечения для максимального FPS -->
+    <!-- GPU Ambient Glow -->
     <div v-if="isDesktop && !isTelegram" class="ambient-glow opt-gpu" v-once></div>
 
     <div class="container">
@@ -8,47 +8,35 @@
       <div class="header-group">
         
         <div class="pricing-header">
-          <span class="kicker">{{ t('pr_kicker') }}</span>
+          <span class="kicker">{{ t('pr_kicker') || 'ІНВЕСТИЦІЇ' }}</span>
           <h2 class="gradient-title">
-            {{ t('pr_title') }}
+            {{ t('pr_title') || 'Вартість розробки' }}
           </h2>
         </div>
 
-        <!-- 3 Направления (Стеки) -->
+        <!-- 3 Типи розробки (Синхронізовано з модалкою) -->
         <div class="tab-wrapper">
-          <div class="tab-system" :style="{ '--tab-count': stacks.length }">
+          <div class="tab-system" style="--tab-count: 3;">
             <div class="tab-indicator" :style="indicatorStyle">
               <div class="indicator-shine" v-once></div>
             </div>
 
             <button
-              v-for="(stack, index) in stacks"
-              :key="stack"
-              @click="setActiveStack(stack, index)"
-              :class="['tab-btn', { active: activeStack === stack }]"
+              v-for="(type, index) in designTypes"
+              :key="type.key"
+              @click="setActiveType(type.key, index)"
+              :class="['tab-btn', { active: activeType === type.key }]"
             >
-              <span class="btn-text">{{ t(stackKeyMap[stack]) }}</span>
+              <span class="btn-text">{{ t(type.titleKey) || type.defTitle }}</span>
             </button>
           </div>
         </div>
 
-        <!-- Услуги под выбранное направление -->
-        <div class="sub-nav-wrapper">
-          <button
-            v-for="service in currentServicesList"
-            :key="service"
-            @click="setActiveService(service)"
-            :class="['sub-btn', { active: activeService === service }]"
-          >
-            <span class="sub-text">{{ t(serviceKeyMap[service]) }}</span>
-            <div class="sub-glow" v-once></div>
-          </button>
-        </div>
-
+        <!-- Опис обраного типу розробки -->
         <div class="dynamic-service-context">
           <Transition name="fade-slide" mode="out-in">
-            <p :key="activeService" class="service-description">
-              {{ currentServiceDescription }}
+            <p :key="activeType" class="service-description">
+              {{ currentTypeDescription }}
             </p>
           </Transition>
         </div>
@@ -56,24 +44,26 @@
 
       <div class="pricing-carousel">
         
+        <!-- Сітка змінена на 3 колонки, відцентрована -->
         <div class="cards-wrapper gpu-scroll" ref="scrollContainer" @scroll="onCarouselScroll">
           <div
             v-for="(plan, index) in currentPlans"
-            :key="activeService + '-' + plan.name" 
+            :key="activeType + '-' + plan.name" 
             class="card-wrapper"
             @click="openModalWithPlan(plan)"
-            v-memo="[isDesktop, index === activeMobileIndex, activeService, currentLang.code]"
+            v-memo="[isDesktop, index === activeMobileIndex, activeType, currentLang.code]"
           >
+            <!-- Центральна картка (index 1) виділяється як Featured -->
             <div :class="['card gpu-layer', { 
-              featured: index === 1 || index === 3,
+              featured: index === 1,
               'is-mobile-active': !isDesktop && index === activeMobileIndex 
             }]">
 
               <div class="card-content">
                 
                 <div class="card-header">
-                  <span class="plan-tag">{{ t(plan.label) }}</span>
-                  <h3 class="plan-name">{{ t(plan.name) }}</h3>
+                  <span class="plan-tag">{{ t(plan.labelKey) || plan.defLabel }}</span>
+                  <h3 class="plan-name">{{ t(plan.nameKey) || plan.originalName }}</h3>
                   <p class="plan-desc">{{ plan.desc }}</p>
                 </div>
 
@@ -83,13 +73,13 @@
                   <div class="luxury-divider" v-once></div>
                   
                   <div class="price-container">
-                    <span class="price-val">{{ t('pr_quote') }}</span>
-                    <span class="billing-info">{{ t('pr_calc') }}</span>
+                    <span class="price-val">{{ plan.priceRange }}</span>
+                    <span class="billing-info">{{ t('pr_calc') || 'Орієнтовний бюджет' }}</span>
                   </div>
 
                   <button class="prime-btn">
                     <span class="btn-inner">
-                      <span class="text">{{ t('pr_btn') }}</span>
+                      <span class="text">{{ t('pr_btn') || 'ОБГОВОРИТИ ПРОЄКТ' }}</span>
                       <div class="arrow-wrapper" v-once>
                         <svg class="luxury-arrow" viewBox="0 0 42 14" fill="none" shape-rendering="optimizeSpeed">
                           <path d="M0 7H40M40 7L34 1M40 7L34 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" />
@@ -110,12 +100,12 @@
 
     </div>
 
+    <!-- Модалка отримує обраний тип розробки та тариф -->
     <ContactModal
       v-if="isModalOpen"
       :is-open="isModalOpen"
-      :initial-stack="activeStack"
-      :initial-service="activeService"
-      :initial-plan="selectedPlanName"
+      :initial-design-type="selectedDesignTypeForModal"
+      :initial-plan="selectedPlanNameForModal"
       @close="isModalOpen = false"
     />
   </section>
@@ -134,192 +124,95 @@ import { t, currentLang } from "../composables/useLanguage";
 
 const ContactModal = defineAsyncComponent(() => import("./ContactModal.vue"));
 
-// --- ОБНОВЛЕННАЯ СТРУКТУРА: 3 НАПРАВЛЕНИЯ ---
-const stacks = [
-  "Conversion Websites",
-  "Lead Automation",
-  "AI Assistants"
+// --- 1. ТИПИ РОЗРОБКИ ---
+const designTypes = [
+  { key: 'template', titleKey: 'mod_opt_template_title', defTitle: 'Шаблонна розробка' },
+  { key: 'layout', titleKey: 'mod_opt_layout_title', defTitle: 'За вашим макетом' },
+  { key: 'custom', titleKey: 'mod_opt_custom_title', defTitle: 'Проєкт під ключ' }
 ];
 
-// --- МАППИНГ КЛЮЧЕЙ ИЗ ФАЙЛА ЛОКАЛИЗАЦИИ ---
-// Используем ключи, которые ты уже добавил в языковой файл (exp_card1_title = "Конверсионные сайты" и тд)
-const stackKeyMap = {
-  "Conversion Websites": "exp_card1_title",
-  "Lead Automation": "exp_card2_title",
-  "AI Assistants": "exp_card3_title"
-};
-
-const serviceKeyMap = {
-  // Сайты
-  "Landing Page": "srv_opt_web_1",
-  "Corporate Website": "srv_opt_web_2",
-  "E-commerce": "srv_opt_web_3",
-  // CRM
-  "Social & CRM": "srv_opt_crm_1",
-  "CRM from Scratch": "srv_opt_crm_2",
-  "CRM Enhancement": "srv_opt_crm_3",
-  // AI
-  "24/7 Bot": "srv_opt_ai_1",
-  "AI Comm Bot": "srv_opt_ai_2",
-  "Custom AI Solutions": "srv_opt_ai_3"
-};
-
-// --- СТРУКТУРА УСЛУГ ПОД КАЖДОЕ НАПРАВЛЕНИЕ ---
-const servicesOrder = {
-  "Conversion Websites": ["Landing Page", "Corporate Website", "E-commerce"],
-  "Lead Automation": ["Social & CRM", "CRM from Scratch", "CRM Enhancement"],
-  "AI Assistants": ["24/7 Bot", "AI Comm Bot", "Custom AI Solutions"]
-};
-
-// --- ОПИСАНИЯ ДЛЯ САМОЙ УСЛУГИ (Текст под кнопками) ---
-const serviceDescriptionsDict = {
-  "Landing Page": {
-    EN: "Fast, high-converting single-page websites designed to capture leads instantly.",
-    RU: "Быстрые одностраничные сайты с высокой конверсией для мгновенного сбора заявок.",
-    UA: "Швидкі односторінкові сайти з високою конверсією для миттєвого збору заявок."
+// Описи під перемикачем (ідентичні текстам з модального вікна)
+const typeDescriptions = {
+  template: {
+    EN: "We take a proven, high-converting template and adapt it specifically for your business.",
+    RU: "Берем проверенный шаблон, который продает, и адаптируем под ваш бизнес.",
+    UA: "Беремо перевірений шаблон, який продає, та адаптуємо під ваш бізнес."
   },
-  "Corporate Website": {
-    EN: "High-performance multi-page websites that build trust and showcase your business.",
-    RU: "Мощные многостраничные сайты, вызывающие доверие и презентующие ваш бизнес.",
-    UA: "Потужні багатосторінкові сайти, що викликають довіру та презентують ваш бізнес."
+  layout: {
+    EN: "You already have a website layout. We will write clean code, add functionality, and bring it to life.",
+    RU: "У вас уже есть готовый макет сайта. Мы напишем чистый код, добавим функционал и оживим его.",
+    UA: "У вас вже є готовий макет сайту. Ми напишемо чистий код, додамо функціонал та оживимо його."
   },
-  "E-commerce": {
-    EN: "Turnkey e-commerce platforms optimized for maximum sales and secure payments.",
-    RU: "Интернет-магазины под ключ, оптимизированные для максимальных продаж и безопасных оплат.",
-    UA: "Інтернет-магазини під ключ, оптимізовані для максимальних продажів та безпечних оплат."
-  },
-  "Social & CRM": {
-    EN: "Seamlessly connect your social media and messengers directly into your CRM system.",
-    RU: "Бесшовная связка ваших соцсетей и мессенджеров напрямую в единую CRM систему.",
-    UA: "Безшовна зв'язка ваших соцмереж та месенджерів безпосередньо в єдину CRM систему."
-  },
-  "CRM from Scratch": {
-    EN: "Complete implementation and setup of a CRM tailored perfectly to your company.",
-    RU: "Полное внедрение и настройка CRM-системы, идеально адаптированной под вашу компанию.",
-    UA: "Повне впровадження та налаштування CRM-системи, ідеально адаптованої під вашу компанію."
-  },
-  "CRM Enhancement": {
-    EN: "Deep audit and modernization of your existing CRM to automate routine tasks.",
-    RU: "Глубокий аудит и доработка вашей текущей CRM для устранения ошибок и автоматизации рутины.",
-    UA: "Глибокий аудит та доопрацювання вашої поточної CRM для усунення помилок і автоматизації рутини."
-  },
-  "24/7 Bot": {
-    EN: "Smart 24/7 consultant bot instantly answering common customer questions.",
-    RU: "Умный бот-консультант, мгновенно отвечающий на частые вопросы ваших клиентов 24/7.",
-    UA: "Розумний бот-консультант, що миттєво відповідає на часті запитання ваших клієнтів 24/7."
-  },
-  "AI Comm Bot": {
-    EN: "Advanced AI assistant to communicate with clients and capture details autonomously.",
-    RU: "Продвинутый ИИ-ассистент, который общается с клиентами и собирает заявки как живой человек.",
-    UA: "Просунутий ШІ-асистент, який спілкується з клієнтами та збирає заявки як жива людина."
-  },
-  "Custom AI Solutions": {
-    EN: "Tailored AI algorithms and tools to automate your specific business logic.",
-    RU: "Индивидуальные ИИ-алгоритмы и инструменты под уникальные задачи вашего бизнеса.",
-    UA: "Індивідуальні ШІ-алгоритми та інструменти під унікальні завдання вашого бізнесу."
+  custom: {
+    EN: "From unique design to the exact functionality you need. A solution for non-standard tasks.",
+    RU: "От уникального дизайна до нужного вам функционала. Решение для нестандартных задач.",
+    UA: "Від унікального дизайну до необхідного вам функціоналу. Рішення для нестандартних завдань."
   }
 };
 
-// --- 4 УРОВНЯ СЛОЖНОСТИ (ПЛАНА) ПОД КАЖДУЮ УСЛУГУ ---
-const planDescDict = {
-  "Landing Page": [
-    { EN: "A clean, fast landing page to test your offer and capture initial leads.", RU: "Чистый, быстрый лендинг для старта, тестирования оффера и сбора первых заявок.", UA: "Чистий, швидкий лендінг для старту, тестування офферу та збору перших заявок." },
-    { EN: "A high-end promo page with custom animations to maximize conversion rates.", RU: "Продвинутый лендинг с премиум-анимацией и сложной структурой для максимальной конверсии.", UA: "Просунутий лендінг з преміум-анімацією та складною структурою для максимальної конверсії." },
-    { EN: "Interactive page with complex logic, quizzes, and dynamic content.", RU: "Интерактивная страница со сложной логикой, квизами, калькуляторами и динамическим контентом.", UA: "Інтерактивна сторінка зі складною логікою, квізами, калькуляторами та динамічним контентом." },
-    { EN: "High-load promo platform ready for thousands of simultaneous visitors.", RU: "High-load платформа, готовая выдержать огромный трафик с крупных рекламных кампаний.", UA: "High-load платформа, готова витримати величезний трафік із великих рекламних кампаній." }
+// --- 2. МАТРИЦЯ ЦІН ТА ПРОСТИХ ОПИСІВ ДЛЯ БІЗНЕСУ ---
+const pricingData = {
+  template: [
+    { nameKey: "pl_n_simp", labelKey: "pl_l_simp", priceRange: "$300 - $600", originalName: "Simple Project", defLabel: "Base",
+      desc: { RU: "Одностраничный сайт для быстрого старта. Базовая настройка и запуск за несколько дней.", EN: "Single-page site for a quick start. Basic setup and launch in a few days.", UA: "Односторінковий сайт для швидкого старту. Базове налаштування та запуск за кілька днів." } },
+    { nameKey: "pl_n_med", labelKey: "pl_l_med", priceRange: "$700 - $1,200", originalName: "Medium Project", defLabel: "Optimal",
+      desc: { RU: "Многостраничный сайт или небольшой магазин. Удобная панель управления и корзина для заказов.", EN: "Multi-page site or small store. Convenient control panel and shopping cart.", UA: "Багатосторінковий сайт або невеликий магазин. Зручна панель управління та кошик для замовлень." } },
+    { nameKey: "pl_n_comp", labelKey: "pl_l_comp", priceRange: "$1,400 - $2,500+", originalName: "Complex Project", defLabel: "Pro",
+      desc: { RU: "Крупный портал с каталогом, личным кабинетом для клиентов и подключением онлайн-оплат.", EN: "Large portal with a catalog, personal client accounts, and online payment integration.", UA: "Великий портал з каталогом, особистим кабінетом для клієнтів та підключенням онлайн-оплат." } }
   ],
-  "Corporate Website": [
-    { EN: "A modern multi-page site to establish a strong digital presence.", RU: "Современный стильный многостраничник для формирования надежного имиджа компании.", UA: "Сучасний стильний багатосторінковий сайт для формування надійного іміджу компанії." },
-    { EN: "Fully equipped business site with a CMS, blog, and advanced forms.", RU: "Полноценный бизнес-сайт с удобной CMS для управления, блогом и сложными формами.", UA: "Повноцінний бізнес-сайт зі зручною CMS для управління, блогом та складними формами." },
-    { EN: "Scalable corporate hub with secure client zones and integrations.", RU: "Масштабируемый портал с личными кабинетами для клиентов и внешними интеграциями.", UA: "Масштабований портал з особистими кабінетами для клієнтів та зовнішніми інтеграціями." },
-    { EN: "Enterprise-grade web infrastructure with maximum security.", RU: "Инфраструктура Enterprise-уровня с банковской степенью безопасности и изолированными базами.", UA: "Інфраструктура Enterprise-рівня з банківським ступенем безпеки та ізольованими базами." }
+  layout: [
+    { nameKey: "pl_n_simp", labelKey: "pl_l_simp", priceRange: "$400 - $800", originalName: "Simple Project", defLabel: "Base",
+      desc: { RU: "Точный перенос вашего дизайна в интернет. Одностраничный сайт, который быстро работает на всех устройствах.", EN: "Exact transfer of your design to the web. A fast single-page site for all devices.", UA: "Точне перенесення вашого дизайну в інтернет. Односторінковий сайт, який швидко працює на всіх пристроях." } },
+    { nameKey: "pl_n_med", labelKey: "pl_l_med", priceRange: "$900 - $1,800", originalName: "Medium Project", defLabel: "Optimal",
+      desc: { RU: "Несколько страниц, плавные анимации и подключение системы для самостоятельного изменения текста и фото.", EN: "Multiple pages, smooth animations, and a system to easily edit text and photos yourself.", UA: "Кілька сторінок, плавні анімації та підключення системи для самостійної зміни тексту й фото." } },
+    { nameKey: "pl_n_comp", labelKey: "pl_l_comp", priceRange: "$2,000 - $4,000+", originalName: "Complex Project", defLabel: "Pro",
+      desc: { RU: "Сложная логика, регистрация пользователей и объединение вашего макета с бизнес-процессами компании.", EN: "Complex logic, user registration, and connecting your design to business processes.", UA: "Складна логіка, реєстрація користувачів та об'єднання вашого макету з бізнес-процесами компанії." } }
   ],
-  "E-commerce": [
-    { EN: "A clean, fast online store to start selling your products online.", RU: "Аккуратный и быстрый интернет-магазин для уверенного старта онлайн-продаж.", UA: "Акуратний і швидкий інтернет-магазин для впевненого старту онлайн-продажів." },
-    { EN: "Advanced store with custom product filtering and payment integrations.", RU: "Продвинутый магазин с умными фильтрами товаров, личным кабинетом и онлайн-оплатой.", UA: "Просунутий магазин з розумними фільтрами товарів, особистим кабінетом та онлайн-оплатою." },
-    { EN: "Large-scale e-commerce with inventory sync and CRM integration.", RU: "Крупный e-commerce проект с синхронизацией складов, интеграцией 1С/CRM и сложной логикой доставки.", UA: "Великий e-commerce проєкт із синхронізацією складів, інтеграцією 1С/CRM та складною логікою доставки." },
-    { EN: "Enterprise marketplace platform capable of handling massive order volumes.", RU: "Масштабный маркетплейс, способный без задержек обрабатывать тысячи заказов ежедневно.", UA: "Масштабний маркетплейс, здатний без затримок обробляти тисячі замовлень щодня." }
-  ],
-  "Social & CRM": [
-    { EN: "Basic integration to send leads from Instagram/FB into your CRM.", RU: "Базовая интеграция для автоматической отправки заявок из Instagram/FB прямиком в CRM.", UA: "Базова інтеграція для автоматичної відправки заявок з Instagram/FB прямо в CRM." },
-    { EN: "Multi-channel sync collecting requests from all messengers into one base.", RU: "Мультиканальная связка: сбор сообщений из Telegram, WhatsApp, Viber и соцсетей в одно окно.", UA: "Мультиканальна зв'язка: збір повідомлень з Telegram, WhatsApp, Viber та соцмереж в одне вікно." },
-    { EN: "Advanced routing to assign leads to managers based on logic.", RU: "Сложная логика маршрутизации: автоматическое распределение заявок между менеджерами.", UA: "Складна логіка маршрутизації: автоматичний розподіл заявок між менеджерами." },
-    { EN: "Total digital transformation connecting all communication channels seamlessly.", RU: "Глобальная экосистема, объединяющая абсолютно все каналы связи и телефонию в единый поток.", UA: "Глобальна екосистема, що поєднує абсолютно всі канали зв'язку та телефонію в єдиний потік." }
-  ],
-  "CRM from Scratch": [
-    { EN: "Clean implementation of a base CRM to organize your client data.", RU: "Внедрение и настройка базовой CRM (Amo/Bitrix) для наведения порядка в базе клиентов.", UA: "Впровадження та налаштування базової CRM (Amo/Bitrix) для наведення ладу в базі клієнтів." },
-    { EN: "Customized CRM with tailored funnels, fields, and access rights.", RU: "Настроенная под ваш бизнес CRM с индивидуальными воронками, полями и правами доступа.", UA: "Налаштована під ваш бізнес CRM з індивідуальними воронками, полями та правами доступу." },
-    { EN: "Automated CRM with smart triggers for document generation and tasks.", RU: "Автоматизированная CRM: авто-постановка задач, умные триггеры и автоматическая генерация договоров.", UA: "Автоматизована CRM: авто-постановка завдань, розумні тригери та автоматична генерація договорів." },
-    { EN: "Enterprise CRM deployment connecting marketing, sales, and production.", RU: "Внедрение Enterprise-решения, связывающего маркетинг, отдел продаж, склад и производство.", UA: "Впровадження Enterprise-рішення, що пов'язує маркетинг, відділ продажу, склад та виробництво." }
-  ],
-  "CRM Enhancement": [
-    { EN: "Fixing bottlenecks and correcting current settings in your CRM.", RU: "Аудит и исправление критических ошибок в текущих настройках воронки вашей CRM.", UA: "Аудит та виправлення критичних помилок у поточних налаштуваннях воронки вашої CRM." },
-    { EN: "Re-engineering workflows to save managers time.", RU: "Пересборка логики работы CRM, добавление новых воронок и автоматизация рутинных действий менеджеров.", UA: "Перезбірка логіки роботи CRM, додавання нових воронок та автоматизація рутинних дій менеджерів." },
-    { EN: "Custom API development to connect external software to your CRM.", RU: "Разработка кастомных API-интеграций для связи вашей CRM со сторонними сервисами и сайтами.", UA: "Розробка кастомних API-інтеграцій для зв'язку вашої CRM зі сторонніми сервісами та сайтами." },
-    { EN: "Total CRM rebuild into a highly secure, automated enterprise system.", RU: "Полная реновация вашей CRM в высокозащищенную автоматизированную корпоративную систему.", UA: "Повна реновація вашої CRM у високозахищену автоматизовану корпоративну систему." }
-  ],
-  "24/7 Bot": [
-    { EN: "A smart FAQ bot to answer simple customer questions instantly.", RU: "Простой FAQ-бот, который мгновенно отвечает на типовые вопросы о ценах и графике работы.", UA: "Простий FAQ-бот, який миттєво відповідає на типові запитання про ціни та графік роботи." },
-    { EN: "Lead generation bot that captures contacts and qualifies clients.", RU: "Бот-лидогенератор, который проводит первичный опрос клиента и собирает контактные данные.", UA: "Бот-лідогенератор, який проводить первинне опитування клієнта та збирає контактні дані." },
-    { EN: "Interactive bot with external database checks (e.g. order status).", RU: "Интерактивный бот с доступом к базе (например, проверка статуса заказа по номеру).", UA: "Інтерактивний бот із доступом до бази (наприклад, перевірка статусу замовлення за номером)." },
-    { EN: "Omnichannel bot ecosystem integrated across all your digital platforms.", RU: "Омниканальная экосистема ботов, работающая синхронно на сайте, в Telegram, WhatsApp и Instagram.", UA: "Омніканальна екосистема ботів, що працює синхронно на сайті, в Telegram, WhatsApp та Instagram." }
-  ],
-  "AI Comm Bot": [
-    { EN: "Basic ChatGPT integration trained on your general company info.", RU: "Базовая интеграция ChatGPT, обученная на основной информации о вашей компании.", UA: "Базова інтеграція ChatGPT, навчена на основній інформації про вашу компанію." },
-    { EN: "Advanced AI trained on your specific services and sales scripts.", RU: "Продвинутый ИИ-ассистент, обученный на ваших услугах, скриптах продаж и прайс-листах.", UA: "Просунутий ШІ-асистент, навчений на ваших послугах, скриптах продажу та прайс-листах." },
-    { EN: "Context-aware AI capable of complex negotiations and objection handling.", RU: "Контекстный ИИ, способный вести сложные диалоги, отрабатывать возражения и закрывать сделки.", UA: "Контекстний ШІ, здатний вести складні діалоги, відпрацьовувати заперечення та закривати угоди." },
-    { EN: "Autonomous AI communication hub directly injecting qualified leads to CRM.", RU: "Полностью автономный ИИ-центр коммуникации, напрямую передающий теплых клиентов в CRM.", UA: "Повністю автономний ШІ-центр комунікації, що безпосередньо передає теплих клієнтів до CRM." }
-  ],
-  "Custom AI Solutions": [
-    { EN: "Simple AI automation to handle a repetitive text-processing task.", RU: "Простая ИИ-автоматизация для обработки и форматирования входящих текстовых данных.", UA: "Проста ШІ-автоматизація для обробки та форматування вхідних текстових даних." },
-    { EN: "AI data extractor to automatically pull info from documents/invoices.", RU: "Умный алгоритм для автоматического извлечения и сортировки данных из документов или счетов.", UA: "Розумний алгоритм для автоматичного вилучення та сортування даних із документів або рахунків." },
-    { EN: "Analytical AI that processes massive datasets for business insights.", RU: "Аналитический ИИ, обрабатывающий массивы данных компании и генерирующий готовые бизнес-отчеты.", UA: "Аналітичний ШІ, що обробляє масиви даних компанії та генерує готові бізнес-звіти." },
-    { EN: "Private, secure AI ecosystem built exclusively for your enterprise.", RU: "Защищенная приватная ИИ-инфраструктура, разработанная эксклюзивно под уникальные бизнес-процессы корпорации.", UA: "Захищена приватна ШІ-інфраструктура, розроблена ексклюзивно під унікальні бізнес-процеси корпорації." }
+  custom: [
+    { nameKey: "pl_n_simp", labelKey: "pl_l_simp", priceRange: "$800 - $1,500", originalName: "Simple Project", defLabel: "Base",
+      desc: { RU: "Разработка дизайна с нуля под ваш стиль. Эксклюзивный одностраничный сайт, выделяющий вас среди конкурентов.", EN: "Custom design from scratch. An exclusive single-page site that makes you stand out.", UA: "Розробка дизайну з нуля під ваш стиль. Ексклюзивний односторінковий сайт, що виділяє вас серед конкурентів." } },
+    { nameKey: "pl_n_med", labelKey: "pl_l_med", priceRange: "$1,500 - $3,500", originalName: "Medium Project", defLabel: "Optimal",
+      desc: { RU: "Премиальный многостраничный сайт. Уникальные эффекты, панель управления и автоматический сбор заявок клиентов.", EN: "Premium multi-page site. Unique effects, management panel, and automatic lead collection.", UA: "Преміальний багатосторінковий сайт. Унікальні ефекти, панель управління та автоматичний збір заявок клієнтів." } },
+    { nameKey: "pl_n_comp", labelKey: "pl_l_comp", priceRange: "$3,500 - $6,000+", originalName: "Complex Project", defLabel: "Pro",
+      desc: { RU: "Полноценная платформа. Личные кабинеты, надежная защита данных, автоматизация продаж и любой нестандартный функционал.", EN: "Full-scale platform. Personal accounts, high security, sales automation, and any custom features.", UA: "Повноцінна платформа. Особисті кабінети, надійний захист даних, автоматизація продажів та будь-який нестандартний функціонал." } }
   ]
 };
 
-// --- STATE ИНИЦИАЛИЗАЦИЯ ---
-const activeStack = ref(stacks[0]);
+// --- СТЕЙТ ---
+const activeType = ref(designTypes[0].key);
 const activeIndex = ref(0);
-const activeService = ref(servicesOrder[stacks[0]][0]);
 
 const scrollContainer = ref(null);
 const isModalOpen = ref(false);
-const selectedPlanName = shallowRef("");
+
+// ДОБАВЛЕНО: Отдельные переменные для передачи в модалку
+const selectedDesignTypeForModal = shallowRef("");
+const selectedPlanNameForModal = shallowRef("");
+
 const isDesktop = ref(true);
 const isTelegram = ref(false);
 const activeMobileIndex = ref(0);
 let rafId = null;
 
-// --- DYNAMIC COMPUTED DATA ---
-const currentServiceDescription = computed(() => {
+// --- ОБЧИСЛЮВАЛЬНІ ДАНІ ---
+const currentTypeDescription = computed(() => {
   const code = currentLang.value.code;
-  const descGroup = serviceDescriptionsDict[activeService.value];
-  if (!descGroup) return t('pr_fallback');
-  // Fallback на английский, если для текущего языка (например, TR или DE) нет точного перевода в локальном словаре
+  const descGroup = typeDescriptions[activeType.value];
   return descGroup[code] || descGroup['EN']; 
-});
-
-const currentServicesList = computed(() => {
-  return servicesOrder[activeStack.value] || [];
 });
 
 const currentPlans = computed(() => {
   const code = currentLang.value.code;
-  const plansArray = planDescDict[activeService.value];
-  if (!plansArray) return [];
+  const plansArray = pricingData[activeType.value] || pricingData['template'];
   
-  const nameKeys = ['pl_n_simp', 'pl_n_med', 'pl_n_comp', 'pl_n_large'];
-  const labelKeys = ['pl_l_simp', 'pl_l_med', 'pl_l_comp', 'pl_l_large'];
-
-  return plansArray.map((p, i) => {
-    return {
-      name: nameKeys[i],
-      label: labelKeys[i],
-      desc: p[code] || p['EN'],
-      originalName: ["Simple Project", "Medium Project", "Complex Project", "Large-Scale Project"][i]
-    }
-  });
+  return plansArray.map(p => ({
+    nameKey: p.nameKey,
+    labelKey: p.labelKey,
+    priceRange: p.priceRange,
+    originalName: p.originalName,
+    defLabel: p.defLabel,
+    desc: p.desc[code] || p.desc['EN']
+  }));
 });
 
 const onCarouselScroll = () => {
@@ -340,8 +233,11 @@ const onCarouselScroll = () => {
   });
 };
 
+// ДОБАВЛЕНО: Обновленная логика открытия модалки
 const openModalWithPlan = (plan) => {
-  selectedPlanName.value = plan.originalName;
+  // Явно запоминаем ТЕКУЩИЙ активный тип разработки и ТЕКУЩИЙ выбранный тариф
+  selectedDesignTypeForModal.value = activeType.value;
+  selectedPlanNameForModal.value = plan.originalName;
   isModalOpen.value = true;
 };
 
@@ -372,28 +268,15 @@ const indicatorStyle = computed(() => ({
   transform: `translate3d(calc(100% * ${activeIndex.value}), 0, 0)`,
 }));
 
-const setActiveService = (service) => {
-  activeService.value = service;
+const setActiveType = (typeKey, index) => {
+  activeType.value = typeKey;
+  activeIndex.value = index;
   activeMobileIndex.value = 0; 
   if (!isDesktop.value && scrollContainer.value) {
     scrollContainer.value.scrollTo({ left: 0, behavior: "smooth" });
   }
 };
-
-const setActiveStack = (stack, index) => {
-  const finalIndex = index !== undefined ? index : stacks.indexOf(stack);
-  if(finalIndex === -1) return; 
-
-  activeStack.value = stack;
-  activeIndex.value = finalIndex;
-  activeService.value = servicesOrder[stack][0];
-  activeMobileIndex.value = 0; 
-
-  if (!isDesktop.value && scrollContainer.value) {
-    scrollContainer.value.scrollTo({ left: 0, behavior: "smooth" });
-  }
-};
-defineExpose({ setActiveStack }); 
+defineExpose({ setActiveType }); 
 </script>
 
 <style scoped>
@@ -437,7 +320,7 @@ defineExpose({ setActiveStack });
 .kicker { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3em; color: #a1a1aa; margin: 0; }
 .gradient-title { font-size: 64px; font-weight: 500; letter-spacing: -0.04em; line-height: 1.1; margin: 0; background: linear-gradient(180deg, #ffffff 0%, #71717a 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
 
-.tab-wrapper { display: flex; justify-content: center; margin-bottom: 40px; }
+.tab-wrapper { display: flex; justify-content: center; margin-bottom: 30px; }
 
 .tab-system { 
   display: flex; 
@@ -498,10 +381,6 @@ defineExpose({ setActiveStack });
 }
 @keyframes shine { 0% { transform: translateX(-100%); } 20%, 100% { transform: translateX(100%); } }
 
-.sub-nav-wrapper { display: flex; justify-content: center; gap: clamp(8px, 2vw, 14px); margin-bottom: 25px; flex-wrap: wrap; }
-.sub-btn { position: relative; padding: clamp(10px, 2vw, 12px) clamp(20px, 4vw, 30px); background: #111; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 50px; color: rgba(255, 255, 255, 0.72); font-size: clamp(11px, 2vw, 13px); font-weight: 800; text-transform: uppercase; letter-spacing: 0.9px; cursor: pointer; overflow: hidden; transition: all 0.35s cubic-bezier(0.19, 1, 0.22, 1); }
-.sub-btn.active { background: #ffffff; color: #000000; border-color: #ffffff; }
-
 .dynamic-service-context { display: flex; justify-content: center; margin-bottom: clamp(40px, 6vw, 60px); text-align: center; height: 24px; }
 .service-description { font-size: 15px; color: #a1a1aa; font-weight: 500; letter-spacing: 0.3px; margin: 0; max-width: 700px; line-height: 1.6; }
 
@@ -509,12 +388,15 @@ defineExpose({ setActiveStack });
 .fade-slide-enter-from { opacity: 0; transform: translateY(10px); }
 .fade-slide-leave-to { opacity: 0; transform: translateY(-10px); }
 
-@media (hover: hover) and (pointer: fine) {
-  .sub-btn:not(.active):hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.35); color: #fff; transform: translateY(-2px); }
-}
-
 .pricing-carousel { position: relative; }
-.cards-wrapper { display: grid; grid-template-columns: repeat(4, 1fr); gap: 36px; }
+
+.cards-wrapper { 
+  display: grid; 
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 36px; 
+  max-width: 1100px; 
+  margin: 0 auto;
+}
 
 .card-wrapper { 
   position: relative; 
@@ -590,7 +472,7 @@ defineExpose({ setActiveStack });
 .luxury-divider { height: 1px; background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%); margin-bottom: 24px; }
 
 .price-container { display: flex; flex-direction: column; gap: 6px; margin-bottom: 24px; }
-.price-val { font-size: 14px; font-weight: 700; color: #ffffff; letter-spacing: 2px; line-height: 1; transition: color 0.4s ease; text-transform: uppercase;}
+.price-val { font-size: 20px; font-weight: 800; color: #ffffff; letter-spacing: 1.5px; line-height: 1; transition: color 0.4s ease; text-transform: uppercase;}
 .billing-info { font-size: 11px; color: #98989d; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
 
 .prime-btn { width: 100%; padding: 16px 24px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.15); background: #141414; color: #ffffff; cursor: pointer; pointer-events: auto; position: relative; overflow: hidden; transition: all 0.4s ease; }
@@ -599,15 +481,21 @@ defineExpose({ setActiveStack });
 .prime-btn .arrow-wrapper { width: 46px !important; overflow: hidden; display: flex; justify-content: flex-end; }
 .prime-btn .luxury-arrow { width: 42px; height: 14px; flex-shrink: 0; transition: transform 0.6s ease; transform: translateX(-14px); color: inherit; }
 
-@media (min-width: 1024px) and (max-width: 1366px) {
-  .cards-wrapper { grid-template-columns: repeat(2, 1fr); gap: 40px; }
+@media (min-width: 1024px) and (max-width: 1200px) {
+  .cards-wrapper { gap: 20px; }
+  .card-content { padding: 34px 26px; }
+  .price-val { font-size: 18px; }
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
   .gradient-title { 
     font-size: clamp(40px, 6vw, 54px) !important; 
   }
-  .cards-wrapper { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  .cards-wrapper { grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 0 20px;}
+  .card-content { padding: 30px 20px; }
+  .plan-name { font-size: 22px; }
+  .price-val { font-size: 16px; }
+  .prime-btn .btn-inner .text { font-size: 10px; }
 }
 
 @media (max-width: 767px) {
@@ -651,31 +539,6 @@ defineExpose({ setActiveStack });
     box-sizing: border-box;
   }
   .tab-btn.active { background: #e5e4e2; color: #000; border-color: transparent; }
-
-  .sub-nav-wrapper { 
-    display: flex; 
-    flex-wrap: wrap; 
-    justify-content: center; 
-    gap: 8px; 
-    margin-bottom: 25px; 
-    padding: 0; 
-  }
-  
-  .sub-btn { 
-    flex: 0 0 calc(100%); 
-    width: 100%;
-    height: 46px; 
-    padding: 0 12px; 
-    font-size: 11.5px; 
-    line-height: 1.2;
-    letter-spacing: 0.3px;
-    border-radius: 12px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    text-align: center; 
-    box-sizing: border-box;
-  }
 
   .pricing-carousel {
     width: 100vw;
@@ -723,6 +586,7 @@ defineExpose({ setActiveStack });
 
   .card-content { padding: 32px 24px; }
   .plan-name { font-size: 24px; }
+  .price-val { font-size: 16px; }
   
   .prime-btn { padding: 14px 16px; }
   .prime-btn .btn-inner .text { font-size: 11px; letter-spacing: 0.5px; }
@@ -733,7 +597,7 @@ defineExpose({ setActiveStack });
   .card-content { padding: 28px 20px; }
   .plan-name { font-size: 22px; margin-bottom: 12px; }
   .plan-desc { font-size: 13.5px; }
-  .price-val { font-size: 13px; letter-spacing: 1px; }
+  .price-val { font-size: 15px; letter-spacing: 1px; }
   .billing-info { font-size: 9px; margin-top: 6px; }
   .prime-btn { padding: 12px 14px; }
   .prime-btn .btn-inner .text { font-size: 10px; letter-spacing: 0px; }

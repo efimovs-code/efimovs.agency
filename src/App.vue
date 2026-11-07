@@ -3,11 +3,11 @@
 
   <div v-else id="app">
     
-    <div class="app-shell" v-if="renderSite">
+    <div class="app-shell">
       
-      <div class="header-wrapper" :class="{ 'header-wrapper--visible': headerVisible }">
+      <div class="header-wrapper header-wrapper--visible">
         <Header 
-          v-if="headerVisible && !isPortfolioPage" 
+          v-if="!isPortfolioPage" 
           :is-modal-open="isModalOpen"
           @open-contact="openWithStack(null)" 
         />
@@ -18,16 +18,15 @@
           <component 
             :is="Component" 
             :key="route.path + '-' + animationKey"
-            :deferHeavyComponents="deferHeavyComponents"
+            deferHeavyComponents="true"
             @open-contact="openWithStack(null)"
             @open-specific="openWithStack"
           />
         </router-view>
       </main>
 
-      <Footer v-show="deferHeavyComponents && !isPortfolioPage" @openModal="openWithStack(null)" />
+      <Footer v-if="!isPortfolioPage" @openModal="openWithStack(null)" />
 
-      <!-- Здесь лежат модалки (поверх всего сайта) -->
       <Teleport to="body">
         <ContactModal
           :isOpen="isModalOpen"
@@ -38,12 +37,6 @@
         />
       </Teleport>
     </div>
-
-    <IntroSequence 
-      v-if="introActive" 
-      @start-fade="handleIntroStartFade" 
-      @intro-finished="handleIntroDestroy" 
-    />
 
     <div class="starlight-bg opt-gpu">
       <div class="ambient-aura"></div>
@@ -56,7 +49,6 @@
       <div ref="starLayerNear" class="star-layer layer-near opt-gpu"></div>
 
       <div class="shooting-star"></div>
-      <div class="luxury-noise"></div>
     </div>
 
   </div>
@@ -77,7 +69,6 @@ import { useRoute, useRouter } from "vue-router";
 import Lenis from "lenis";
 import { gsap } from "gsap";
 
-import IntroSequence from "./components/IntroSequence.vue";
 import Header from "./components/Header.vue";
 
 const Footer = defineAsyncComponent(() => import("./components/Footer.vue"));
@@ -98,29 +89,12 @@ const starLayerFar = ref(null);
 const starLayerMid = ref(null);
 const starLayerNear = ref(null);
 
-const renderSite = ref(true);       
 const animationKey = ref(0);        
-const introActive = ref(true);     
-const headerVisible = ref(false);
-const deferHeavyComponents = ref(false);
 
 let lenis = null;
 let lastWidth = 0;
 let resizeObserver = null;
-
-const forceGlassRepaint = () => {
-  setTimeout(() => {
-    const glassNodes = document.querySelectorAll('.header-glass, .card, .premium-row, .minimal-sub-card, .luxury-card');
-    
-    for (let i = 0; i < glassNodes.length; i++) {
-      const node = glassNodes[i];
-      const oldDisplay = node.style.display;
-      node.style.display = 'none';
-      void node.offsetHeight; 
-      node.style.display = oldDisplay;
-    }
-  }, 20); 
-};
+let mobileScrollRafId = null;
 
 router.beforeEach((to, from, next) => {
   if (from.path === '/') {
@@ -131,37 +105,29 @@ router.beforeEach((to, from, next) => {
 });
 
 router.afterEach((to, from) => {
-  if (to.path === '/' && from.path === '/careers') {
-    nextTick(() => {
-      void document.documentElement.offsetHeight; 
-      
-      const saved = parseInt(sessionStorage.getItem('efimovs_scroll_y') || '0', 10);
-      const finalScroll = saved > 100 ? saved : document.documentElement.scrollHeight;
-
-      window.scrollTo({ top: finalScroll, behavior: 'instant' });
-      
-      if (lenis) {
-        lenis.resize(); 
-        lenis.scrollTo(finalScroll, { immediate: true, force: true });
-      }
-    });
-  } 
-  else {
-    nextTick(() => {
-      window.scrollTo({ top: 0, behavior: 'instant' });
-      if (lenis) {
-        lenis.resize();
-        lenis.scrollTo(0, { immediate: true, force: true });
-      }
-    });
-  }
+  nextTick(() => {
+    let finalScroll = 0;
+    if (to.path === '/' && from.path === '/careers') {
+        const saved = parseInt(sessionStorage.getItem('efimovs_scroll_y') || '0', 10);
+        finalScroll = saved > 100 ? saved : document.documentElement.scrollHeight;
+    }
+    
+    window.scrollTo({ top: finalScroll, behavior: 'instant' });
+    
+    if (lenis) {
+      lenis.resize(); 
+      lenis.scrollTo(finalScroll, { immediate: true, force: true });
+    }
+  });
 });
 
 watch(isModalOpen, (isOpen) => {
   if (isOpen) {
     document.body.classList.add('global-modal-open');
+    if (lenis) lenis.stop();
   } else {
     document.body.classList.remove('global-modal-open');
+    if (lenis) lenis.start();
   }
 });
 
@@ -171,10 +137,8 @@ const openWithStack = (stackName, serviceName = "") => {
   isModalOpen.value = true;
 };
 
-const handleScroll = () => {
+const updateStars = (currentScroll) => {
   if (!isDesktop.value) return;
-
-  const currentScroll = lenis ? Math.max(0, lenis.scroll) : window.scrollY;
   
   if (starLayerFar.value) {
     const y = -(currentScroll * 0.15) % 340;
@@ -188,6 +152,13 @@ const handleScroll = () => {
     const y = -(currentScroll * 0.6) % 720;
     starLayerNear.value.style.transform = `translate3d(0, ${y}px, 0)`;
   }
+};
+
+const handleMobileScroll = () => {
+    if (mobileScrollRafId) cancelAnimationFrame(mobileScrollRafId);
+    mobileScrollRafId = requestAnimationFrame(() => {
+        updateStars(window.scrollY);
+    });
 };
 
 const checkDevice = () => {
@@ -213,10 +184,10 @@ const initLenis = () => {
   });
 
   window.lenis = lenis;
-  lenis.on('scroll', handleScroll);
 
   gsap.ticker.add((time) => {
     lenis.raf(time * 1000);
+    updateStars(lenis.scroll);
   });
   gsap.ticker.lagSmoothing(0);
 
@@ -224,32 +195,6 @@ const initLenis = () => {
     if (lenis) lenis.resize();
   });
   resizeObserver.observe(document.body);
-};
-
-const handleIntroStartFade = async () => {
-  renderSite.value = false; 
-  animationKey.value++; 
-  await nextTick(); 
-  renderSite.value = true; 
-};
-
-const handleIntroDestroy = () => {
-  introActive.value = false;
-  headerVisible.value = true; 
-  
-  document.documentElement.style.overflow = '';
-  document.body.style.overflow = '';
-  
-  if (lenis) {
-    lenis.start();
-  }
-
-  const loadHeavyComponents = async () => {
-    deferHeavyComponents.value = true;
-    await nextTick(); 
-    if (lenis) lenis.resize(); 
-  };
-  setTimeout(loadHeavyComponents, 100);
 };
 
 onMounted(() => {
@@ -262,41 +207,16 @@ onMounted(() => {
   lastWidth = window.innerWidth;
   isDesktop.value = window.innerWidth >= 1024;
 
-  const introSeen = sessionStorage.getItem('introSeen');
+  document.documentElement.style.overflow = '';
+  document.body.style.overflow = '';
 
-  if (introSeen) {
-    introActive.value = false;
-    setTimeout(() => { headerVisible.value = true; }, 50);
-    document.documentElement.style.overflow = '';
-    document.body.style.overflow = '';
-
-    if (isDesktop.value) {
-      initLenis();
-    } else {
-      window.addEventListener('scroll', handleScroll, { passive: true });
-    }
-
-    const loadHeavyComponents = async () => {
-      deferHeavyComponents.value = true;
-      await nextTick(); 
-      if (lenis) lenis.resize(); 
-    };
-    setTimeout(loadHeavyComponents, 100);
-
+  if (isDesktop.value) {
+    initLenis();
   } else {
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-
-    if (isDesktop.value) {
-      initLenis();
-      lenis.stop(); 
-    } else {
-      window.addEventListener('scroll', handleScroll, { passive: true });
-    }
+    window.addEventListener('scroll', handleMobileScroll, { passive: true });
   }
 
   window.addEventListener("resize", checkDevice, { passive: true });
-  window.addEventListener('refresh-header-glass', forceGlassRepaint);
 });
 
 onBeforeUnmount(() => {
@@ -308,15 +228,13 @@ onBeforeUnmount(() => {
   });
   
   if (lenis) {
-    lenis.off('scroll', handleScroll);
     lenis.destroy();
     window.lenis = null; 
-  } else {
-    window.removeEventListener('scroll', handleScroll);
   }
-
+  
+  if (mobileScrollRafId) cancelAnimationFrame(mobileScrollRafId);
+  window.removeEventListener('scroll', handleMobileScroll);
   window.removeEventListener("resize", checkDevice);
-  window.removeEventListener('refresh-header-glass', forceGlassRepaint);
 });
 </script>
 
@@ -333,15 +251,10 @@ body.global-modal-open .header {
   left: 0;
   width: 100%;
   z-index: 9999;
-  opacity: 0;
-  transform: translateY(-20px);
-  pointer-events: none;
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.header-wrapper.header-wrapper--visible {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .app-shell {
@@ -392,6 +305,11 @@ html.scroll-locked, body.scroll-locked { overflow: hidden !important; }
   overflow: hidden;
   pointer-events: none;
 }
+.opt-gpu {
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+}
 
 .ambient-aura { position: absolute; inset: 0; z-index: 2; }
 .hero-focus-glow { position: absolute; inset: 0; z-index: 3; }
@@ -401,8 +319,6 @@ html.scroll-locked, body.scroll-locked { overflow: hidden !important; }
   background: radial-gradient(ellipse at center, transparent 40%, #000000 100%);
   z-index: 5;
 }
-
-.luxury-noise { display: none; }
 
 .shooting-star {
   position: absolute; top: 15%; right: 15%;

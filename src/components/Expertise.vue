@@ -7,10 +7,10 @@
         <h2 class="gradient-title">{{ t('exp_title') }}</h2>
       </div>
 
+      <!-- DESKTOP LAYOUT (1 КАРТОЧКА) -->
       <div class="desktop-layout">
         <div class="stack-layout">
           
-          <!-- ГРУППА 1: Конверсионные сайты -->
           <div class="expertise-group">
             <div class="card-wrapper">
               <div
@@ -31,75 +31,6 @@
                     <div class="text-info">
                       <h3>{{ t('exp_card1_title') }}</h3>
                       <p><strong>{{ t('exp_card1_q') }}</strong> {{ t('exp_card1_desc') }}</p>
-                      <div class="service-cta">
-                        {{ t('btn_discuss') }}
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="card-border"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ГРУППА 2: Автоматизация заявок -->
-          <div class="expertise-group">
-            <div class="card-wrapper">
-              <div
-                class="card direction-main"
-                style="--clr: #ffffff"
-                v-on="isMobile ? {} : { mousemove: handleMouseMove }"
-                @click="openModal('Lead Automation')"
-              >
-                <div class="card-content">
-                  <div class="info">
-                    <div class="icon-wrapper">
-                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M9.5 2L11 8.5L17.5 10L11 11.5L9.5 18L8 11.5L1.5 10L8 8.5L9.5 2Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" />
-                        <path d="M19 14L19.8 17.2L23 18L19.8 18.8L19 22L18.2 18.8L15 18L18.2 17.2L19 14Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" opacity="0.6" />
-                      </svg>
-                    </div>
-                    <div class="text-info">
-                      <h3>{{ t('exp_card2_title') }}</h3>
-                      <p><strong>{{ t('exp_card2_q') }}</strong> {{ t('exp_card2_desc') }}</p>
-                      <div class="service-cta">
-                        {{ t('btn_discuss') }}
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="card-border"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ГРУППА 3: AI-Ассистенты -->
-          <div class="expertise-group">
-            <div class="card-wrapper">
-              <div
-                class="card direction-main"
-                style="--clr: #ffffff"
-                v-on="isMobile ? {} : { mousemove: handleMouseMove }"
-                @click="openModal('AI Assistants')"
-              >
-                <div class="card-content">
-                  <div class="info">
-                    <div class="icon-wrapper">
-                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
-                        <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.6" />
-                        <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.3" />
-                      </svg>
-                    </div>
-                    <div class="text-info">
-                      <h3>{{ t('exp_card3_title') }}</h3>
-                      <p><strong>{{ t('exp_card3_q') }}</strong> {{ t('exp_card3_desc') }}</p>
-                      <div class="service-cta">
-                        {{ t('btn_discuss') }}
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -111,10 +42,10 @@
         </div>
       </div>
 
+      <!-- MOBILE LAYOUT (1 КАРТОЧКА) -->
       <div class="mobile-layout">
         <div class="stack-layout">
           
-          <!-- MOBILE: Конверсионные сайты -->
           <div class="premium-row-wrapper">
             <div class="premium-row single-action" style="--clr: #ffffff">
               <div class="row-glass" @click="openModal('Conversion Websites')">
@@ -129,59 +60,6 @@
                   <div class="header-text">
                     <h3>{{ t('exp_card1_title') }}</h3>
                     <p><strong>{{ t('exp_card1_q') }}</strong> {{ t('exp_card1_desc') }}</p>
-                    <div class="service-cta">
-                      {{ t('btn_discuss') }}
-                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- MOBILE: Автоматизация -->
-          <div class="premium-row-wrapper">
-            <div class="premium-row single-action" style="--clr: #ffffff">
-              <div class="row-glass" @click="openModal('Lead Automation')">
-                <div class="row-header">
-                  <div class="icon-wrapper">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M9.5 2L11 8.5L17.5 10L11 11.5L9.5 18L8 11.5L1.5 10L8 8.5L9.5 2Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" />
-                      <path d="M19 14L19.8 17.2L23 18L19.8 18.8L19 22L18.2 18.8L15 18L18.2 17.2L19 14Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" opacity="0.6" />
-                    </svg>
-                  </div>
-                  <div class="header-text">
-                    <h3>{{ t('exp_card2_title') }}</h3>
-                    <p><strong>{{ t('exp_card2_q') }}</strong> {{ t('exp_card2_desc') }}</p>
-                    <div class="service-cta">
-                      {{ t('btn_discuss') }}
-                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- MOBILE: AI-Ассистенты -->
-          <div class="premium-row-wrapper">
-            <div class="premium-row single-action" style="--clr: #ffffff">
-              <div class="row-glass" @click="openModal('AI Assistants')">
-                <div class="row-header">
-                  <div class="icon-wrapper">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
-                      <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.6" />
-                      <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.3" />
-                    </svg>
-                  </div>
-                  <div class="header-text">
-                    <h3>{{ t('exp_card3_title') }}</h3>
-                    <p><strong>{{ t('exp_card3_q') }}</strong> {{ t('exp_card3_desc') }}</p>
-                    <div class="service-cta">
-                      {{ t('btn_discuss') }}
-                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -193,8 +71,8 @@
 
       <!-- ГЛАВНАЯ КНОПКА СЕКЦИИ -->
       <div class="section-cta-wrapper">
-        <button class="main-action-btn" @click="openModal(null)">
-          {{ t('exp_btn_calc') }}
+        <button class="main-action-btn" @click="openModal('Conversion Websites')">
+          {{ t('btn_discuss') }}
         </button>
       </div>
 
@@ -209,7 +87,7 @@ import { t } from "../composables/useLanguage.js";
 const emit = defineEmits(["open-specific"]);
 const isMobile = ref(false);
 
-const openModal = (service = null) => {
+const openModal = (service = "Conversion Websites") => {
   emit("open-specific", service);
 };
 
@@ -243,10 +121,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
-* {
-  box-sizing: border-box;
-}
-
 @mixin silver-text-static {
   background: linear-gradient(135deg, #d7d7d7 0%, #ffffff 50%, #999999 100%);
   -webkit-background-clip: text !important;
@@ -322,43 +196,9 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
-/* --- Стили для микро-кнопок в карточках --- */
-.service-cta {
-  margin-top: 24px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 24px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 100px;
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  pointer-events: none;
-
-  svg {
-    width: 18px;
-    height: 18px;
-    transition: transform 0.3s ease;
-  }
-}
-
-.card:hover .service-cta,
-.premium-row:active .service-cta {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  
-  svg {
-    transform: translateX(4px);
-  }
-}
-
 /* --- СТИЛИ ДЛЯ ГЛАВНОЙ КНОПКИ СЕКЦИИ --- */
 .section-cta-wrapper {
-  margin-top: clamp(50px, 6vw, 80px);
+  margin-top: clamp(40px, 5vw, 60px);
   display: flex;
   justify-content: center;
   width: 100%;
@@ -391,14 +231,11 @@ onBeforeUnmount(() => {
     transform: scale(0.98);
   }
 }
-/* --------------------------------------- */
-
 
 .desktop-layout .expertise-group {
   display: flex;
   flex-direction: column;
   gap: 25px;
-  margin-bottom: 30px;
 }
 
 .desktop-layout .card {
@@ -686,9 +523,6 @@ onBeforeUnmount(() => {
   }
   .mobile-layout .header-text p {
     font-size: 15px;
-  }
-  .service-cta {
-    width: 100%;
   }
   .main-action-btn {
     width: 100%;
