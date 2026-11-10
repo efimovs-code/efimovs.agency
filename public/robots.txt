@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://efimovs.com/sitemap.xml
+Sitemap: https://efimovs.agency/sitemap.xml
