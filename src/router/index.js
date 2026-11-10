@@ -8,7 +8,7 @@ const routes = [
     component: () => import('../views/Home.vue'),
     meta: { 
       title: 'Efimovs Agency | Conversion-Focused Websites',
-      description: 'Efimovs Agency: Development of conversion-focused websites that turn visitors into clients.'
+      description: 'Efimovs Agency —— Development of conversion-focused websites that turn visitors into clients.'
     }
   },
   { 
