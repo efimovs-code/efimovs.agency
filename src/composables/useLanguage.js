@@ -1,4 +1,4 @@
-import { ref, watchEffect } from 'vue';
+import { ref } from 'vue';
 
 // 🌐 Глобальная языковая система
 export const languages = ref([
@@ -268,7 +268,6 @@ const translations = {
     mod_opt_layout_desc: 'You already have a layout/design. We will write clean code, add functionality, and bring it to life.',
   },
   RU: {
-    page_title: 'Efimovs Agency — Конверсионные сайты',
     projects: 'Проекты',
     services: 'Услуги',
     packages: 'Тарифы',
@@ -520,7 +519,7 @@ const translations = {
     mod_opt_layout_desc: 'У вас уже есть готовый макет сайта. Мы напишем чистый код, добавим функционал и оживим его.',
   },
   UA: {
-    page_title: 'Efimovs Agency — Конверсійні сайти',
+    page_title: 'Efimovs Agency — Конверсійні Сайти',
     projects: 'Проєкти',
     services: 'Послуги',
     packages: 'Тарифи',
@@ -531,7 +530,7 @@ const translations = {
     hero_line4: 'щодня',
     hero_desc: 'Інвестиції в якісну веб-розробку.',
     btn_scale: 'МАСШТАБУВАТИ БІЗНЕС',
-    btn_cases: 'ДИВИТИСЯ КЕЙСЫ',
+    btn_cases: 'ДИВИТИСЯ КЕЙСИ',
     roadmap_kicker: 'Як ми працюємо',
     roadmap_title_1: 'Від ідеї',
     roadmap_title_2: 'до запуску.',
@@ -773,7 +772,6 @@ const translations = {
     mod_opt_layout_desc: 'У вас вже є готовий макет сайту. Ми напишемо чистий код, додамо функціонал та оживимо його.',
   },
   TR: {
-    page_title: 'Efimovs Agency — Dönüşüm Odaklı Siteler',
     projects: 'Projeler',
     services: 'Hizmetler',
     packages: 'Fiyatlandırma',
@@ -1026,7 +1024,6 @@ const translations = {
     mod_opt_layout_desc: 'Zaten hazır bir site tasarımınız var. Temiz kod yazacak, işlevsellik ekleyecek ve onu canlandıracağız.',
   },
   DE: {
-    page_title: 'Efimovs Agency — Conversion-Websites',
     projects: 'Projekte',
     services: 'Dienstleistungen',
     packages: 'Preise',
@@ -1279,7 +1276,6 @@ const translations = {
     mod_opt_layout_desc: 'Sie haben bereits ein fertiges Website-Layout. Wir schreiben sauberen Code, fügen Funktionen hinzu und erwecken es zum Leben.',
   },
   FR: {
-    page_title: 'Efimovs Agency — Sites Web de Conversion',
     projects: 'Projets',
     services: 'Services',
     packages: 'Tarifs',
@@ -1532,7 +1528,6 @@ const translations = {
     mod_opt_layout_desc: 'Vous avez déjà une maqueta prête. Nous écrirons un code propre, ajouterons les fonctionnalités et lui donnerons vie.',
   },
   ES: {
-    page_title: 'Efimovs Agency — Sitios Web de Conversión',
     projects: 'Proyectos',
     services: 'Servicios',
     packages: 'Precios',
@@ -1790,12 +1785,3 @@ const translations = {
 export const t = (key) => {
   return translations[currentLang.value.code]?.[key] || key;
 };
-
-// 🔄 Автоматическое обновление title на главной странице при смене языка
-watchEffect(() => {
-  if (typeof document !== 'undefined') {
-    if (window.location.pathname === '/' || window.location.pathname === '') {
-      document.title = t('page_title');
-    }
-  }
-});
