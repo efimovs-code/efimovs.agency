@@ -1,15 +1,18 @@
 <template>
-  <section class="roadmap-section">
+  <section class="roadmap-section" :class="{ 'tg-safe-mode': isTelegram }">
     <div class="container">
       
-      <!-- 🌟 Заголовок секции (теперь в одну строку) -->
+      <!-- 🌟 Заголовок секции (ИДЕНТИЧНЫЙ FAQ И PRICING) -->
       <div class="section-header">
-        <div v-if="isDesktop" class="ambient-glow" v-once></div>
+        <div v-if="isDesktop && !isTelegram" class="ambient-glow" v-once></div>
 
         <span class="kicker">{{ t('roadmap_kicker') }}</span>
-        <h2 class="gradient-title">
-          {{ t('roadmap_title_1') }} <span style="white-space: nowrap;">{{ t('roadmap_title_2') }}</span>
-        </h2>
+        
+        <div class="title-scroll-wrapper">
+          <h2 class="gradient-title">
+            {{ t('roadmap_title_1') }} {{ t('roadmap_title_2') }}
+          </h2>
+        </div>
       </div>
 
       <!-- Сама линия и шаги -->
@@ -95,6 +98,7 @@ import { t } from '../composables/useLanguage';
 defineEmits(['open-contact']);
 
 const isDesktop = ref(true);
+const isTelegram = ref(false);
 let resizeTimer = null;
 
 const checkDevice = () => {
@@ -105,6 +109,10 @@ const checkDevice = () => {
 };
 
 onMounted(() => {
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+  if (/Telegram|FBAV|Instagram/i.test(ua)) {
+    isTelegram.value = true;
+  }
   checkDevice();
   window.addEventListener("resize", checkDevice, { passive: true });
 });
@@ -121,9 +129,10 @@ onBeforeUnmount(() => {
   width: 100%;
   min-height: 100vh; 
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 100px 0px;
+  padding: 150px 0px;
   background: transparent;
   color: #ffffff;
   z-index: 10;
@@ -133,9 +142,25 @@ onBeforeUnmount(() => {
   text-rendering: optimizeLegibility;
 }
 
+.container {
+  max-width: 1700px; 
+  width: 100%;
+  margin: 0px auto;
+  padding: 0px 50px;
+}
+
+/* =========================================
+   ЗАГОЛОВОК (КАК В FAQ / PRICING)
+   ========================================= */
 .section-header {
   position: relative;
   z-index: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+  gap: 16px;
 }
 
 .ambient-glow { 
@@ -150,11 +175,35 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
-.container {
-  max-width: 1700px; 
+.kicker {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  color: #a1a1aa;
+  margin-bottom: 0px;
+}
+
+.title-scroll-wrapper {
   width: 100%;
-  margin: 0px auto;
-  padding: 0px 50px;
+  display: flex;
+  justify-content: center;
+}
+
+.gradient-title {
+  font-size: 64px;
+  font-weight: 500;
+  margin: 0px;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+  padding-bottom: 0.15em; /* Компенсация WebKit бага */
+  padding-left: 0.25em; /* Оптическая компенсация для точки в конце */
+  background: linear-gradient(180deg, #ffffff 0%, #71717a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  white-space: nowrap; /* Строго в одну строку для скролла */
 }
 
 /* =========================================
@@ -315,6 +364,7 @@ onBeforeUnmount(() => {
 .btn-text {
   position: relative;
   z-index: 2;
+  text-transform: uppercase;
 }
 
 .btn-platinum {
@@ -330,6 +380,10 @@ onBeforeUnmount(() => {
 /* =========================================
    АДАПТИВНОСТЬ
    ========================================= */
+@media (min-width: 1024px) and (max-width: 1200px) {
+  .gradient-title { font-size: clamp(48px, 5vw, 56px); }
+}
+
 @media (max-width: 1199px) {
   .roadmap-section {
     min-height: auto;
@@ -346,10 +400,9 @@ onBeforeUnmount(() => {
   }
 }
 
-@media (min-width: 768px) and (max-width: 1199px) {
-  .section-header .gradient-title {
-    font-size: clamp(44px, 6vw, 64px) !important; 
-    line-height: 1.1 !important;
+@media (min-width: 768px) and (max-width: 1023px) {
+  .gradient-title {
+    font-size: clamp(40px, 6vw, 54px) !important;
   }
 }
 
@@ -360,6 +413,51 @@ onBeforeUnmount(() => {
   
   .container {
     padding: 0px 24px;
+  }
+
+  .section-header { 
+    margin-bottom: 24px; 
+    gap: 12px; 
+  }
+  
+  .kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.45em;
+    margin-right: -0.45em;
+    margin-bottom: 0;
+  }
+
+  /* 🌟 Обертка для мобильного скролла */
+  .title-scroll-wrapper {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .title-scroll-wrapper::-webkit-scrollbar { display: none; }
+
+  .title-scroll-wrapper::before,
+  .title-scroll-wrapper::after {
+    content: "";
+    flex: 1 0 auto;
+  }
+  
+  /* Идеальный адаптивный заголовок строго в одну строку */
+  .gradient-title { 
+    flex: 0 0 auto;
+    font-size: clamp(24px, 7.5vw, 36px) !important; 
+    padding: 0 16px 0.15em calc(16px + 0.25em) !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  .timeline-wrapper {
+    margin-top: 32px;
   }
 
   .steps-grid {

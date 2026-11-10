@@ -6,9 +6,12 @@
       
       <div class="section-header">
         <span class="kicker">{{ t('projects_kicker') }}</span>
-        <h2 class="gradient-title">
-          {{ t('projects_title_1') }}<br class="mobile-br"><span class="desktop-space">&nbsp;&nbsp;</span>{{ t('projects_title_2') }}
-        </h2>
+        <!-- Обертка для идеального скролла длинных заголовков на мобильных -->
+        <div class="title-scroll-wrapper">
+          <h2 class="gradient-title">
+            {{ t('projects_title_1') }} {{ t('projects_title_2') }}
+          </h2>
+        </div>
       </div>
 
       <div class="desktop-grid gpu-scroll">
@@ -52,9 +55,6 @@
             </div>
 
             <div class="project-info">
-              <div class="info-header">
-                <span class="category">{{ project.category }}</span>
-              </div>
               <h3 class="name">
                 {{ project.title }}
               </h3>
@@ -83,9 +83,6 @@
                 />
               </div>
               <div class="project-info">
-                <div class="info-header">
-                  <span class="category">{{ project.category }}</span>
-                </div>
                 <h3 class="name">
                   {{ project.title }}
                 </h3>
@@ -111,7 +108,6 @@ import { onMounted, onBeforeUnmount, ref, computed } from "vue";
 import { t, currentLang } from "../composables/useLanguage";
 
 const featuredProjects = computed(() => {
-  const isEn = currentLang.value?.code === 'EN' || !currentLang.value;
   const isRu = currentLang.value?.code === 'RU';
   const isUa = currentLang.value?.code === 'UA';
   const isTr = currentLang.value?.code === 'TR';
@@ -141,21 +137,12 @@ const featuredProjects = computed(() => {
     if (isEs) return "Creamos un sitio web fácil de usar con hermosos efectos, un menú en línea personalizado y reservas convenientes.";
     return "Created a user-friendly website with beautiful effects, a custom online menu, and convenient booking.";
   };
-  
-  const getCatWeb = () => {
-    if (isRu || isUa) return 'Веб-разработка';
-    if (isTr) return 'Web Geliştirme';
-    if (isDe) return 'Webentwicklung';
-    if (isFr || isEs) return 'Développement Web';
-    return 'Web Development';
-  }
 
   return [
     {
       id: 1,
       link: "/portfolio#aima", 
       title: t('proj1_title'),
-      category: t('cat_web') || getCatWeb(),
       task: t('proj1_task'),
       image: "/images/aima-1.png", 
     },
@@ -163,7 +150,6 @@ const featuredProjects = computed(() => {
       id: 2,
       link: "/portfolio#geometriya",
       title: getGeoTitle(),
-      category: t('cat_web') || getCatWeb(),
       task: getGeoTask(),
       image: "/images/geometriya-1.png", 
     },
@@ -171,7 +157,6 @@ const featuredProjects = computed(() => {
       id: 3,
       link: "/portfolio#shortlyst",
       title: t('proj3_title'),
-      category: t('cat_web') || getCatWeb(),
       task: t('proj3_task'),
       image: "/images/shortlyst-1.png", 
     },
@@ -179,7 +164,6 @@ const featuredProjects = computed(() => {
       id: 4,
       link: "/portfolio#qr-cafe",
       title: getQrTitle(),
-      category: t('cat_web') || getCatWeb(),
       task: getQrTask(),
       image: "/images/qrcafe-1.png", 
     }
@@ -261,9 +245,50 @@ onBeforeUnmount(() => {
   padding: 0px 40px;
 }
 
-.mobile-br { display: none; }
-.desktop-space { display: inline; }
+/* --- СТИЛИ ЗАГОЛОВКА --- */
+.section-header { 
+  margin-bottom: 40px; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  text-align: center; 
+  gap: 16px; 
+  width: 100%;
+}
 
+.kicker { 
+  font-size: 12px; 
+  font-weight: 600; 
+  text-transform: uppercase; 
+  letter-spacing: 0.25em; 
+  color: #98989d; 
+  margin: 0; 
+  margin-right: -0.25em; 
+}
+
+.title-scroll-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.gradient-title { 
+  font-size: 64px; 
+  font-weight: 500; 
+  letter-spacing: -0.04em; 
+  line-height: 1.2; 
+  padding-bottom: 0.15em;
+  padding-left: 0.25em; /* Оптическая компенсация точки в конце */
+  margin: 0; 
+  background: linear-gradient(180deg, #ffffff 0%, #71717a 100%); 
+  -webkit-background-clip: text; 
+  background-clip: text; 
+  color: transparent; 
+  -webkit-text-fill-color: transparent; 
+  white-space: nowrap; 
+}
+
+/* --- ОСТАЛЬНЫЕ СТИЛИ --- */
 .desktop-grid {
   display: flex;
   flex-direction: column;
@@ -272,22 +297,10 @@ onBeforeUnmount(() => {
   margin-top: clamp(48px, 6vw, 88px);
 }
 
-.desktop-grid .project-wrapper {
-  width: 48%; 
-  position: relative;
-}
-
-.desktop-grid .project-wrapper:nth-child(odd) {
-  align-self: flex-start;
-}
-
-.desktop-grid .project-wrapper:nth-child(even) {
-  align-self: flex-end;
-}
-
-.desktop-grid .project-wrapper:nth-child(n+2) {
-  margin-top: -12%; 
-}
+.desktop-grid .project-wrapper { width: 48%; position: relative; }
+.desktop-grid .project-wrapper:nth-child(odd) { align-self: flex-start; }
+.desktop-grid .project-wrapper:nth-child(even) { align-self: flex-end; }
+.desktop-grid .project-wrapper:nth-child(n+2) { margin-top: -12%; }
 
 .desktop-grid .project-item {
   width: 100%;
@@ -340,21 +353,6 @@ onBeforeUnmount(() => {
 .project-info {
   margin-top: 35px;
   padding-left: 5px;
-}
-
-.info-header {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 12px;
-}
-
-.project-info .category {
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 3.3px;
-  color: #a1a1aa;
 }
 
 .project-info .name {
@@ -436,29 +434,11 @@ onBeforeUnmount(() => {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .desktop-grid .project-wrapper:hover {
-    z-index: 2; 
-  }
-  
-  .project-item:hover .image-box {
-    border-color: #e5e4e2; 
-    transform: translateY(-8px) translateZ(0px);
-  }
-
-  .project-item:hover .image-box::after {
-    transform: translateX(100%) translateZ(0);
-  }
-
-  .project-item:hover .image-box img {
-    -webkit-transform: scale(1.06) translateZ(0px);
-    transform: scale(1.06) translateZ(0px);
-    filter: grayscale(0) brightness(1.05);
-  }
-  
-  .project-item:hover .project-overlay {
-    opacity: 1;
-  }
-  
+  .desktop-grid .project-wrapper:hover { z-index: 2; }
+  .project-item:hover .image-box { border-color: #e5e4e2; transform: translateY(-8px) translateZ(0px); }
+  .project-item:hover .image-box::after { transform: translateX(100%) translateZ(0); }
+  .project-item:hover .image-box img { -webkit-transform: scale(1.06) translateZ(0px); transform: scale(1.06) translateZ(0px); filter: grayscale(0) brightness(1.05); }
+  .project-item:hover .project-overlay { opacity: 1; }
   .project-item:hover .view-btn {
     opacity: 1;
     -webkit-backdrop-filter: blur(12px);
@@ -467,38 +447,16 @@ onBeforeUnmount(() => {
     transform: translateY(0px) scale(1) translateZ(0);
     background: rgba(255, 255, 255, 0.12);
   }
-  
-  .project-item .view-btn:hover {
-    background: #ffffff !important;
-    border-color: #ffffff !important;
-  }
-  
-  .project-item .view-btn:hover .view-text,
-  .project-item .view-btn:hover .view-arrow {
-    color: #000000 !important;
-  }
-  
-  .project-item .view-btn:hover .view-arrow {
-    -webkit-transform: translate3d(5px, 0px, 0px);
-    transform: translate3d(5px, 0px, 0px);
-  }
-  
-  .project-item:hover .project-info .name {
-    color: #ffffff;
-  }
-  
-  .project-item:hover .project-info .task-desc {
-    color: #b0b0b0;
-  }
+  .project-item .view-btn:hover { background: #ffffff !important; border-color: #ffffff !important; }
+  .project-item .view-btn:hover .view-text, .project-item .view-btn:hover .view-arrow { color: #000000 !important; }
+  .project-item .view-btn:hover .view-arrow { -webkit-transform: translate3d(5px, 0px, 0px); transform: translate3d(5px, 0px, 0px); }
+  .project-item:hover .project-info .name { color: #ffffff; }
+  .project-item:hover .project-info .task-desc { color: #b0b0b0; }
 }
 
 .mobile-marquee { display: none; }
 
-.all-cases-action {
-  display: flex;
-  justify-content: center;
-  margin-top: 100px;
-}
+.all-cases-action { display: flex; justify-content: center; margin-top: 100px; }
 
 .btn-outline-platinum {
   position: relative;
@@ -519,25 +477,14 @@ onBeforeUnmount(() => {
   touch-action: manipulation;
 }
 
-.btn-outline-platinum .text {
-  position: relative;
-  z-index: 2;
-  color: #ffffff;
-  transition: color 0.3s ease;
-}
-
+.btn-outline-platinum .text { position: relative; z-index: 2; color: #ffffff; transition: color 0.3s ease; }
 .btn-outline-platinum .btn-flare {
   position: absolute;
   top: 0px;
   left: -100%;
   width: 50%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
   -webkit-transform: skewX(-20deg);
   transform: skewX(-20deg);
   transition: left 0.5s;
@@ -545,91 +492,76 @@ onBeforeUnmount(() => {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .btn-outline-platinum:hover {
-    background: #e5e4e2;
-    border-color: #e5e4e2;
-  }
-  .btn-outline-platinum:hover .text {
-    background: none !important;
-    -webkit-text-fill-color: #000000 !important;
-    color: #000000 !important;
-    animation: none !important;
-  }
-  .btn-outline-platinum:hover .btn-flare {
-    left: 150%;
-    transition: left 0.7s;
-  }
+  .btn-outline-platinum:hover { background: #e5e4e2; border-color: #e5e4e2; }
+  .btn-outline-platinum:hover .text { background: none !important; -webkit-text-fill-color: #000000 !important; color: #000000 !important; animation: none !important; }
+  .btn-outline-platinum:hover .btn-flare { left: 150%; transition: left 0.7s; }
 }
 
 @media (min-width: 1024px) and (max-width: 1366px) {
-  .desktop-grid .project-wrapper:nth-child(n+2) {
-    margin-top: -10%;
-  }
+  .desktop-grid .project-wrapper:nth-child(n+2) { margin-top: -10%; }
   .project-info { margin-top: 30px; }
-  .project-info .category { font-size: 10px; letter-spacing: 2px; }
   .project-info .name { font-size: 32px; margin-top: 10px; }
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
-  .gradient-title {
-    font-size: clamp(44px, 6vw, 56px) !important;
-    text-align: center;
-  }
-  .mobile-br { display: block !important; }
-  .desktop-space { display: none !important; }
+  .gradient-title { font-size: clamp(40px, 5.5vw, 56px) !important; text-align: center; }
 }
 
 @media (max-width: 1023px) {
   .desktop-grid { display: none !important; }
   .mobile-marquee { display: block !important; }
-
-  .marquee-wrapper {
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
-    overflow: hidden;
-    position: relative;
-    touch-action: pan-y;
-    margin-top: clamp(36px, 6vw, 48px);
-  }
-
+  .marquee-wrapper { width: 100vw; margin-left: calc(-50vw + 50%); overflow: hidden; position: relative; touch-action: pan-y; margin-top: clamp(36px, 6vw, 48px); }
   .marquee-track { display: flex; width: max-content; }
+  .marquee-set { display: flex; gap: 20px; padding-right: 20px; -webkit-animation: luxuryMarquee 25s linear infinite; animation: luxuryMarquee 25s linear infinite; -webkit-transform: translateZ(0px); transform: translateZ(0px); will-change: transform; }
+  
+  @-webkit-keyframes luxuryMarquee { 0% { -webkit-transform: translate3d(0px, 0px, 0px); } 100% { -webkit-transform: translate3d(-100%, 0px, 0px); } }
+  @keyframes luxuryMarquee { 0% { transform: translate3d(0px, 0px, 0px); } 100% { transform: translate3d(-100%, 0px, 0px); } }
 
-  .marquee-set {
-    display: flex;
-    gap: 20px;
-    padding-right: 20px;
-    -webkit-animation: luxuryMarquee 25s linear infinite;
-    animation: luxuryMarquee 25s linear infinite;
-    -webkit-transform: translateZ(0px);
-    transform: translateZ(0px);
-    will-change: transform;
-  }
-
-  @-webkit-keyframes luxuryMarquee {
-    0% { -webkit-transform: translate3d(0px, 0px, 0px); }
-    100% { -webkit-transform: translate3d(-100%, 0px, 0px); }
-  }
-  @keyframes luxuryMarquee {
-    0% { transform: translate3d(0px, 0px, 0px); }
-    100% { transform: translate3d(-100%, 0px, 0px); }
-  }
-
-  .mobile-marquee .project-item {
-    width: 360px; 
-    flex-shrink: 0;
-    margin-top: 0px !important;
-    grid-column: auto !important;
-  }
+  .mobile-marquee .project-item { width: 360px; flex-shrink: 0; margin-top: 0px !important; grid-column: auto !important; }
   .mobile-marquee .image-box { aspect-ratio: 16 / 11 !important; }
   .all-cases-action { margin-top: 50px; }
 }
 
+/* --- ИДЕАЛЬНЫЙ АДАПТИВНЫЙ СКРОЛЛ ЗАГОЛОВКА --- */
 @media (max-width: 767px) {
   .projects-section { padding: 80px 0px !important; background-color: transparent !important; }
-  .mobile-br { display: block; }
-  .desktop-space { display: none; }
+  .container { padding: 0 16px; }
+  .section-header { margin-bottom: 32px; gap: 12px; }
+  
+  .kicker {
+    font-size: 11px; 
+    font-weight: 700;
+    letter-spacing: 0.4em; 
+    margin-right: -0.4em;
+  }
+  
+  .title-scroll-wrapper {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    justify-content: flex-start;
+  }
+  
+  .title-scroll-wrapper::-webkit-scrollbar { display: none; }
+  
+  .title-scroll-wrapper::before,
+  .title-scroll-wrapper::after {
+    content: "";
+    flex: 1 0 auto;
+  }
+  
+  .gradient-title { 
+    flex: 0 0 auto;
+    font-size: clamp(24px, 7.5vw, 36px) !important; 
+    /* Сохраняем компенсацию точки на мобильных (16px дефолт + 0.25em компенсация) */
+    padding: 0 16px 0.15em calc(16px + 0.25em) !important; 
+  }
+  
   .project-info { margin-top: 20px; }
-  .project-info .category { font-size: 10px; }
   .project-info .name { font-size: 24px; }
   .project-info .task-desc { font-size: 13px; max-width: 100%; }
   .btn-outline-platinum { width: 100%; padding: 18px 0px; font-size: 13px; min-height: 56px; }
@@ -639,11 +571,7 @@ onBeforeUnmount(() => {
 
 @media (hover: none) {
   .image-box .project-overlay { display: none !important; }
-  .image-box img {
-    filter: brightness(0.95) !important;
-    -webkit-transform: translateZ(0px) !important;
-    transform: translateZ(0px) !important;
-  }
+  .image-box img { filter: brightness(0.95) !important; -webkit-transform: translateZ(0px) !important; transform: translateZ(0px) !important; }
   .btn-outline-platinum:active { background: #e5e4e2; border-color: #e5e4e2; }
   .btn-outline-platinum:active .text { background: none !important; -webkit-text-fill-color: #000000 !important; color: #000000 !important; animation: none !important; }
 }
@@ -653,13 +581,7 @@ onBeforeUnmount(() => {
   .gpu-item, .gpu-image, .project-item { -webkit-backface-visibility: hidden !important; backface-visibility: hidden !important; }
   .marquee-set { display: flex !important; -webkit-transform: none; transform: none; -webkit-animation: marqueeScrollMobile 20s linear infinite !important; animation: marqueeScrollMobile 20s linear infinite !important; }
   
-  @-webkit-keyframes marqueeScrollMobile {
-    0% { -webkit-transform: translate3d(0px, 0px, 0px); }
-    100% { -webkit-transform: translate3d(-100%, 0px, 0px); }
-  }
-  @keyframes marqueeScrollMobile {
-    0% { transform: translate3d(0px, 0px, 0px); }
-    100% { transform: translate3d(-100%, 0px, 0px); }
-  }
+  @-webkit-keyframes marqueeScrollMobile { 0% { -webkit-transform: translate3d(0px, 0px, 0px); } 100% { -webkit-transform: translate3d(-100%, 0px, 0px); } }
+  @keyframes marqueeScrollMobile { 0% { transform: translate3d(0px, 0px, 0px); } 100% { transform: translate3d(-100%, 0px, 0px); } }
 }
 </style>

@@ -1,14 +1,17 @@
 <template>
-  <section id="faq" class="faq-luxury">
-    <div v-if="isDesktop" class="ambient-glow" v-once></div>
+  <section id="faq" class="faq-luxury" :class="{ 'tg-safe-mode': isTelegram }">
+    <div v-if="isDesktop && !isTelegram" class="ambient-glow" v-once></div>
 
     <div class="container">
       
-      <!-- 🌟 Заголовок -->
+      <!-- 🌟 Заголовок с идеальным скроллом и центрированием -->
       <div class="section-header">
         <span class="kicker">{{ t('faq_kicker') }}</span>
-        <!-- Используем v-html для корректного рендера двойных &nbsp; -->
-        <h2 class="gradient-title" v-html="t('faq_title')"></h2>
+        
+        <div class="title-scroll-wrapper">
+          <h2 class="gradient-title" v-html="t('faq_title')"></h2>
+        </div>
+        
         <p class="section-subtitle">{{ t('faq_sub') }}</p>
       </div>
 
@@ -48,7 +51,7 @@
         </div>
       </div>
 
-      <!-- 🌟 Кнопка вызова действия (Один в один как в Expertise) -->
+      <!-- 🌟 Кнопка вызова действия -->
       <div class="faq-action">
         <button class="btn-silver-wrapper" @click="$emit('open-contact')">
           <div class="btn-solid-silver-inner">
@@ -88,8 +91,8 @@ const faqDict = {
     { question: "Як ми розпочинаємо роботу та які умови оплати?", answer: "Проєкт стартує після внесення <b>передоплати 50%</b>. Наші провідні розробники часто зайняті великими проєктами, тому цей депозит надійно бронює наступний доступний слот у графіку команди.<br><br>Для невеликих проєктів залишок оплачується перед фінальним розгортанням готового рішення на ваших серверах. Якщо проєкт масштабний і вимагає тривалої розробки, ми ділимо оплату на прозорі етапи. Підсумкова структура оплати завжди визначається суворо індивідуально з менеджером під час дзвінка." },
     { question: "Як побудована комунікація та контроль розробки?", answer: "Ми цінуємо ваш час, тому вибудовуємо повністю прозорий, але ненав'язливий процес. На весь період розробки за вашим проєктом закріплюється персональний менеджер.<br><br>Якщо в процесі роботи виникають питання, ви можете сміливо звертатися до нього в робочі години. Ми дуже поважаємо особистий час нашої команди, тому <b>в неробочий час менеджер знаходиться офлайн і не відповідає на повідомлення</b>, але обов'язково зв'яжеться з вами в першу чергу на початку наступного робочого дня." },
     { question: "Що як ми захочемо додати нову функцію в процесі розробки?", answer: "Блискучі ідеї часто з'являються під час розробки. Якщо нова функція (наприклад, складна інтеграція або новий розділ) не була включена в початкове ТЗ, ми оформлюємо її як <b>Запит на зміну (Change Request)</b>.<br><br>Ми прозоро оцінюємо вартість додавання нової функції в проєкт перед тим, як приступити до реалізації. Цей процес завжди обговорюється індивідуально з менеджером." },
-    { question: "Кому належать права на дизайн і код після завершення проєкту?", answer: "Ви отримуєте 100% ексклюзивних прав на продукт. Після фінальної оплати ми передаємо абсолютно всі вихідні матеріали: репозиторії коду (GitHub), майстер-файли дизайну (Figma) та повні права на інтелектуальну власність.<br><br>Жодних прихованих ліцензій, підписок на код або прив'язки до нашого агентства — продукт стає вашим повним і незалежним бізнес-активом." },
-    { question: "Чи надаєте ви підтримку проєкту після релізу?", answer: "Абсолютно. Ми не просто передаємо вихідний код, ми будуємо довгострокове партнерство. Ми пропонуємо два варіанти співпраці:<br><br><b>1. Погодинна підтримка.</b> Після того як проєкт повністю завершений і прийнятий вами, будь-які допрацювання або додавання нових функцій оплачуються за погодинною ставкою розробника.<br><b>2. Щомісячна підписка.</b> Після релізу проєкту ми можемо перевести вас на модель підписки. Це означає, що проєкт буде повністю обслуговуватися на постійній основі, поки активна підписка. Це включає допрацювання, додавання невеликих функцій та моніторинг серверів.<br><br>Оптимальний формат підтримки завжди обговорюється індивідуально з вашим менеджером." },
+    { question: "Кому належать права на дизайн і код після завершення проєкту?", answer: "Ви отримуєте 100% ексклюзивних прав на продукт. Після фінальної оплаты ми передаємо абсолютно всі вихідні матеріали: репозиторії коду (GitHub), майстер-файлы дизайну (Figma) та повні права на інтелектуальну власність.<br><br>Жодних прихованих ліцензій, підписок на код або прив'язки до нашого агентства — продукт стає вашим повним і незалежним бізнес-активом." },
+    { question: "Чи надаєте ви підтримку проєкту після релізу?", answer: "Абсолютно. Ми не просто передаємо вихідний код, ми будуємо довгострокове партнерство. Ми пропонуємо два варіанти співпраці:<br><br><b>1. Погодинна підтримка.</b> Після того як проєкт повністю завершений і прийнятий вами, будь-які допрацювання або додавання нових функцій оплачуються за погодинною ставкою розробника.<br><b>2. Щомісячна підписка.</b> Після релізу проєкту ми можемо перевести вас на модель підписки. Це означає, що проєкт буде повністю обслуговуватися на постійній основі, поки активна підписка. Це включає допрацювання, додавання невеликих функцій та моніторинг серверів.<br><br>Оптимальный формат підтримки завжди обговорюється індивідуально з вашим менеджером." },
     { question: "Чи підписуєте ви NDA (Угоду про нерозголошення)?", answer: "Звісно. Конфіденційність вашої бізнес-ідеї, комерційної таємниці та баз даних клієнтів — наш абсолютний пріоритет. Ми готові підписати сувору Угоду про нерозголошення (NDA) ще до нашого першого ознайомчого дзвінка." }
   ],
   TR: [
@@ -132,6 +135,7 @@ const currentFaqs = computed(() => {
 
 const activeIndex = ref(null);
 const isDesktop = ref(true);
+const isTelegram = ref(false);
 let resizeTimer = null;
 
 const toggleFaq = (index) => {
@@ -164,6 +168,10 @@ const checkDevice = () => {
 };
 
 onMounted(() => {
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+  if (/Telegram|FBAV|Instagram/i.test(ua)) {
+    isTelegram.value = true;
+  }
   isDesktop.value = window.innerWidth >= 1024;
   window.addEventListener("resize", checkDevice, { passive: true });
 });
@@ -210,33 +218,45 @@ onBeforeUnmount(() => {
   z-index: 10; 
 }
 
+/* 🌟 СТИЛИ ЗАГОЛОВКА */
 .section-header {
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-bottom: 60px;
+  gap: 16px; /* Добавлен gap для отступов, как в Projects */
 }
 
 .kicker {
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 3px;
+  letter-spacing: 0.3em;
   color: #a1a1aa;
-  margin-bottom: 20px;
+  margin-bottom: 0; /* Убрано, так как используется gap */
+}
+
+.title-scroll-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .gradient-title {
-  font-size: clamp(32px, 5vw, 56px);
-  font-weight: 800;
-  margin: 0px 0px 24px 0px;
-  letter-spacing: -1px;
-  background: linear-gradient(180deg, #ffffff 0%, #a1a1aa 100%);
+  font-size: 64px;
+  font-weight: 500;
+  margin: 0px; /* Убрано margin-bottom, используется gap */
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+  padding-bottom: 0.15em; /* Компенсация WebKit бага (обрезание букв) */
+  padding-left: 0.25em; /* Оптическая компенсация для точки в конце */
+  background: linear-gradient(180deg, #ffffff 0%, #71717a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   color: transparent;
+  white-space: nowrap; /* Важно для работы идеального скролла */
 }
 
 .section-subtitle { 
@@ -248,6 +268,7 @@ onBeforeUnmount(() => {
   max-width: 600px; 
 }
 
+/* 🌟 СТИЛИ FAQ КАРТОЧЕК */
 .faq-list {
   display: flex;
   flex-direction: column;
@@ -354,7 +375,7 @@ onBeforeUnmount(() => {
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* 🌟 СТИЛИ КНОПКИ "ОБСУДИТЬ ПРОЕКТ" (Как в Expertise) */
+/* 🌟 СТИЛИ КНОПКИ "ОБСУДИТЬ ПРОЕКТ" */
 .faq-action {
   display: flex;
   justify-content: center;
@@ -398,10 +419,13 @@ onBeforeUnmount(() => {
 }
 
 /* 🌟 АДАПТИВНОСТЬ */
+@media (min-width: 1024px) and (max-width: 1200px) {
+  .gradient-title { font-size: clamp(48px, 5vw, 56px); }
+}
+
 @media (min-width: 768px) and (max-width: 1023px) {
   .gradient-title {
-    font-size: clamp(36px, 5vw, 48px) !important;
-    letter-spacing: -0.5px;
+    font-size: clamp(40px, 6vw, 54px) !important;
   }
 }
 
@@ -409,14 +433,44 @@ onBeforeUnmount(() => {
   .faq-luxury { padding: 80px 0px; }
   .container { padding: 0px 20px; }
   
-  .gradient-title {
-    font-size: clamp(20px, 6vw, 28px);
-    white-space: normal;
-    word-break: break-word;
-    letter-spacing: -0.5px; 
+  .section-header { margin-bottom: 24px; gap: 12px; }
+  
+  .kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.45em;
+    margin-right: -0.45em;
+  }
+
+  /* 🌟 Обертка для мобильного скролла */
+  .title-scroll-wrapper {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .title-scroll-wrapper::-webkit-scrollbar { display: none; }
+
+  .title-scroll-wrapper::before,
+  .title-scroll-wrapper::after {
+    content: "";
+    flex: 1 0 auto;
+  }
+
+  .gradient-title { 
+    flex: 0 0 auto;
+    font-size: clamp(24px, 7.5vw, 36px) !important; 
+    padding: 0 16px 0.15em calc(16px + 0.25em) !important; /* Учитываем базовый отступ (16px) и оптическую компенсацию точки */
   }
 
   .section-subtitle { font-size: 14px; }
+
+  .faq-list { margin-top: 32px; }
 
   .faq-question { padding: 24px 20px; }
   .faq-question h3 { font-size: 16px; line-height: 22px; font-weight: 500; letter-spacing: -0.2px; }

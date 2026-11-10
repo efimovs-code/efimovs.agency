@@ -51,16 +51,7 @@
               </div>
             </div>
 
-            <div class="case-meta-bar hypnotic-item delay-2">
-              <div class="meta-item">
-                <span class="meta-label">{{ t('port_meta_dir') }}</span>
-                <span class="case-category">{{ item.category }}</span>
-              </div>
-              <div class="meta-item year-item">
-                <span class="meta-label">{{ t('port_meta_year') }}</span>
-                <span class="meta-value">{{ item.year }}</span>
-              </div>
-            </div>
+            <!-- Блок метаданных (Направление и Год) полностью удален по вашему запросу -->
 
             <div class="case-content-grid hypnotic-item delay-3">
               
@@ -493,14 +484,13 @@ const checkDevice = () => {
 
 #subtitle { text-transform: uppercase; letter-spacing: 12px; font-size: 11px; margin: 0px 0px 35px 0px; font-weight: 800; color: #d4af37; }
 
-/* === УПРАВЛЕНИЕ ЗАГОЛОВКОМ (ДЕСКТОП) === */
 .hero-title { 
   font-size: clamp(32px, 6.5vw, 96px); 
   font-weight: 800; 
   margin: 0px auto; 
   letter-spacing: -0.5px; 
-  word-spacing: 0.12em;   
-  line-height: 1.22;      
+  word-spacing: 0.12em;    
+  line-height: 1.22;       
   background: linear-gradient(180deg, #ffffff 0px, #c0c0c0 50%, #555555 100%);
   -webkit-background-clip: text !important; 
   background-clip: text !important; 
@@ -515,13 +505,6 @@ const checkDevice = () => {
   display: block;
   white-space: nowrap;
   padding-bottom: 0.08em; 
-}
-
-.pulse-dot { color: #d4af37; -webkit-text-fill-color: initial; display: inline-block; animation: pulseDot 2.5s ease-in-out infinite alternate; }
-
-@keyframes pulseDot {
-  0% { opacity: 0.7;}
-  100% { opacity: 1;}
 }
 
 .cinematic-reveal { opacity: 0; filter: blur(20px); transform: scale(0.95) translateY(20px); animation: slowCinematicFade 2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
@@ -557,6 +540,7 @@ const checkDevice = () => {
   transform: translateZ(0px);
   cursor: pointer;
   z-index: 1;
+  margin-bottom: 40px; /* Добавлен отступ вместо удаленного блока метаданных */
 }
 
 .slider-wrapper {
@@ -609,45 +593,6 @@ const checkDevice = () => {
   line-height: 62px;
   color: #ffffff;
   overflow-wrap: break-word; 
-}
-
-/* === 🌟 МЕТАДАННЫЕ 🌟 === */
-.case-meta-bar {
-  display: flex;
-  align-items: flex-start;
-  gap: 80px; 
-  padding: 40px 0px; 
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12); 
-  margin-bottom: 40px;
-  position: relative;
-  z-index: 5; 
-}
-
-.meta-item {
-  display: flex;
-  flex-direction: column;
-  gap: 12px; 
-}
-
-.meta-label {
-  font-size: 12px; 
-  font-weight: 800;
-  color: #a1a1aa; 
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  white-space: nowrap; 
-}
-
-.meta-value, .case-category {
-  font-size: 20px; 
-  color: #ffffff; 
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  white-space: nowrap; 
-}
-
-.case-category {
-  color: #d4af37;
 }
 
 /* === 🌟 СЕТКА ТЕКСТА 🌟 === */
@@ -926,11 +871,10 @@ const checkDevice = () => {
   }
 }
 
-/* === 🌟 ИДЕАЛЬНАЯ КНОПКА СТРОГО ПОД ЧАТОМ 🌟 === */
 .scroll-top-btn {
   position: fixed;
-  bottom: 34px; /* Ровно 34px + 50px (кнопка) + 12px (зазор) = 96px (где начинается чат) */
-  right: 32px;  /* Строго одна ось с кнопкой чата */
+  bottom: 34px; 
+  right: 32px;  
   z-index: 100;
   width: 50px;
   height: 50px;
@@ -979,10 +923,6 @@ const checkDevice = () => {
 @media (max-width: 1024px) {
   .hero-nav { left: 40px; top: 40px; }
   .case-title { font-size: 42px; }
-  
-  .case-meta-bar {
-    gap: 40px; 
-  }
 
   .case-content-grid { 
     grid-template-columns: 1fr 1fr; 
@@ -1039,6 +979,7 @@ const checkDevice = () => {
   .case-visual-hero { 
     aspect-ratio: 16 / 9; 
     border-radius: 16px; 
+    margin-bottom: 24px;
   }
 
   .case-visual-hero.mobile-app-layout {
@@ -1055,32 +996,6 @@ const checkDevice = () => {
   
   .media-overlay {
     background: linear-gradient(to top, rgba(0,0,0,0.95) 0px, rgba(0,0,0,0.2) 80px, transparent 150px);
-  }
-  
-  .case-meta-bar {
-    display: flex; 
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 24px 0px;
-    padding: 24px 0px;
-    margin-bottom: 20px;
-  }
-  
-  .meta-item {
-    width: auto; 
-  }
-
-  .year-item {
-    display: none !important; 
-  }
-  
-  .meta-label, .meta-value, .case-category {
-    white-space: normal;
-    overflow-wrap: break-word;
-  }
-
-  .meta-value, .case-category {
-    font-size: 18px; 
   }
 
   .case-content-grid { 

@@ -141,7 +141,7 @@ const typeDescriptions = {
   layout: {
     EN: "You already have a website layout. We will write clean code, add functionality, and bring it to life.",
     RU: "У вас уже есть готовый макет сайта. Мы напишем чистый код, добавим функционал и оживим его.",
-    UA: "У вас вже є готовий макет сайту. Ми напишемо чистий код, додамо функціонал та оживимо його."
+    UA: "У вас вже є готовий макет сайту. Ми напишемо чистий код, добавимо функціонал та оживимо його."
   },
   custom: {
     EN: "From unique design to the exact functionality you need. A solution for non-standard tasks.",
@@ -156,7 +156,7 @@ const pricingData = {
     { nameKey: "pl_n_simp", labelKey: "pl_l_simp", priceRange: "$300 - $600", originalName: "Simple Project", defLabel: "Base",
       desc: { RU: "Одностраничный сайт для быстрого старта. Базовая настройка и запуск за несколько дней.", EN: "Single-page site for a quick start. Basic setup and launch in a few days.", UA: "Односторінковий сайт для швидкого старту. Базове налаштування та запуск за кілька днів." } },
     { nameKey: "pl_n_med", labelKey: "pl_l_med", priceRange: "$700 - $1,200", originalName: "Medium Project", defLabel: "Optimal",
-      desc: { RU: "Многостраничный сайт или небольшой магазин. Удобная панель управления и корзина для заказов.", EN: "Multi-page site or small store. Convenient control panel and shopping cart.", UA: "Багатосторінковий сайт або невеликий магазин. Зручна панель управління та кошик для замовлень." } },
+      desc: { RU: "Многостраничный сайт или небольшой магазин. Удобная панель управления и корзина для заказов.", EN: "Multi-page site or small store. Convenient control panel and shopping cart.", UA: "Багатосторінковий сайт або невеликий магазин. Зручна панель управления та кошик для замовлень." } },
     { nameKey: "pl_n_comp", labelKey: "pl_l_comp", priceRange: "$1,400 - $2,500+", originalName: "Complex Project", defLabel: "Pro",
       desc: { RU: "Крупный портал с каталогом, личным кабинетом для клиентов и подключением онлайн-оплат.", EN: "Large portal with a catalog, personal client accounts, and online payment integration.", UA: "Великий портал з каталогом, особистим кабінетом для клієнтів та підключенням онлайн-оплат." } }
   ],
@@ -170,7 +170,7 @@ const pricingData = {
   ],
   custom: [
     { nameKey: "pl_n_simp", labelKey: "pl_l_simp", priceRange: "$800 - $1,500", originalName: "Simple Project", defLabel: "Base",
-      desc: { RU: "Разработка дизайна с нуля под ваш стиль. Эксклюзивный одностраничный сайт, выделяющий вас среди конкурентов.", EN: "Custom design from scratch. An exclusive single-page site that makes you stand out.", UA: "Розробка дизайну з нуля під ваш стиль. Ексклюзивний односторінковий сайт, що виділяє вас серед конкурентів." } },
+      desc: { RU: "Разработка дизайна с нуля под ваш стиль. Эксклюзивный одностраничный сайт, выделяющий вас среди конкурентов.", EN: "Custom design from scratch. An exclusive single-page site that makes you stand out.", UA: "Розробка дизайну з нуля под ваш стиль. Ексклюзивний односторінковий сайт, що виділяє вас серед конкурентів." } },
     { nameKey: "pl_n_med", labelKey: "pl_l_med", priceRange: "$1,500 - $3,500", originalName: "Medium Project", defLabel: "Optimal",
       desc: { RU: "Премиальный многостраничный сайт. Уникальные эффекты, панель управления и автоматический сбор заявок клиентов.", EN: "Premium multi-page site. Unique effects, management panel, and automatic lead collection.", UA: "Преміальний багатосторінковий сайт. Унікальні ефекти, панель управління та автоматичний збір заявок клієнтів." } },
     { nameKey: "pl_n_comp", labelKey: "pl_l_comp", priceRange: "$3,500 - $6,000+", originalName: "Complex Project", defLabel: "Pro",
@@ -185,7 +185,6 @@ const activeIndex = ref(0);
 const scrollContainer = ref(null);
 const isModalOpen = ref(false);
 
-// ДОБАВЛЕНО: Отдельные переменные для передачи в модалку
 const selectedDesignTypeForModal = shallowRef("");
 const selectedPlanNameForModal = shallowRef("");
 
@@ -219,7 +218,7 @@ const onCarouselScroll = () => {
   if (isDesktop.value || !scrollContainer.value) return;
   if (rafId) cancelAnimationFrame(rafId);
   rafId = requestAnimationFrame(() => {
-    const cardWidth = window.innerWidth * 0.72;
+    const cardWidth = window.innerWidth * 0.76; 
     const gap = 16;
     const itemFullWidth = cardWidth + gap;
     
@@ -233,9 +232,7 @@ const onCarouselScroll = () => {
   });
 };
 
-// ДОБАВЛЕНО: Обновленная логика открытия модалки
 const openModalWithPlan = (plan) => {
-  // Явно запоминаем ТЕКУЩИЙ активный тип разработки и ТЕКУЩИЙ выбранный тариф
   selectedDesignTypeForModal.value = activeType.value;
   selectedPlanNameForModal.value = plan.originalName;
   isModalOpen.value = true;
@@ -318,7 +315,23 @@ defineExpose({ setActiveType });
 
 .pricing-header { margin-bottom: 32px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; }
 .kicker { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3em; color: #a1a1aa; margin: 0; }
-.gradient-title { font-size: 64px; font-weight: 500; letter-spacing: -0.04em; line-height: 1.1; margin: 0; background: linear-gradient(180deg, #ffffff 0%, #71717a 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+
+/* 🌟 ИДЕАЛЬНЫЙ АДАПТИВНЫЙ ЗАГОЛОВОК ДЛЯ ДЕСКТОПА */
+.gradient-title { 
+  display: block;
+  white-space: nowrap !important; 
+  font-size: clamp(16px, 5.2vw, 36px) !important; 
+  line-height: 1.15;
+  letter-spacing: normal !important;
+  word-spacing: normal !important;
+  margin: 0 auto; 
+  background: linear-gradient(180deg, #ffffff 0%, #71717a 100%); 
+  -webkit-background-clip: text; 
+  background-clip: text; 
+  color: transparent; 
+  -webkit-text-fill-color: transparent;
+  max-width: 100%;
+}
 
 .tab-wrapper { display: flex; justify-content: center; margin-bottom: 30px; }
 
@@ -501,50 +514,110 @@ defineExpose({ setActiveType });
 @media (max-width: 767px) {
   .pricing-luxury { padding: 80px 0; }
   
-  .pricing-header { margin-bottom: 24px; gap: 12px; }
-  .gradient-title { font-size: clamp(32px, 8.5vw, 42px); }
+  .pricing-header { 
+    margin-bottom: 24px; 
+    gap: 6px; 
+    padding: 0 20px; 
+    width: 100%; 
+    box-sizing: border-box;
+  }
 
-  .dynamic-service-context { height: auto; margin-bottom: 30px; padding: 0 10px; }
+  .gradient-title {
+    font-family: "Plus Jakarta Sans", sans-serif !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    
+    white-space: nowrap !important;
+    width: max-content !important; 
+    max-width: none !important;    
+    
+    font-size: clamp(24px, 7.5vw, 36px) !important;
+    font-weight: 500 !important;
+    letter-spacing: -1px !important;
+    
+    /* 🌟 Увеличиваем line-height и добавляем padding-bottom, чтобы хвостики букв (y, p) не обрезались фоном */
+    line-height: 1.35 !important;
+    padding-bottom: 0.15em !important;
+    
+    margin: 0px 0px 10px 0px !important;
+    
+    background: linear-gradient(180deg, #ffffff 0%, #71717a 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
+    text-shadow: none !important;
+  }
+  
+  .kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.45em;
+    margin-right: -0.45em;
+  }
+
+  .dynamic-service-context { height: auto; margin-bottom: 40px; padding: 0 10px; }
   .service-description { font-size: 13px; }
 
+  /* 🌟 СТРОГАЯ ПИРАМИДА */
   .tab-system { 
     display: flex; 
     flex-wrap: wrap; 
     justify-content: center;
     align-items: center;
-    gap: 8px; 
+    gap: 10px; 
     background: transparent; 
     border: none; 
-    padding: 0; 
+    padding: 0 10px; 
     box-shadow: none; 
     height: auto; 
+    width: 100%;
+    max-width: 100%;
   }
   .tab-indicator { display: none; }
   
   .tab-btn { 
-    flex: 0 0 calc(100%); 
-    width: 100%;
-    height: 46px; 
-    padding: 0 12px; 
-    font-size: 11.5px; 
-    line-height: 1.2;
-    border-radius: 12px; 
+    flex: 0 0 calc(50% - 5px) !important; 
+    max-width: calc(50% - 5px) !important; 
+    min-width: 0; 
+    height: 48px; 
+    padding: 0 6px; 
+    font-size: clamp(9px, 2.7vw, 12px); 
+    font-weight: 700;
+    white-space: nowrap; 
+    overflow: hidden; 
+    line-height: 1; 
+    border-radius: 14px; 
     background: #111; 
     border: 1px solid rgba(255, 255, 255, 0.08); 
     display: flex; 
     align-items: center; 
     justify-content: center; 
     text-align: center; 
-    letter-spacing: 0.3px;
+    letter-spacing: 0.5px;
     box-sizing: border-box;
+    transition: all 0.3s ease;
   }
-  .tab-btn.active { background: #e5e4e2; color: #000; border-color: transparent; }
+  
+  .tab-btn .btn-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  .tab-btn.active { 
+    background: #e5e4e2; 
+    color: #000; 
+    border-color: transparent; 
+    font-weight: 800;
+  }
 
   .pricing-carousel {
     width: 100vw;
     margin-left: calc(-50vw + 50%); 
     margin-right: calc(-50vw + 50%);
-    padding-top: 20px;
+    padding-top: 10px;
     padding-bottom: 50px; 
   }
 
@@ -555,7 +628,8 @@ defineExpose({ setActiveType });
     scroll-snap-type: x mandatory; 
     scroll-behavior: smooth; 
     gap: 16px; 
-    padding: 0 14vw; 
+    padding: 0 20px; 
+    scroll-padding-left: 20px; 
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none; 
     will-change: scroll-position;
@@ -563,9 +637,9 @@ defineExpose({ setActiveType });
   .gpu-scroll::-webkit-scrollbar { display: none; }
   
   .card-wrapper { 
-    flex: 0 0 72vw; 
-    width: 72vw; 
-    scroll-snap-align: center; 
+    flex: 0 0 76vw; 
+    width: 76vw; 
+    scroll-snap-align: start; 
     scroll-snap-stop: always;
   }
 
@@ -593,7 +667,15 @@ defineExpose({ setActiveType });
 }
 
 @media (max-width: 380px) {
-  .gradient-title { font-size: clamp(28px, 8vw, 36px); }
+  .tab-system { padding: 0 4px; gap: 6px; }
+  .tab-btn { 
+    flex: 0 0 calc(50% - 3px) !important; 
+    max-width: calc(50% - 3px) !important;
+    height: 44px; 
+    padding: 0 4px; 
+    font-size: clamp(8px, 2.5vw, 11px); 
+  }
+
   .card-content { padding: 28px 20px; }
   .plan-name { font-size: 22px; margin-bottom: 12px; }
   .plan-desc { font-size: 13.5px; }

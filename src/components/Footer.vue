@@ -12,9 +12,12 @@
           <!-- ЛЕВАЯ КОЛОНКА -->
           <div class="grid-column">
             
+            <!-- 🌟 Обновленный единый заголовок -->
             <div class="column-header">
               <span class="kicker">{{ t('ft_kicker_left') }}</span>
-              <h2 class="gradient-title">{{ t('ft_title_left') }}</h2>
+              <div class="title-scroll-wrapper">
+                <h2 class="gradient-title">{{ t('ft_title_left') }}</h2>
+              </div>
             </div>
             
             <div class="column-body">
@@ -52,14 +55,17 @@
 
           </div>
 
-          <!-- ПРАВАЯ КОЛОНКА (ФОРМА) -->
+          <!-- ПРАВАЯ КОЛОНКА (ФОРМА И EMAIL) -->
           <div class="grid-column">
             
+            <!-- 🌟 Обновленный единый заголовок -->
             <div class="column-header">
               <span class="kicker">{{ t('ft_kicker_right') }}</span>
-              <a href="mailto:efimovs.agency@gmail.com" class="gradient-title email-link">
-                efimovs.agency@gmail.com
-              </a>
+              <div class="title-scroll-wrapper">
+                <a href="mailto:efimovs.agency@gmail.com" class="gradient-title email-link">
+                  efimovs.agency@gmail.com
+                </a>
+              </div>
             </div>
 
             <div class="column-body">
@@ -204,7 +210,6 @@ const shake = reactive({ name: false, email: false, message: false });
 
 let resizeTimer = null;
 
-// Статичный массив выведен из реактивности
 const socials = [
   {
     name: "X",
@@ -383,6 +388,18 @@ onBeforeUnmount(() => {
   justify-content: center;
 }
 
+.ambient-glow { 
+  position: absolute; 
+  top: 50%; 
+  left: 50%; 
+  transform: translate(-50%, -50%) translateZ(0); 
+  width: 800px; 
+  height: 400px; 
+  background: radial-gradient(ellipse closest-side, rgba(255, 255, 255, 0.03) 0%, transparent 100%); 
+  z-index: 1; 
+  pointer-events: none;
+}
+
 .container {
   width: 100%;
   max-width: 1500px;
@@ -416,49 +433,55 @@ onBeforeUnmount(() => {
   width: 100%;
 }
 
+/* =========================================
+   🌟 ЕДИНЫЙ СТИЛЬ ЗАГОЛОВКА С ОСНОВНЫМ САЙТОМ
+   ========================================= */
 .column-header {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin-bottom: 25px; 
+  margin-bottom: 24px; 
+  gap: 16px; 
   padding: 0px;
   width: 100%;
 }
 
 .kicker {
   display: block;
-  font-size: 13px; 
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 3px; 
-  color: #a1a1aa; 
-  margin: 0px 0px 16px 0px;
-  padding: 0px;
-  line-height: 13px;
-  text-rendering: optimizeLegibility; 
+  letter-spacing: 0.3em;
+  color: #a1a1aa;
+  margin-bottom: 0px;
+}
+
+.title-scroll-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
 }
 
 .gradient-title {
   display: block; 
-  font-size: 46px;
-  font-weight: 700;
-  line-height: 50px;
-  letter-spacing: -1.5px;
-  padding: 0px 0px 5px 0px; 
-  margin: 0px 0px -5px 0px; 
-  background: linear-gradient(180deg, #ffffff 0px, #a1a1aa 100px);
+  font-size: clamp(36px, 4vw, 56px);
+  font-weight: 500;
+  margin: 0px;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+  padding-bottom: 0.15em; /* Компенсация WebKit бага */
+  padding-right: 0.25em; /* Предотвращаем обрезку последней буквы */
+  background: linear-gradient(180deg, #ffffff 0%, #71717a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   color: transparent;
-  word-break: break-word;
-  overflow-wrap: break-word;
+  white-space: nowrap; /* Строго в одну строку для скролла */
 }
 
 .email-link {
   text-decoration: none;
   transition: opacity 0.4s ease;
-  white-space: nowrap;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -488,6 +511,7 @@ onBeforeUnmount(() => {
   align-items: flex-start;
 }
 
+/* КАРЬЕРНЫЙ БЛОК */
 .career-left-wrapper {
   margin-top: 80px;
   width: 100%;
@@ -676,7 +700,6 @@ onBeforeUnmount(() => {
   opacity: 0;
 }
 
-/* Технический хак для браузерного автозаполнения - остается */
 .luxury-input:-webkit-autofill,
 .luxury-input:-webkit-autofill:hover, 
 .luxury-input:-webkit-autofill:focus,
@@ -912,9 +935,10 @@ onBeforeUnmount(() => {
     margin-right: auto;
     max-width: 100%;
   }
+
+  /* Центрирование контента при сложении колонок на планшете */
+  .title-scroll-wrapper { justify-content: center; }
   
-  .gradient-title { text-align: center; font-size: 38px; line-height: 42px; }
-  .email-link { font-size: 38px; }
   .action-group { align-items: center; }
   
   .career-left-wrapper {
@@ -951,8 +975,44 @@ onBeforeUnmount(() => {
 @media (max-width: 767px) {
   .footer { min-height: auto; } 
   
-  .gradient-title { font-size: 32px; line-height: 38px; margin-bottom: 10px; }
-  .email-link { font-size: 26px; }
+  .column-header { margin-bottom: 24px; gap: 12px; }
+
+  .kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.45em;
+    margin-right: -0.45em;
+    margin-bottom: 0;
+  }
+
+  /* 🌟 Обертка для мобильного скролла */
+  .title-scroll-wrapper {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .title-scroll-wrapper::-webkit-scrollbar { display: none; }
+
+  .title-scroll-wrapper::before,
+  .title-scroll-wrapper::after {
+    content: "";
+    flex: 1 0 auto;
+  }
+  
+  /* Идеальный адаптивный заголовок строго в одну строку */
+  .gradient-title { 
+    flex: 0 0 auto;
+    font-size: clamp(24px, 7.5vw, 36px) !important; 
+    padding: 0 16px 0.15em 16px !important;
+    letter-spacing: -0.02em !important;
+    margin-bottom: 0px !important;
+  }
   
   .cta-description, .email-disclaimer, .career-subtext {
     font-size: 14px;
@@ -987,13 +1047,13 @@ onBeforeUnmount(() => {
   
   .socials-row { gap: 25px; }
   .copyright-minimal { font-size: 12px; text-align: center; }
-  
-  .kicker { margin-bottom: 12px; }
 }
 
 @media (max-width: 380px) {
-  .gradient-title { font-size: 26px; line-height: 32px; }
-  .email-link { font-size: 20px; }
+  /* 🌟 УМЕНЬШЕНИЕ РАЗМЕРА ДЛЯ САМЫХ МАЛЕНЬКИХ ЭКРАНОВ БЕЗ ПЕРЕНОСОВ */
+  .gradient-title { 
+    font-size: clamp(20px, 6.2vw, 24px) !important; 
+  }
   
   .btn-outline-platinum-visual { padding: 18px 10px !important; }
   

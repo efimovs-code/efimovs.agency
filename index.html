@@ -33,6 +33,23 @@
     </style>
   </head>
   <body>
+    <!-- 🌟 ФИКС ПРЫГАЮЩЕГО ШРИФТА (FOUT) ПРИ СМЕНЕ ЯЗЫКА 🌟 -->
+    <!-- Заставляет браузер скачать кириллицу для всех нужных начертаний в фоне при первой загрузке -->
+    <div style="position: absolute; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;" aria-hidden="true">
+      <!-- Montserrat -->
+      <span style="font-family: 'Montserrat', sans-serif; font-weight: 300;">АБВГҐДЕЄЖЗИІЇЙ</span>
+      <span style="font-family: 'Montserrat', sans-serif; font-weight: 400;">АБВГҐДЕЄЖЗИІЇЙ</span>
+      <span style="font-family: 'Montserrat', sans-serif; font-weight: 500;">АБВГҐДЕЄЖЗИІЇЙ</span>
+      <span style="font-family: 'Montserrat', sans-serif; font-weight: 700;">АБВГҐДЕЄЖЗИІЇЙ</span>
+      <span style="font-family: 'Montserrat', sans-serif; font-weight: 900;">АБВГҐДЕЄЖЗИІЇЙ</span>
+      <!-- Plus Jakarta Sans -->
+      <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 400;">АБВГҐДЕЄЖЗИІЇЙ</span>
+      <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500;">АБВГҐДЕЄЖЗИІЇЙ</span>
+      <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600;">АБВГҐДЕЄЖЗИІЇЙ</span>
+      <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;">АБВГҐДЕЄЖЗИІЇЙ</span>
+      <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800;">АБВГҐДЕЄЖЗИІЇЙ</span>
+    </div>
+
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
   </body>
