@@ -479,9 +479,13 @@ onBeforeUnmount(() => {
   white-space: nowrap; /* Строго в одну строку для скролла */
 }
 
+/* 🌟 ТОЧЕЧНАЯ АДАПТАЦИЯ РАЗМЕРА ПОЧТЫ ДЛЯ ИСКЛЮЧЕНИЯ ОБРЕЗКИ НА ВСЕХ ЭКРАНАХ 🌟 */
 .email-link {
   text-decoration: none;
   transition: opacity 0.4s ease;
+  font-size: clamp(20px, 2.7vw, 40px) !important;
+  letter-spacing: -0.03em !important;
+  max-width: 100%;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -1014,6 +1018,10 @@ onBeforeUnmount(() => {
     margin-bottom: 0px !important;
   }
   
+  .email-link {
+    font-size: clamp(16px, 5.5vw, 28px) !important;
+  }
+
   .cta-description, .email-disclaimer, .career-subtext {
     font-size: 14px;
     line-height: 24px;
@@ -1050,9 +1058,12 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 380px) {
-  /* 🌟 УМЕНЬШЕНИЕ РАЗМЕРА ДЛЯ САМЫХ МАЛЕНЬКИХ ЭКРАНОВ БЕЗ ПЕРЕНОСОВ */
   .gradient-title { 
     font-size: clamp(20px, 6.2vw, 24px) !important; 
+  }
+
+  .email-link {
+    font-size: clamp(14px, 5vw, 22px) !important;
   }
   
   .btn-outline-platinum-visual { padding: 18px 10px !important; }

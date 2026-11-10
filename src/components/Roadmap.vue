@@ -80,10 +80,10 @@
         </div>
       </div>
       
-      <!-- КНОПКА CALL-TO-ACTION -->
-      <div class="roadmap-cta">
-        <button class="btn-pill btn-platinum" @click="$emit('open-contact')">
-          <span class="btn-text">{{ t('btn_discuss') }}</span>
+      <!-- 🌟 КНОПКА CALL-TO-ACTION (ТОЧНАЯ КОПИЯ ИЗ EXPERTISE.VUE) -->
+      <div class="section-cta-wrapper">
+        <button class="main-action-btn" @click="$emit('open-contact')">
+          {{ t('btn_discuss') }}
         </button>
       </div>
 
@@ -322,59 +322,41 @@ onBeforeUnmount(() => {
 }
 
 /* =========================================
-   СЕКЦИЯ КНОПКИ (CTA)
+   СЕКЦИЯ КНОПКИ (ТОЧНАЯ КОПИЯ ИЗ EXPERTISE.VUE)
    ========================================= */
-.roadmap-cta {
+.section-cta-wrapper {
+  margin-top: clamp(40px, 5vw, 60px);
   display: flex;
   justify-content: center;
-  margin-top: 80px;
-  position: relative;
-  z-index: 5;
+  width: 100%;
 }
 
-.btn-pill {
-  padding: 22px 42px;
-  border-radius: 100px;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
-              background 0.3s ease, 
-              border-color 0.3s ease;
+.main-action-btn {
+  background-color: #E6E6E6;
+  color: #050505;
   border: none;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  
-  transform: translateZ(0) scale(1);
-  backface-visibility: hidden; 
-  -webkit-backface-visibility: hidden;
-  perspective: 1000px;
-  will-change: transform;
-  
-  outline: 1px solid transparent;
-  background-clip: padding-box;
-  -webkit-background-clip: padding-box;
-}
-
-.btn-text {
-  position: relative;
-  z-index: 2;
+  border-radius: 100px;
+  padding: 24px 80px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
-.btn-platinum {
-  background: #e5e4e2;
-  color: #000;
+@media (hover: hover) and (pointer: fine) {
+  .main-action-btn:hover {
+    background-color: #ffffff;
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
+  }
 }
 
-.btn-platinum:hover {
-  background: #ffffff;
-  transform: translateZ(0) scale(1.03);
+.main-action-btn:active {
+  transform: scale(0.98);
 }
 
 /* =========================================
@@ -514,15 +496,14 @@ onBeforeUnmount(() => {
     line-height: 24px;
   }
   
-  .roadmap-cta {
-    margin-top: 50px;
+  .section-cta-wrapper {
+    margin-top: 40px;
   }
   
-  .btn-pill { 
+  .main-action-btn {
     width: 100%;
-    padding: 20px 0;
-    font-size: 12px;
-    white-space: nowrap;
+    padding: 20px 24px;
+    font-size: 14px;
   }
 }
 </style>

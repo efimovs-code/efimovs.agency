@@ -9,12 +9,15 @@
         
         <div class="pricing-header">
           <span class="kicker">{{ t('pr_kicker') || 'ІНВЕСТИЦІЇ' }}</span>
-          <h2 class="gradient-title">
-            {{ t('pr_title') || 'Вартість розробки' }}
-          </h2>
+          <!-- Обертка для идеального выравнивания и скролла -->
+          <div class="title-scroll-wrapper">
+            <h2 class="gradient-title">
+              {{ t('pr_title') || 'Вартість розробки' }}
+            </h2>
+          </div>
         </div>
 
-        <!-- 3 Типи розробки (Синхронізовано з модалкою) -->
+        <!-- 3 Типы разработки -->
         <div class="tab-wrapper">
           <div class="tab-system" style="--tab-count: 3;">
             <div class="tab-indicator" :style="indicatorStyle">
@@ -32,7 +35,7 @@
           </div>
         </div>
 
-        <!-- Опис обраного типу розробки -->
+        <!-- Описание выбранного типа разработки -->
         <div class="dynamic-service-context">
           <Transition name="fade-slide" mode="out-in">
             <p :key="activeType" class="service-description">
@@ -43,8 +46,6 @@
       </div>
 
       <div class="pricing-carousel">
-        
-        <!-- Сітка змінена на 3 колонки, відцентрована -->
         <div class="cards-wrapper gpu-scroll" ref="scrollContainer" @scroll="onCarouselScroll">
           <div
             v-for="(plan, index) in currentPlans"
@@ -53,7 +54,6 @@
             @click="openModalWithPlan(plan)"
             v-memo="[isDesktop, index === activeMobileIndex, activeType, currentLang.code]"
           >
-            <!-- Центральна картка (index 1) виділяється як Featured -->
             <div :class="['card gpu-layer', { 
               featured: index === 1,
               'is-mobile-active': !isDesktop && index === activeMobileIndex 
@@ -95,12 +95,10 @@
             </div>
           </div>
         </div>
-
       </div>
 
     </div>
 
-    <!-- Модалка отримує обраний тип розробки та тариф -->
     <ContactModal
       v-if="isModalOpen"
       :is-open="isModalOpen"
@@ -124,14 +122,12 @@ import { t, currentLang } from "../composables/useLanguage";
 
 const ContactModal = defineAsyncComponent(() => import("./ContactModal.vue"));
 
-// --- 1. ТИПИ РОЗРОБКИ ---
 const designTypes = [
   { key: 'template', titleKey: 'mod_opt_template_title', defTitle: 'Шаблонна розробка' },
   { key: 'layout', titleKey: 'mod_opt_layout_title', defTitle: 'За вашим макетом' },
   { key: 'custom', titleKey: 'mod_opt_custom_title', defTitle: 'Проєкт під ключ' }
 ];
 
-// Описи під перемикачем (ідентичні текстам з модального вікна)
 const typeDescriptions = {
   template: {
     EN: "We take a proven, high-converting template and adapt it specifically for your business.",
@@ -150,7 +146,6 @@ const typeDescriptions = {
   }
 };
 
-// --- 2. МАТРИЦЯ ЦІН ТА ПРОСТИХ ОПИСІВ ДЛЯ БІЗНЕСУ ---
 const pricingData = {
   template: [
     { nameKey: "pl_n_simp", labelKey: "pl_l_simp", priceRange: "$300 - $600", originalName: "Simple Project", defLabel: "Base",
@@ -178,7 +173,6 @@ const pricingData = {
   ]
 };
 
-// --- СТЕЙТ ---
 const activeType = ref(designTypes[0].key);
 const activeIndex = ref(0);
 
@@ -193,7 +187,6 @@ const isTelegram = ref(false);
 const activeMobileIndex = ref(0);
 let rafId = null;
 
-// --- ОБЧИСЛЮВАЛЬНІ ДАНІ ---
 const currentTypeDescription = computed(() => {
   const code = currentLang.value.code;
   const descGroup = typeDescriptions[activeType.value];
@@ -313,26 +306,50 @@ defineExpose({ setActiveType });
 }
 .header-group { max-width: 1240px; margin: 0 auto; }
 
-.pricing-header { margin-bottom: 32px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; }
-.kicker { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3em; color: #a1a1aa; margin: 0; }
+/* --- СТИЛИ ЗАГОЛОВКА (1:1 С PROJECTS.VUE НА ДЕСКТОПЕ) --- */
+.pricing-header { 
+  margin-bottom: 40px; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  text-align: center; 
+  gap: 16px; 
+  width: 100%;
+}
 
-/* 🌟 ИДЕАЛЬНЫЙ АДАПТИВНЫЙ ЗАГОЛОВОК ДЛЯ ДЕСКТОПА */
+.kicker { 
+  font-size: 12px; 
+  font-weight: 600; 
+  text-transform: uppercase; 
+  letter-spacing: 0.25em; 
+  color: #98989d; 
+  margin: 0; 
+  margin-right: -0.25em; 
+}
+
+.title-scroll-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 .gradient-title { 
-  display: block;
-  white-space: nowrap !important; 
-  font-size: clamp(16px, 5.2vw, 36px) !important; 
-  line-height: 1.15;
-  letter-spacing: normal !important;
-  word-spacing: normal !important;
-  margin: 0 auto; 
+  font-size: 64px; 
+  font-weight: 500; 
+  letter-spacing: -0.04em; 
+  line-height: 1.2; 
+  padding-bottom: 0.15em;
+  padding-left: 0.25em; /* Оптическая компенсация точки/края */
+  margin: 0; 
   background: linear-gradient(180deg, #ffffff 0%, #71717a 100%); 
   -webkit-background-clip: text; 
   background-clip: text; 
   color: transparent; 
-  -webkit-text-fill-color: transparent;
-  max-width: 100%;
+  -webkit-text-fill-color: transparent; 
+  white-space: nowrap; 
 }
 
+/* --- ТАБЫ И ДИНАМИЧЕСКИЙ КОНТЕКСТ --- */
 .tab-wrapper { display: flex; justify-content: center; margin-bottom: 30px; }
 
 .tab-system { 
@@ -401,6 +418,7 @@ defineExpose({ setActiveType });
 .fade-slide-enter-from { opacity: 0; transform: translateY(10px); }
 .fade-slide-leave-to { opacity: 0; transform: translateY(-10px); }
 
+/* --- КАРТОЧКИ --- */
 .pricing-carousel { position: relative; }
 
 .cards-wrapper { 
@@ -467,7 +485,7 @@ defineExpose({ setActiveType });
   .card-wrapper:hover .card.featured .prime-btn { transform: translateY(-2px); } 
   .card-wrapper:hover .card.featured .prime-btn .luxury-arrow { transform: translateX(0); }
 
-  .card-wrapper:hover .card-light { opacity: 1; }
+  .card-light { opacity: 1; }
   @media (hover: hover) and (pointer: fine) {
     .tab-btn:not(.active):hover { color: rgba(255, 255, 255, 0.82); }
   }
@@ -501,9 +519,7 @@ defineExpose({ setActiveType });
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
-  .gradient-title { 
-    font-size: clamp(40px, 6vw, 54px) !important; 
-  }
+  .gradient-title { font-size: clamp(40px, 5.5vw, 56px) !important; text-align: center; }
   .cards-wrapper { grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 0 20px;}
   .card-content { padding: 30px 20px; }
   .plan-name { font-size: 22px; }
@@ -514,52 +530,43 @@ defineExpose({ setActiveType });
 @media (max-width: 767px) {
   .pricing-luxury { padding: 80px 0; }
   
-  .pricing-header { 
-    margin-bottom: 24px; 
-    gap: 6px; 
-    padding: 0 20px; 
-    width: 100%; 
-    box-sizing: border-box;
-  }
-
-  .gradient-title {
-    font-family: "Plus Jakarta Sans", sans-serif !important;
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
-    
-    white-space: nowrap !important;
-    width: max-content !important; 
-    max-width: none !important;    
-    
-    font-size: clamp(24px, 7.5vw, 36px) !important;
-    font-weight: 500 !important;
-    letter-spacing: -1px !important;
-    
-    /* 🌟 Увеличиваем line-height и добавляем padding-bottom, чтобы хвостики букв (y, p) не обрезались фоном */
-    line-height: 1.35 !important;
-    padding-bottom: 0.15em !important;
-    
-    margin: 0px 0px 10px 0px !important;
-    
-    background: linear-gradient(180deg, #ffffff 0%, #71717a 100%) !important;
-    -webkit-background-clip: text !important;
-    background-clip: text !important;
-    color: transparent !important;
-    -webkit-text-fill-color: transparent !important;
-    text-shadow: none !important;
-  }
+  .pricing-header { margin-bottom: 32px; gap: 12px; }
   
   .kicker {
-    font-size: 11px;
+    font-size: 11px; 
     font-weight: 700;
-    letter-spacing: 0.45em;
-    margin-right: -0.45em;
+    letter-spacing: 0.4em; 
+    margin-right: -0.4em;
+  }
+  
+  .title-scroll-wrapper {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    justify-content: flex-start;
+  }
+  
+  .title-scroll-wrapper::-webkit-scrollbar { display: none; }
+  
+  .title-scroll-wrapper::before,
+  .title-scroll-wrapper::after {
+    content: "";
+    flex: 1 0 auto;
+  }
+  
+  .gradient-title { 
+    flex: 0 0 auto;
+    font-size: clamp(24px, 7.5vw, 36px) !important; 
+    padding: 0 16px 0.15em calc(16px + 0.25em) !important; 
   }
 
   .dynamic-service-context { height: auto; margin-bottom: 40px; padding: 0 10px; }
   .service-description { font-size: 13px; }
 
-  /* 🌟 СТРОГАЯ ПИРАМИДА */
   .tab-system { 
     display: flex; 
     flex-wrap: wrap; 
