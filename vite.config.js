@@ -8,8 +8,12 @@ export default defineConfig({
   build: {
     target: 'esnext',
     minify: 'esbuild',
+    cssMinify: 'esbuild', // ВАЖНО: Дополнительно ускоряем парсинг стилей
     cssCodeSplit: true, // ВАЖНО: Разделяет CSS, чтобы не грузить один огромный файл
     chunkSizeWarningLimit: 600,
+    modulePreload: {
+      polyfill: false // Отключаем ненужный код, так как target: 'esnext'
+    },
     rollupOptions: {
       output: {
         manualChunks(id) {

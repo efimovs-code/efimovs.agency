@@ -4,7 +4,7 @@ const routes = [
   { 
     path: '/', 
     name: 'Home', 
-    // Загружается только при открытии главной страницы
+    // Загружается только при открытии главной страницы (Code Splitting)
     component: () => import('../views/Home.vue'),
     meta: { 
       title: 'Efimovs Agency | Conversion-Focused Websites',
@@ -21,6 +21,12 @@ const routes = [
       description: 'Efimov Agency Case Studies: Websites Developed.'
     }
   },
+  // Защита от несуществующих маршрутов (404)
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    redirect: '/'
+  }
 ]
 
 const router = createRouter({
@@ -44,5 +50,13 @@ router.beforeEach((to, from, next) => {
 
   next();
 })
+
+// Защита от сбоев при загрузке асинхронных чанков (особенно актуально для Vercel)
+router.onError((error, to) => {
+  if (error.message.includes('Failed to fetch dynamically imported module') || error.message.includes('Importing a module script failed')) {
+    // Если пользователь пытался перейти на страницу, но JS-файл обновился на сервере - делаем хард-релоад
+    window.location = to.fullPath;
+  }
+});
 
 export default router

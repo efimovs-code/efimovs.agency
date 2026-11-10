@@ -1,9 +1,10 @@
 <template>
-  <section class="portfolio-page">
+  <section class="portfolio-page opt-gpu">
     
-    <div class="premium-hero">
-      <div class="hero-ambient-glow"></div>
-      <div class="hero-ambient-core"></div>
+    <!-- ИЗОЛЯЦИЯ: Вынесено в отдельный композитный слой -->
+    <div class="premium-hero opt-gpu-heavy">
+      <div class="hero-ambient-glow opt-gpu"></div>
+      <div class="hero-ambient-core opt-gpu"></div>
 
       <div class="hero-nav">
         <router-link to="/" class="back-link">
@@ -33,25 +34,26 @@
           
           <div class="editorial-case">
             
-            <div class="case-visual-hero hypnotic-item delay-1" :class="{'mobile-app-layout': item.category.includes('Mobile') || item.category.includes('Мобильная') || item.category.includes('Мобільна') || item.category.includes('Móvil') || item.category.includes('Mobil')}">
-              <div class="slider-wrapper">
+            <div 
+              class="case-visual-hero hypnotic-item delay-1 opt-gpu" 
+              :class="{'mobile-app-layout': item.category.includes('Mobile') || item.category.includes('Мобильная') || item.category.includes('Мобільна') || item.category.includes('Móvil') || item.category.includes('Mobil')}"
+            >
+              <div class="slider-wrapper opt-gpu">
                 <img 
                   :src="item.images[0]" 
                   :alt="item.title" 
-                  class="case-media absolute-img" 
+                  class="case-media absolute-img opt-gpu" 
                   loading="lazy" 
                   decoding="async" 
                 />
               </div>
               
-              <div class="media-overlay"></div>
+              <div class="media-overlay opt-gpu"></div>
 
               <div class="case-hero-typography">
                 <h2 class="case-title">{{ item.title }}</h2>
               </div>
             </div>
-
-            <!-- Блок метаданных (Направление и Год) полностью удален по вашему запросу -->
 
             <div class="case-content-grid hypnotic-item delay-3">
               
@@ -73,9 +75,9 @@
               
               <div class="grid-col button-col" v-if="item.link !== '#'">
                 <a :href="item.link" target="_blank" rel="noopener noreferrer" class="visit-btn-wrapper">
-                  <div class="visit-btn-inner">
+                  <div class="visit-btn-inner opt-gpu">
                     <span class="visit-text">{{ t('port_btn_live') }}</span>
-                    <div class="visit-icon">
+                    <div class="visit-icon opt-gpu">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2px" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                         <polyline points="12 5 19 12 12 19"></polyline>
@@ -86,9 +88,9 @@
               </div>
               <div class="grid-col button-col" v-else>
                 <div class="private-badge-wrapper" :title="t('port_title_nda')">
-                  <div class="private-badge-inner">
+                  <div class="private-badge-inner opt-gpu">
                     <span class="private-text">{{ t('port_btn_private') }}</span>
-                    <div class="private-icon">
+                    <div class="private-icon opt-gpu">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2px" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                         <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
@@ -108,7 +110,7 @@
       </section>
 
       <div class="container load-more-container" v-if="visibleCount < localizedCases.length">
-        <button class="btn-load-more" @click="loadMoreProjects">
+        <button class="btn-load-more opt-gpu" @click="loadMoreProjects">
           <span>{{ t('port_btn_load') }}</span>
         </button>
       </div>
@@ -118,8 +120,8 @@
     <div class="container hypnotic-section">
       <div class="cta-section hypnotic-item delay-1">
         <h2 class="cta-title">{{ t('port_cta_title') }}</h2>
-        <button class="btn-silver-wrapper" @click="openModal()">
-          <div class="btn-solid-silver-inner">
+        <button class="btn-silver-wrapper opt-gpu" @click="openModal()">
+          <div class="btn-solid-silver-inner opt-gpu">
             <span class="btn-text">{{ t('port_cta_btn') }}</span>
           </div>
         </button>
@@ -136,7 +138,7 @@
               class="social-link-minimal"
               :aria-label="social.name"
             >
-              <svg viewBox="0 0 24 24" fill="none" shape-rendering="geometricPrecision" class="social-svg">
+              <svg viewBox="0 0 24 24" fill="none" shape-rendering="geometricPrecision" class="social-svg opt-gpu">
                 <g v-html="social.icon"></g>
               </svg>
             </a>
@@ -149,7 +151,7 @@
     <Transition name="scroll-fade">
       <button 
         v-if="showScrollTop" 
-        class="scroll-top-btn" 
+        class="scroll-top-btn opt-gpu-heavy" 
         @mousedown="scrollToTop"
         @touchstart.passive="scrollToTop"
         @click="scrollToTop"
@@ -281,6 +283,11 @@ let observer = null;
 
 const observeSections = () => {
   if (!observer) return;
+  
+  document.querySelectorAll('.editorial-section, .hypnotic-section').forEach((el) => {
+    observer.unobserve(el);
+  });
+
   document.querySelectorAll('.editorial-section, .hypnotic-section').forEach((el) => {
     if (el) observer.observe(el);
   });
@@ -333,7 +340,7 @@ onMounted(() => {
     });
   }, {
     threshold: 0.1, 
-    rootMargin: "0px 0px -100px 0px" 
+    rootMargin: "150px 0px"
   });
 
   nextTick(() => {
@@ -356,7 +363,10 @@ onBeforeUnmount(() => {
   window.removeEventListener("resize", checkDevice);
   window.removeEventListener("scroll", handleScroll); 
   if (scrollRafId) cancelAnimationFrame(scrollRafId);
-  if (observer) observer.disconnect();
+  if (observer) {
+    observer.disconnect();
+    observer = null;
+  }
 });
 
 const checkDevice = () => {
@@ -369,6 +379,19 @@ const checkDevice = () => {
 </script>
 
 <style scoped>
+.opt-gpu {
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+.opt-gpu-heavy {
+    transform: translate3d(0, 0, 0);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
 .portfolio-page { 
   padding: 0px 0px 150px 0px; 
   min-height: 1000px; 
@@ -381,6 +404,7 @@ const checkDevice = () => {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  contain: content; /* ИСПРАВЛЕНИЕ: Возвращен скролл с сохранением изоляции */
 }
 
 .container { 
@@ -389,29 +413,23 @@ const checkDevice = () => {
   padding: 0px 40px; 
 }
 
-/* === 🌟 АНИМАЦИИ 🌟 === */
 .hypnotic-item {
   opacity: 0;
-  transform: translateY(120px) scale(0.85) translateZ(0px);
-  filter: blur(10px); 
-  transition: opacity 1.8s cubic-bezier(0.16, 1, 0.3, 1), 
-              transform 1.8s cubic-bezier(0.16, 1, 0.3, 1), 
-              filter 1.8s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform, filter;
+  transform: translateY(60px) scale(0.95) translateZ(0px); 
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), 
+              transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
 }
 
 .hypnotic-section.is-visible .hypnotic-item {
   opacity: 1;
   transform: translateY(0px) scale(1) translateZ(0px);
-  filter: blur(0px);
 }
 
 .delay-1 { transition-delay: 0.1s; } 
-.delay-2 { transition-delay: 0.3s; } 
-.delay-3 { transition-delay: 0.5s; } 
-.delay-4 { transition-delay: 0.7s; } 
+.delay-3 { transition-delay: 0.3s; } 
+.delay-4 { transition-delay: 0.4s; } 
 
-/* === 🌟 HERO БЛОК 🌟 === */
 .premium-hero {
   position: relative;
   width: 100%;
@@ -424,6 +442,7 @@ const checkDevice = () => {
   padding: 40px;
   overflow: hidden;
   background: #000000;
+  contain: paint layout; 
 }
 
 .hero-ambient-glow {
@@ -473,7 +492,7 @@ const checkDevice = () => {
 }
 .back-link svg { width: 16px; height: 16px; transition: transform 0.4s ease; }
 .back-link:hover { color: #ffffff; }
-.back-link:hover svg { transform: translateX(-5px); }
+.back-link:hover svg { transform: translateX(-5px) translateZ(0px); }
 
 .hero-content {
   position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 1200px; 
@@ -507,10 +526,9 @@ const checkDevice = () => {
   padding-bottom: 0.08em; 
 }
 
-.cinematic-reveal { opacity: 0; filter: blur(20px); transform: scale(0.95) translateY(20px); animation: slowCinematicFade 2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-@keyframes slowCinematicFade { 0% { opacity: 0; filter: blur(20px); transform: scale(0.95) translateY(20px); } 100% { opacity: 1; filter: blur(0px); transform: scale(1) translateY(0px); } }
+.cinematic-reveal { opacity: 0; filter: blur(8px); transform: scale(0.95) translateY(20px); animation: slowCinematicFade 2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+@keyframes slowCinematicFade { 0% { opacity: 0; filter: blur(8px); transform: scale(0.95) translateY(20px); } 100% { opacity: 1; filter: blur(0px); transform: scale(1) translateY(0px); } }
 
-/* === 🌟 ОБОЛОЧКА СЕКЦИЙ 🌟 === */
 .cases-editorial-wrapper {
   display: flex;
   flex-direction: column;
@@ -521,6 +539,7 @@ const checkDevice = () => {
   width: 100%;
   padding: 0px; 
   scroll-margin-top: 120px; 
+  contain: content; 
 }
 
 .editorial-case {
@@ -529,7 +548,6 @@ const checkDevice = () => {
   flex-direction: column;
 }
 
-/* === 🌟 ВИЗУАЛ 🌟 === */
 .case-visual-hero {
   position: relative;
   width: 100%;
@@ -537,10 +555,9 @@ const checkDevice = () => {
   border-radius: 24px;
   overflow: hidden;
   background: #09090b;
-  transform: translateZ(0px);
   cursor: pointer;
   z-index: 1;
-  margin-bottom: 40px; /* Добавлен отступ вместо удаленного блока метаданных */
+  margin-bottom: 40px; 
 }
 
 .slider-wrapper {
@@ -562,15 +579,13 @@ const checkDevice = () => {
   object-fit: cover;
   image-rendering: -webkit-optimize-contrast; 
   -webkit-backface-visibility: hidden; 
-  filter: grayscale(0) brightness(1.05);
-  transform: scale(1.03) translateZ(0px);
-  will-change: opacity;
+  filter: grayscale(0) brightness(1.05); 
 }
 
 .media-overlay {
   position: absolute;
   inset: 0px;
-  background: linear-gradient(to top, rgba(0,0,0,0.9) 0px, rgba(0,0,0,0.4) 250px, transparent 500px);
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%); 
   pointer-events: none;
   z-index: 2;
 }
@@ -595,7 +610,6 @@ const checkDevice = () => {
   overflow-wrap: break-word; 
 }
 
-/* === 🌟 СЕТКА ТЕКСТА 🌟 === */
 .case-content-grid {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
@@ -611,12 +625,7 @@ const checkDevice = () => {
   justify-content: flex-start; 
 }
 
-.challenge-col {
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-  padding-right: 30px;
-}
-
-.solution-col {
+.challenge-col, .solution-col {
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   padding-right: 30px;
 }
@@ -645,12 +654,8 @@ const checkDevice = () => {
   border-radius: 8px; 
   display: inline-block;
 }
-.status-dot.problem {
-  background-color: #ff453a; 
-}
-.status-dot.solution {
-  background-color: #32d74b; 
-}
+.status-dot.problem { background-color: #ff453a; }
+.status-dot.solution { background-color: #32d74b; }
 
 .spec-text {
   font-size: 16px;
@@ -667,7 +672,6 @@ const checkDevice = () => {
   font-weight: 600; 
 }
 
-/* === 🌟 КНОПКИ ПРОЕКТОВ 🌟 === */
 .visit-btn-wrapper {
   display: inline-block;
   text-decoration: none;
@@ -683,9 +687,6 @@ const checkDevice = () => {
   text-decoration: none; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;
   width: max-content; 
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.4s ease;
-  transform: translateZ(0px);
-  backface-visibility: hidden;
-  will-change: transform;
 }
 
 .visit-text { color: #000000; }
@@ -694,7 +695,6 @@ const checkDevice = () => {
   display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; 
   background: #000000; color: #ffffff; border-radius: 34px; 
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
-  transform: translateZ(0px);
 }
 .visit-icon svg { width: 14px; height: 14px; stroke-width: 2px; }
 
@@ -731,9 +731,6 @@ const checkDevice = () => {
   cursor: pointer;
   outline: none;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  transform: translateZ(0px);
-  backface-visibility: hidden;
-  will-change: transform;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -813,9 +810,6 @@ const checkDevice = () => {
   text-decoration: none; 
   font-family: inherit; 
   transition: transform 0.3s ease, background-color 0.3s ease;
-  transform: translateZ(0px);
-  backface-visibility: hidden;
-  will-change: transform;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -834,41 +828,14 @@ const checkDevice = () => {
   gap: 30px;
 }
 
-.social-footer-text {
-  font-size: 14px;
-  color: #8a8a93;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  margin: 0;
-}
-
-.socials-row {
-  display: flex;
-  align-items: center;
-  gap: 35px;
-}
-
-.social-link-minimal {
-  color: #a1a1aa; 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-.social-svg {
-  width: 28px; 
-  height: auto;
-  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-  will-change: transform, filter; 
-  transform: translateZ(0);
-}
+.social-footer-text { font-size: 14px; color: #8a8a93; font-weight: 500; letter-spacing: 0.5px; margin: 0; }
+.socials-row { display: flex; align-items: center; gap: 35px; }
+.social-link-minimal { color: #a1a1aa; display: flex; align-items: center; justify-content: center; transition: color 0.4s cubic-bezier(0.19, 1, 0.22, 1); }
+.social-svg { width: 28px; height: auto; transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1); }
 
 @media (hover: hover) and (pointer: fine) {
   .social-link-minimal:hover { color: #ffffff; }
-  .social-link-minimal:hover .social-svg {
-    transform: translateY(-4px) scale(1.15);
-  }
+  .social-link-minimal:hover .social-svg { transform: translateY(-4px) scale(1.15) translateZ(0px); }
 }
 
 .scroll-top-btn {
@@ -879,10 +846,8 @@ const checkDevice = () => {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: rgba(10, 10, 10, 0.85);
+  background: rgba(20, 20, 20, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -892,32 +857,16 @@ const checkDevice = () => {
   -webkit-tap-highlight-color: transparent;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
   transition: transform 0.25s ease, border-color 0.25s ease;
-  transform: translateZ(0);
 }
 
-.scroll-top-btn svg {
-  width: 20px;
-  height: 20px;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
-}
+.scroll-top-btn svg { width: 20px; height: 20px; transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease; }
 
 @media (hover: hover) and (pointer: fine) {
-  .scroll-top-btn:hover {
-    transform: scale(1.06);
-    border-color: rgba(255, 255, 255, 0.4);
-  }
+  .scroll-top-btn:hover { transform: scale(1.06) translateZ(0px); border-color: rgba(255, 255, 255, 0.4); }
 }
 
-.scroll-fade-enter-active, 
-.scroll-fade-leave-active {
-  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.scroll-fade-enter-from, 
-.scroll-fade-leave-to {
-  opacity: 0;
-  transform: translateY(20px) scale(0.9);
-}
+.scroll-fade-enter-active, .scroll-fade-leave-active { transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.scroll-fade-enter-from, .scroll-fade-leave-to { opacity: 0; transform: translateY(20px) scale(0.9) translateZ(0px); }
 
 /* === АДАПТИВНОСТЬ === */
 @media (max-width: 1024px) {
@@ -942,130 +891,37 @@ const checkDevice = () => {
 }
 
 @media (max-width: 768px) {
-  .premium-hero { 
-    height: auto;
-    min-height: 500px; 
-    padding: 110px 15px 60px 15px; 
-  } 
+  .premium-hero { height: auto; min-height: 500px; padding: 110px 15px 60px 15px; } 
   .hero-nav { left: 20px; top: 20px; }
-  
-  .hero-content {
-    margin-top: 0px; 
-    padding: 0px;
-    width: 100%;
-  }
-
-  .hero-title {
-    font-size: clamp(26px, 7vw, 44px);
-    letter-spacing: 0px !important;
-    word-spacing: 0.18em;
-    line-height: 1.22;
-  }
-
-  .hero-line {
-    white-space: nowrap;
-    display: block;
-    text-align: center;
-  }
-
-  #subtitle { 
-    font-size: 11px; 
-    letter-spacing: 6px;
-    margin-bottom: 20px; 
-  }
-  
+  .hero-content { margin-top: 0px; padding: 0px; width: 100%; }
+  .hero-title { font-size: clamp(26px, 7vw, 44px); letter-spacing: 0px !important; word-spacing: 0.18em; line-height: 1.22; }
+  .hero-line { white-space: nowrap; display: block; text-align: center; }
+  #subtitle { font-size: 11px; letter-spacing: 6px; margin-bottom: 20px; }
   .container { padding: 0px 15px; } 
-  
-  .case-visual-hero { 
-    aspect-ratio: 16 / 9; 
-    border-radius: 16px; 
-    margin-bottom: 24px;
-  }
-
-  .case-visual-hero.mobile-app-layout {
-    aspect-ratio: 3 / 4; 
-  }
-  
-  .case-visual-hero.mobile-app-layout .case-media {
-    transform: scale(1.15) translateZ(0px); 
-    object-position: center center;
-  }
-  
+  .case-visual-hero { aspect-ratio: 16 / 9; border-radius: 16px; margin-bottom: 24px; }
+  .case-visual-hero.mobile-app-layout { aspect-ratio: 3 / 4; }
+  .case-visual-hero.mobile-app-layout .case-media { transform: scale(1.15) translateZ(0px); object-position: center center; }
   .case-hero-typography { left: 20px; bottom: 15px; gap: 2px; }
   .case-title { font-size: 24px; line-height: 28px; }
-  
-  .media-overlay {
-    background: linear-gradient(to top, rgba(0,0,0,0.95) 0px, rgba(0,0,0,0.2) 80px, transparent 150px);
-  }
-
-  .case-content-grid { 
-    display: flex;
-    flex-direction: column;
-    gap: 40px; 
-  }
-  
-  .grid-col { 
-    width: 100%;
-    align-items: flex-start; 
-    border-right: none !important; 
-    padding-right: 0px !important; 
-  }
-  
-  .spec-text { 
-    font-size: 16px; 
-    line-height: 26px; 
-    max-width: 100%; 
-  }
-
-  .grid-col.button-col { 
-    border-top: none; 
-    padding-top: 10px; 
-    padding-left: 0px; 
-  } 
-  
+  .media-overlay { background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 40%); }
+  .case-content-grid { display: flex; flex-direction: column; gap: 40px; }
+  .grid-col { width: 100%; align-items: flex-start; border-right: none !important; padding-right: 0px !important; }
+  .spec-text { font-size: 16px; line-height: 26px; max-width: 100%; }
+  .grid-col.button-col { border-top: none; padding-top: 10px; padding-left: 0px; } 
   .visit-btn-wrapper { width: 100%; display: block; }
   .visit-btn-inner { width: 100%; justify-content: center; padding: 16px 20px; position: relative; }
   .visit-btn-inner .visit-icon { position: absolute; right: 16px; }
-  
   .private-badge-wrapper { width: 100%; display: block; }
   .private-badge-inner { width: 100%; justify-content: center; padding: 16px 20px; position: relative; }
   .private-badge-inner .private-icon { position: absolute; right: 16px; }
-
   .project-separator { margin: 60px 0px; }
-  
-  .load-more-container {
-    padding: 40px 0 0px 0; 
-    margin-top: 20px;
-  }
-
-  .btn-load-more {
-    width: max-content; 
-    padding: 14px 32px;
-    font-size: 11px;
-  }
-
+  .load-more-container { padding: 40px 0 0px 0; margin-top: 20px; }
+  .btn-load-more { width: max-content; padding: 14px 32px; font-size: 11px; }
   .cta-section { margin-top: 40px; padding: 60px 0px; }
   .cta-title { font-size: 32px; }
-  
-  .btn-solid-silver-inner { 
-    padding: 14px 32px; 
-    font-size: 13px; 
-    letter-spacing: 1.5px; 
-  }
-
-  .social-footer-wrapper {
-    margin-top: 50px;
-    padding-top: 35px;
-    gap: 25px;
-  }
-  
-  .social-footer-text {
-    font-size: 13px;
-    max-width: 280px;
-    line-height: 1.5;
-    text-align: center;
-  }
-  
+  .btn-solid-silver-inner { padding: 14px 32px; font-size: 13px; letter-spacing: 1.5px; }
+  .social-footer-wrapper { margin-top: 50px; padding-top: 35px; gap: 25px; }
+  .social-footer-text { font-size: 13px; max-width: 280px; line-height: 1.5; text-align: center; }
   .socials-row { gap: 25px; }
 }
 </style>

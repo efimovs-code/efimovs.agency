@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 // 🌐 Глобальная языковая система
 export const languages = ref([
@@ -11,7 +11,43 @@ export const languages = ref([
   { code: 'ES', name: 'Español', flag: 'es' },
 ]);
 
-export const currentLang = ref(languages.value[0]);
+// ОПТИМИЗАЦИЯ UX: Умная инициализация языка
+const getInitialLanguage = () => {
+  // 1. Проверяем, сохранял ли пользователь язык ранее
+  const savedLangCode = localStorage.getItem('efimovs_lang');
+  if (savedLangCode) {
+    const found = languages.value.find(l => l.code === savedLangCode);
+    if (found) return found;
+  }
+
+  // 2. Если нет, пытаемся определить язык браузера (fallback)
+  if (typeof navigator !== 'undefined') {
+    const browserLang = navigator.language.slice(0, 2).toUpperCase(); // 'en-US' -> 'EN'
+    
+    // Фикс для украинского (код браузера 'uk', а у нас 'UA')
+    if (browserLang === 'UK') return languages.value.find(l => l.code === 'UA');
+    
+    const foundBrowser = languages.value.find(l => l.code === browserLang);
+    if (foundBrowser) return foundBrowser;
+  }
+
+  // 3. По умолчанию Английский
+  return languages.value[0];
+};
+
+export const currentLang = ref(getInitialLanguage());
+
+// ОПТИМИЗАЦИЯ SEO & ПАМЯТИ: Следим за сменой языка
+watch(currentLang, (newLang) => {
+  // Сохраняем выбор, чтобы после F5 язык не сбрасывался
+  localStorage.setItem('efimovs_lang', newLang.code);
+  
+  // Динамически меняем атрибут <html> для SEO
+  if (typeof document !== 'undefined') {
+    const htmlLang = newLang.code === 'UA' ? 'uk' : newLang.code.toLowerCase();
+    document.documentElement.lang = htmlLang;
+  }
+}, { immediate: true }); // immediate: true применит атрибут lang сразу при загрузке
 
 const translations = {
   EN: {
@@ -530,7 +566,7 @@ const translations = {
     hero_line4: 'щодня',
     hero_desc: 'Інвестиції в якісну веб-розробку.',
     btn_scale: 'МАСШТАБУВАТИ БІЗНЕС',
-    btn_cases: 'ДИВИТИСЯ КЕЙСИ',
+    btn_cases: 'ДИВИТИСЯ КЕЙСЫ',
     roadmap_kicker: 'Як ми працюємо',
     roadmap_title_1: 'Від ідеї',
     roadmap_title_2: 'до запуску.',

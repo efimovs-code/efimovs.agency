@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="home-container">
     <!-- ЗАХВАТ ВНИМАНИЯ (Грузится сразу) -->
     <Main @open-contact="$emit('open-contact')" />
     
@@ -27,7 +27,6 @@
     <div ref="roadmapRef" class="opt-contain section-wrapper">
       <Roadmap v-if="isVisible.roadmap" @open-contact="$emit('open-contact')" />
     </div>
-
   </div>
 </template>
 
@@ -35,7 +34,7 @@
 import { defineAsyncComponent, reactive, ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import Main from '../components/Main.vue';
 
-// Асинхронный импорт компонентов
+// Асинхронный импорт с базовым кэшированием браузера
 const Expertise = defineAsyncComponent(() => import('../components/Expertise.vue'));
 const Pricing = defineAsyncComponent(() => import('../components/Pricing.vue'));
 const Projects = defineAsyncComponent(() => import('../components/Projects.vue'));
@@ -63,9 +62,10 @@ let observer = null;
 onMounted(async () => {
   await nextTick();
   
+  // ОПТИМИЗАЦИЯ: Уменьшен margin. 800px триггерил загрузку всего сразу.
   const observerOptions = {
     root: null,
-    rootMargin: '800px', 
+    rootMargin: '150px 0px', 
     threshold: 0
   };
 
@@ -74,6 +74,7 @@ onMounted(async () => {
       if (entry.isIntersecting) {
         const sectionName = entry.target.dataset.section;
         isVisible[sectionName] = true;
+        // Отключаем наблюдение после первой отрисовки для экономии CPU
         observerInstance.unobserve(entry.target);
       }
     });
@@ -98,12 +99,20 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   if (observer) {
     observer.disconnect();
+    observer = null;
   }
 });
 </script>
 
 <style scoped>
+.home-container {
+  /* Изолируем страницу для браузера */
+  contain: content;
+}
+
 .section-wrapper {
   min-height: 20vh;
+  /* Указываем браузеру, что контент не влияет на внешний layout */
+  contain: layout style;
 }
 </style>
