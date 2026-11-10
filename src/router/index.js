@@ -7,8 +7,8 @@ const routes = [
     // Загружается только при открытии главной страницы
     component: () => import('../views/Home.vue'),
     meta: { 
-      title: 'Efimovs Agency | Разработка сайтов и IT-услуги',
-      description: 'Агентство Ефимова: создание премиальных веб-сайтов, приложений и внедрение AI-инструментов.'
+      title: 'Efimovs Agency | Development of conversion-oriented websites',
+      description: 'Efimovs Agency: Development of conversion-focused websites that turn visitors into clients.'
     }
   },
   { 
@@ -17,20 +17,10 @@ const routes = [
     // Загружается только при переходе в портфолио
     component: () => import('../views/Portfolio.vue'),
     meta: { 
-      title: 'Портфолио | Efimovs Agency',
-      description: 'Кейсы Агентства Ефимова: разработанные сайты, порталы и мобильные приложения.'
+      title: 'Portfolio | Efimovs Agency',
+      description: 'Efimov Agency Case Studies: Websites Developed.'
     }
   },
-  { 
-    path: '/careers', 
-    name: 'Careers', 
-    // Загружается только при переходе в карьеру
-    component: () => import('../components/Careers.vue'),
-    meta: { 
-      title: 'Карьера | Efimovs Agency',
-      description: 'Присоединяйтесь к команде разработчиков Efimovs Agency.'
-    }
-  }
 ]
 
 const router = createRouter({
