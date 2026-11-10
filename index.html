@@ -1,102 +1,122 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#000000" />
     
-    <!-- Базовое SEO-описание -->
-    <meta name="description" content="Efimovs Agency — разработка конверсионных сайтов, которые приносят результат. Масштабируем ваш бизнес через передовые IT-услуги." />
+    <!-- SEO-описание без рекламы и сухих обещаний -->
+    <meta name="description" content="Efimovs Agency builds conversion-focused websites engineered to turn visitors into clients. We develop fast, sales-driven web solutions for businesses worldwide." />
+    <meta name="keywords" content="Efimovs Agency, conversion websites, sales web development, landing pages, custom web application" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://efimovs.agency/" />
     
-    <!-- Open Graph -->
-    <meta property="og:title" content="Efimovs Agency | Разработка сайтов и IT-услуги" />
-    <meta property="og:description" content="Масштабируйте бизнес через качественную веб-разработку." />
+    <!-- Open Graph (Facebook, LinkedIn, Slack) -->
+    <meta property="og:title" content="Efimovs Agency — Conversion-Focused Websites" />
+    <meta property="og:description" content="We design and build websites engineered to convert site visitors into paying clients. Worldwide web development." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://efimovs.agency/" />
+    <meta property="og:site_name" content="Efimovs Agency" />
     
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Efimovs Agency | IT-услуги" />
-    <meta name="twitter:description" content="Инвестиции в качественную веб-разработку." />
+    <meta name="twitter:title" content="Efimovs Agency — Conversion Websites" />
+    <meta name="twitter:description" content="Websites engineered to convert visitors into clients for businesses worldwide." />
 
-    <!-- Мультиязычное SEO (hreflang) -->
-    <link rel="alternate" hreflang="ru" href="https://efimovs.agency/?lang=ru" />
-    <link rel="alternate" hreflang="uk" href="https://efimovs.agency/?lang=ua" />
+    <!-- Мультиязычное SEO (hreflang) для индексации во всех странах -->
+    <link rel="alternate" hreflang="x-default" href="https://efimovs.agency/" />
     <link rel="alternate" hreflang="en" href="https://efimovs.agency/?lang=en" />
+    <link rel="alternate" hreflang="uk" href="https://efimovs.agency/?lang=ua" />
+    <link rel="alternate" hreflang="ru" href="https://efimovs.agency/?lang=ru" />
     <link rel="alternate" hreflang="es" href="https://efimovs.agency/?lang=es" />
     <link rel="alternate" hreflang="fr" href="https://efimovs.agency/?lang=fr" />
     <link rel="alternate" hreflang="de" href="https://efimovs.agency/?lang=de" />
     <link rel="alternate" hreflang="tr" href="https://efimovs.agency/?lang=tr" />
-    <link rel="alternate" hreflang="x-default" href="https://efimovs.agency/" />
     
-    <!-- Микроразметка Schema.org для Google и AI -->
+    <!-- Микроразметка Schema.org для Google AI и поисковых систем -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@graph": [
         {
-          "@type": "Organization",
+          "@type": "ProfessionalService",
           "@id": "https://efimovs.agency/#organization",
           "name": "Efimovs Agency",
-          "alternateName": ["Агентство Ефимова", "Efimovs IT Agency"],
+          "legalName": "Efimovs Agency",
+          "alternateName": ["Efimovs Web Agency", "Efimovs Conversion Websites"],
           "url": "https://efimovs.agency/",
+          "logo": "https://efimovs.agency/icons/favicon.png",
+          "image": "https://efimovs.agency/icons/favicon.png",
+          "description": "Global web development agency specializing exclusively in conversion-focused websites that turn visitors into paying clients.",
+          "disambiguatingDescription": "Efimovs Agency is an independent global web development agency founded by developer Artur Efimov. It is not affiliated with any regional agencies or third-party IT firms.",
+          "knowsAbout": [
+            "Conversion-Focused Websites",
+            "Conversion Rate Optimization",
+            "Sales Web Development",
+            "Custom Web Architecture",
+            "Vue.js Development"
+          ],
+          "areaServed": {
+            "@type": "Place",
+            "name": "Worldwide"
+          },
           "founder": {
             "@type": "Person",
             "@id": "https://efimovs.agency/#person",
             "name": "Artur Efimov",
-            "alternateName": ["Артур Ефимов"],
             "jobTitle": "Web Developer",
             "url": "https://github.com/artur"
           },
           "contactPoint": {
             "@type": "ContactPoint",
-            "contactType": "customer support",
-            "availableLanguage": ["English", "Russian", "Ukrainian"]
-          }
+            "contactType": "customer service",
+            "availableLanguage": ["English", "Ukrainian", "Spanish", "French", "German", "Turkish", "Russian"]
+          },
+          "sameAs": [
+            "https://github.com/artur",
+            "https://efimovs-agency.vercel.app/"
+          ]
         },
         {
           "@type": "WebSite",
           "@id": "https://efimovs.agency/#website",
           "url": "https://efimovs.agency/",
           "name": "Efimovs Agency",
-          "description": "Разработка конверсионных сайтов, которые приносят результат.",
+          "description": "Conversion-focused website development for businesses worldwide.",
           "publisher": {
             "@id": "https://efimovs.agency/#organization"
           },
-          "inLanguage": ["en", "ru", "uk", "tr", "de", "fr", "es"]
+          "inLanguage": ["en", "uk", "ru", "tr", "de", "fr", "es"]
         }
       ]
     }
     </script>
 
-    <!-- ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА LCP -->
+    <!-- Загрузка шрифтов и ресурсов -->
     <link rel="preload" href="/preloader-emblem.webp" as="image" fetchpriority="high" />
     
-    <!-- Исправленный фавикон с параметром ?v=2 для сброса кэша -->
-    <link rel="icon" type="image/jpeg" sizes="any" href="/icons/favicon.png?v=2" />
+    <link rel="icon" type="image/png" sizes="any" href="/icons/favicon.png?v=2" />
     <link rel="apple-touch-icon" href="/icons/favicon.png?v=2" />
     
-    <title>Efimovs Agency | Разработка сайтов и IT-услуги</title>
+    <title>Efimovs Agency — Conversion-Focused Websites & Web Architecture</title>
     
     <style>
       body { margin: 0; background-color: #000000; }
     </style>
   </head>
   <body>
-    <!-- 🌟 ФИКС ПРЫГАЮЩЕГО ШРИФТА (FOUT) ПРИ СМЕНЕ ЯЗЫКА 🌟 -->
+    <!-- Предзагрузка шрифтов для предотвращения сдвигов (FOUT) -->
     <div style="position: absolute; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;" aria-hidden="true">
-      <!-- Montserrat -->
-      <span style="font-family: 'Montserrat', sans-serif; font-weight: 300;">АБВГҐДЕЄЖЗИІЇЙ</span>
-      <span style="font-family: 'Montserrat', sans-serif; font-weight: 400;">АБВГҐДЕЄЖЗИІЇЙ</span>
-      <span style="font-family: 'Montserrat', sans-serif; font-weight: 500;">АБВГҐДЕЄЖЗИІЇЙ</span>
-      <span style="font-family: 'Montserrat', sans-serif; font-weight: 700;">АБВГҐДЕЄЖЗИІЇЙ</span>
-      <span style="font-family: 'Montserrat', sans-serif; font-weight: 900;">АБВГҐДЕЄЖЗИІЇЙ</span>
-      <!-- Plus Jakarta Sans -->
-      <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 400;">АБВГҐДЕЄЖЗИІЇЙ</span>
-      <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500;">АБВГҐДЕЄЖЗИІЇЙ</span>
-      <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600;">АБВГҐДЕЄЖЗИІЇЙ</span>
-      <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;">АБВГҐДЕЄЖЗИІЇЙ</span>
-      <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800;">АБВГҐДЕЄЖЗИІЇЙ</span>
+      <span style="font-family: 'Montserrat', sans-serif; font-weight: 300;">АБВГҐДЕЄЖЗИІЇЙ ABCDEFGHIJKLMNOPQRSTUVWXYZ</span>
+      <span style="font-family: 'Montserrat', sans-serif; font-weight: 400;">АБВГҐДЕЄЖЗИІЇЙ ABCDEFGHIJKLMNOPQRSTUVWXYZ</span>
+      <span style="font-family: 'Montserrat', sans-serif; font-weight: 500;">АБВГҐДЕЄЖЗИІЇЙ ABCDEFGHIJKLMNOPQRSTUVWXYZ</span>
+      <span style="font-family: 'Montserrat', sans-serif; font-weight: 700;">АБВГҐДЕЄЖЗИІЇЙ ABCDEFGHIJKLMNOPQRSTUVWXYZ</span>
+      <span style="font-family: 'Montserrat', sans-serif; font-weight: 900;">АБВГҐДЕЄЖЗИІЇЙ ABCDEFGHIJKLMNOPQRSTUVWXYZ</span>
+      <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 400;">АБВГҐДЕЄЖЗИІЇЙ ABCDEFGHIJKLMNOPQRSTUVWXYZ</span>
+      <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500;">АБВГҐДЕЄЖЗИІЇЙ ABCDEFGHIJKLMNOPQRSTUVWXYZ</span>
+      <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600;">АБВГҐДЕЄЖЗИІЇЙ ABCDEFGHIJKLMNOPQRSTUVWXYZ</span>
+      <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;">АБВГҐДЕЄЖЗИІЇЙ ABCDEFGHIJKLMNOPQRSTUVWXYZ</span>
+      <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800;">АБВГҐДЕЄЖЗИІЇЙ ABCDEFGHIJKLMNOPQRSTUVWXYZ</span>
     </div>
 
     <div id="app"></div>
