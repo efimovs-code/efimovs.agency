@@ -8,11 +8,11 @@ export default defineConfig({
   build: {
     target: 'esnext',
     minify: 'esbuild',
-    cssMinify: 'esbuild', // ВАЖНО: Дополнительно ускоряем парсинг стилей
-    cssCodeSplit: true, // ВАЖНО: Разделяет CSS, чтобы не грузить один огромный файл
+    cssMinify: 'esbuild',
+    cssCodeSplit: false, // Весь CSS собирается в один файл — стили секций не отвалятся после деплоя
     chunkSizeWarningLimit: 600,
     modulePreload: {
-      polyfill: false // Отключаем ненужный код, так как target: 'esnext'
+      polyfill: false
     },
     rollupOptions: {
       output: {
@@ -21,7 +21,7 @@ export default defineConfig({
             if (id.includes('three')) return 'vendor-three';
             if (id.includes('vue')) return 'vendor-vue';
             if (id.includes('@studio-freight/lenis') || id.includes('lenis')) return 'vendor-lenis';
-            if (id.includes('gsap')) return 'vendor-gsap'; // ВАЖНО: Изолируем GSAP
+            if (id.includes('gsap')) return 'vendor-gsap';
             return 'vendor-core';
           }
         }
