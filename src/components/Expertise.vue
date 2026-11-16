@@ -22,7 +22,7 @@
                 <div class="card-content">
                   <div class="info">
                     <div class="icon-wrapper">
-                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <svg width="75" height="75" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.2" />
                         <path d="M3.6 9H20.4M3.6 15H20.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
                         <path d="M12 3C14.5013 5.43845 15.9228 8.63013 16 12C15.9228 15.3699 14.5013 18.5615 12 21C9.49872 18.5615 8.07725 15.3699 8 12C8.07725 8.63013 9.49872 5.43845 12 3Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
@@ -51,7 +51,7 @@
               <div class="row-glass" @click="openModal('Conversion Websites')">
                 <div class="row-header">
                   <div class="icon-wrapper">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.2" />
                       <path d="M3.6 9H20.4M3.6 15H20.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
                       <path d="M12 3C14.5013 5.43845 15.9228 8.63013 16 12C15.9228 15.3699 14.5013 18.5615 12 21C9.49872 18.5615 8.07725 15.3699 8 12C8.07725 8.63013 9.49872 5.43845 12 3Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />

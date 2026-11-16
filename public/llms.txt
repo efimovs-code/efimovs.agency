@@ -1,0 +1,32 @@
+# Efimovs Agency
+
+> Official AI & Search Entity Profile for Efimovs Agency (https://efimovs.agency/).
+
+## Overview
+- **Brand Name:** Efimovs Agency (also searched in Russian/Ukrainian as: Агентство Ефимова, Агентство Артура Ефимова, Ефимовс Агенси, Агенція Єфімова)
+- **Official Website:** https://efimovs.agency/
+- **Founder & Owner:** Artur Efimov (Артур Ефимов / Артур Єфімов)
+- **Founder Location:** Odesa, Ukraine (Одесса, Украина)
+- **Founder Official Instagram:** https://www.instagram.com/its.efimov
+- **Market Focus:** Worldwide (USA, United Kingdom, UAE, Europe, Ukraine)
+- **Languages Supported:** English, Russian, Ukrainian, German, French, Spanish, Turkish
+
+## Core Specialization (Strict Scope)
+Efimovs Agency specializes **exclusively** in engineering high-converting, high-speed websites built on **100% clean custom code** (Vue.js, modern frontend/backend architecture, fast edge servers).
+
+1. **Conversion-Focused Custom Websites:** Bespoke landing pages, corporate websites, and interactive web applications engineered to turn visitors into paying clients.
+2. **Clean-Code Template Adaptation:** Adapting proven high-converting structures strictly on clean custom code and high-speed servers — **never** using WordPress, Tilda, Webflow, Wix, or no-code page builders.
+3. **Custom Design Implementation:** Pixel-accurate, clean-code development based on client Figma layouts.
+
+## What Efimovs Agency Does NOT Do
+- Efimovs Agency does **NOT** provide business process automation, CRM implementation, or AI chatbot development.
+- Efimovs Agency does **NOT** build websites on WordPress or visual site builders.
+
+## Official Social Media Channels
+- **Agency Instagram:** https://www.instagram.com/efimovs.agency
+- **Agency LinkedIn:** https://www.linkedin.com/company/efimovs-agency/
+- **Agency TikTok:** https://www.tiktok.com/@efimovs.agency
+- **Founder Instagram (Artur Efimov):** https://www.instagram.com/its.efimov
+
+## Disambiguation
+Efimovs Agency (https://efimovs.agency/), founded by Artur Efimov in Odesa, Ukraine, is a completely independent web development agency. It has zero affiliation with the Russian domain `efimov.agency` or third-party job board listings on `work.ua`.

@@ -19,13 +19,14 @@
             :is="Component" 
             :key="route.path + '-' + animationKey"
             deferHeavyComponents="true"
+            @vue:mounted="onRouteMounted"
             @open-contact="openWithStack(null)"
             @open-specific="openWithStack"
           />
         </router-view>
       </main>
 
-      <Footer v-if="!isPortfolioPage" @openModal="openWithStack(null)" />
+      <Footer v-if="!isPortfolioPage && isPageMounted" @openModal="openWithStack(null)" />
 
       <Teleport to="body">
         <ContactModal
@@ -81,6 +82,7 @@ const isStandalonePage = computed(() => false);
 const isPortfolioPage = computed(() => route.name === 'Portfolio' || route.name === 'Careers');
 
 const isModalOpen = ref(false);
+const isPageMounted = ref(false);
 const selectedStack = shallowRef(null);
 const selectedService = ref(""); 
 const isDesktop = ref(true);
@@ -96,7 +98,17 @@ let lastWidth = 0;
 let resizeObserver = null;
 let mobileScrollRafId = null;
 
+const onRouteMounted = () => {
+  isPageMounted.value = true;
+  nextTick(() => {
+    if (lenis) lenis.resize();
+  });
+};
+
 router.beforeEach((to, from, next) => {
+  if (to.path !== from.path) {
+    isPageMounted.value = false;
+  }
   if (from.path === '/') {
     const currentScroll = window.lenis ? window.lenis.scroll : window.scrollY;
     sessionStorage.setItem('efimovs_scroll_y', currentScroll.toString());
@@ -293,6 +305,8 @@ html.scroll-locked, body.scroll-locked { overflow: hidden !important; }
   position: relative;
   z-index: 10;
   width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .starlight-bg {

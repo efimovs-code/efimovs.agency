@@ -195,11 +195,6 @@ const openModal = (stack = "", service = "") => {
 
 const socials = [
   {
-    name: "X",
-    link: "https://x.com/efimovsagency?s=21",
-    icon: '<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="currentColor"/>'
-  },
-  {
     name: "Instagram",
     link: "https://www.instagram.com/efimovs.agency?stkn=MXF4enEyYjVwMWs5bA%3D%3D&utm_source=qr",
     icon: '<path fill-rule="evenodd" clip-rule="evenodd" d="M7 2C4.23858 2 2 4.23858 2 7V17C2 19.7614 4.23858 22 7 22H17C19.7614 22 22 19.7614 22 17V7C22 4.23858 19.7614 2 17 2H7ZM12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17C14.7614 17 17 14.7614 17 12C17 9.23858 14.7614 7 12 7ZM18.5 6.75C19.1904 6.75 19.75 6.19036 19.75 5.5C19.75 4.80964 19.1904 4.25 18.5 4.25C17.8096 4.25 17.25 4.80964 17.25 5.5C17.25 6.19036 17.8096 6.75 18.5 6.75ZM12 9C13.6569 9 15 10.3431 15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9Z" fill="currentColor"/>',

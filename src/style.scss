@@ -46,10 +46,21 @@ html {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* 🌟 ДОБАВЛЕНО: Блокировка Layout Shifts при рендере графики */
-img, picture, video, canvas, svg {
+/* 🌟 Блокировка Layout Shifts при рендере графики */
+img, picture, video, canvas {
   display: block;
   max-width: 100%;
+}
+
+svg {
+  max-width: 100%;
+  flex-shrink: 0;
+}
+
+/* Страховка для SVG без атрибутов width/height до загрузки scoped-CSS */
+svg:not([width]):not([height]) {
+  width: 1.5em;
+  height: 1.5em;
 }
 
 body {

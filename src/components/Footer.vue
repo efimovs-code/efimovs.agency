@@ -35,24 +35,6 @@
               </div>
             </div>
 
-            <div class="career-left-wrapper">
-              <router-link to="/careers" class="career-inline-link">
-                <div class="career-status">
-                  <span class="hiring-dot" v-once></span>
-                  <span class="career-label">{{ t('ft_career_title') }}</span>
-                </div>
-                <p class="career-subtext">
-                  {{ t('ft_career_desc') }}<br/>
-                  <span class="career-highlight">
-                    {{ t('ft_career_link') }}
-                    <svg class="career-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2px">
-                      <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="square" />
-                    </svg>
-                  </span>
-                </p>
-              </router-link>
-            </div>
-
           </div>
 
           <!-- ПРАВАЯ КОЛОНКА (ФОРМА И EMAIL) -->
@@ -211,11 +193,6 @@ const shake = reactive({ name: false, email: false, message: false });
 let resizeTimer = null;
 
 const socials = [
-  {
-    name: "X",
-    link: "https://x.com/efimovsagency?s=21",
-    icon: '<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="currentColor"/>'
-  },
   {
     name: "Instagram",
     link: "https://www.instagram.com/efimovs.agency",
@@ -513,89 +490,6 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-}
-
-/* КАРЬЕРНЫЙ БЛОК */
-.career-left-wrapper {
-  margin-top: 80px;
-  width: 100%;
-  max-width: 420px;
-}
-
-.career-inline-link {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 14px;
-  text-decoration: none;
-  -webkit-tap-highlight-color: transparent;
-  outline: none;
-  width: fit-content;
-}
-
-.career-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.hiring-dot {
-  width: 8px; 
-  height: 8px; 
-  border-radius: 8px;
-  background-color: #e5e4e2;
-  animation: pulsePlatinumHiring 2.5s ease-in-out infinite alternate;
-  will-change: opacity;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .career-inline-link:hover .career-label { color: #ffffff; }
-  .career-inline-link:hover .career-subtext { color: #d1d1d6; }
-  .career-inline-link:hover .career-highlight { color: #ffffff; }
-  .career-inline-link:hover .career-arrow { transform: translateX(5px); }
-}
-
-@keyframes pulsePlatinumHiring {
-  0% { opacity: 0.5; }
-  100% { opacity: 1; }
-}
-
-.career-label {
-  font-size: 13px; 
-  font-weight: 800;
-  color: #ffffff; 
-  text-transform: uppercase;
-  letter-spacing: 3px; 
-  transition: color 0.4s ease;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-}
-
-.career-subtext {
-  font-size: 16px; 
-  line-height: 26px;
-  color: #a1a1aa; 
-  margin: 0px;
-  font-weight: 400;
-  transition: color 0.4s ease;
-  text-rendering: optimizeLegibility;
-}
-
-.career-highlight {
-  color: #ffffff; 
-  font-weight: 600; 
-  transition: color 0.4s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 4px;
-}
-
-.career-arrow {
-  width: 16px; 
-  height: 16px;
-  transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-  stroke-width: 2px;
 }
 
 /* =========================================
@@ -927,7 +821,7 @@ onBeforeUnmount(() => {
   
   .footer-top-grid {
     grid-template-columns: 1fr;
-    gap: 0px; 
+    gap: 80px; 
     margin-bottom: 60px;
     text-align: center;
   }
@@ -944,20 +838,6 @@ onBeforeUnmount(() => {
   .title-scroll-wrapper { justify-content: center; }
   
   .action-group { align-items: center; }
-  
-  .career-left-wrapper {
-    margin-top: 80px; 
-    margin-bottom: 80px; 
-    padding: 40px 0px; 
-    width: 100%;
-    max-width: 100%;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    background: linear-gradient(180deg, rgba(255,255,255,0.01) 0%, transparent 100%);
-  }
-  .career-inline-link { align-items: center; } 
-  .career-status { justify-content: center; width: 100%; }
-  .career-highlight { justify-content: center; }
 
   .form-row { flex-direction: column; gap: 32px; }
   .form-footer { justify-content: center; margin-top: 30px; }
@@ -1022,7 +902,7 @@ onBeforeUnmount(() => {
     font-size: clamp(16px, 5.5vw, 28px) !important;
   }
 
-  .cta-description, .email-disclaimer, .career-subtext {
+  .cta-description, .email-disclaimer {
     font-size: 14px;
     line-height: 24px;
     padding: 0px 10px; 
@@ -1067,12 +947,6 @@ onBeforeUnmount(() => {
   }
   
   .btn-outline-platinum-visual { padding: 18px 10px !important; }
-  
-  .career-left-wrapper {
-    margin-top: 60px;
-    margin-bottom: 60px;
-    padding: 30px 0px;
-  }
 }
 
 @media (hover: none) {
