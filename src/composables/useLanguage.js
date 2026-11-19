@@ -63,7 +63,7 @@ watch(currentLang, (newLang) => {
 
 const translations = {
   EN: {
-    page_title: 'Efimovs Agency — Conversion-Focused Websites',
+    page_title: 'Efimovs Agency',
     projects: 'Projects',
     services: 'Services',
     packages: 'Pricing',
@@ -316,7 +316,7 @@ const translations = {
     mod_opt_layout_desc: 'You already have a layout/design. We will write clean code, add functionality, and bring it to life.',
   },
   RU: {
-    page_title: 'Efimovs Agency — Разработка конверсионных сайтов',
+    page_title: 'Efimovs Agency',
     projects: 'Проекты',
     services: 'Услуги',
     packages: 'Тарифы',
@@ -569,7 +569,7 @@ const translations = {
     mod_opt_layout_desc: 'У вас уже есть готовый макет сайта. Мы напишем чистый код, добавим функционал и оживим его.',
   },
   UA: {
-    page_title: 'Efimovs Agency — Конверсійні Сайти',
+    page_title: 'Efimovs Agency',
     projects: 'Проєкти',
     services: 'Послуги',
     packages: 'Тарифи',
@@ -822,7 +822,7 @@ const translations = {
     mod_opt_layout_desc: 'У вас вже є готовий макет сайту. Ми напишемо чистий код, додамо функціонал та оживимо його.',
   },
   TR: {
-    page_title: 'Efimovs Agency — Dönüşüm Odaklı Web Siteleri',
+    page_title: 'Efimovs Agency',
     projects: 'Projeler',
     services: 'Hizmetler',
     packages: 'Fiyatlandırma',
@@ -1075,7 +1075,7 @@ const translations = {
     mod_opt_layout_desc: 'Zaten hazır bir site tasarımınız var. Temiz kod yazacak, işlevsellik ekleyecek ve onu canlandıracağız.',
   },
   DE: {
-    page_title: 'Efimovs Agency — Conversion-Websites',
+    page_title: 'Efimovs Agency',
     projects: 'Projekte',
     services: 'Dienstleistungen',
     packages: 'Preise',
@@ -1328,7 +1328,7 @@ const translations = {
     mod_opt_layout_desc: 'Sie haben bereits ein fertiges Website-Layout. Wir schreiben sauberen Code, fügen Funktionen hinzu und erwecken es zum Leben.',
   },
   FR: {
-    page_title: 'Efimovs Agency — Sites Web de Conversion',
+    page_title: 'Efimovs Agency',
     projects: 'Projets',
     services: 'Services',
     packages: 'Tarifs',
@@ -1581,7 +1581,7 @@ const translations = {
     mod_opt_layout_desc: 'Vous avez déjà une maquette prête. Nous écrirons un code propre, ajouterons les fonctionnalités et lui donnerons vie.',
   },
   ES: {
-    page_title: 'Efimovs Agency — Sitios Web de Conversión',
+    page_title: 'Efimovs Agency',
     projects: 'Proyectos',
     services: 'Servicios',
     packages: 'Precios',

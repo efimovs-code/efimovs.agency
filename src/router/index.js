@@ -7,7 +7,7 @@ const routes = [
     // Загружается только при открытии главной страницы (Code Splitting)
     component: () => import('../views/Home.vue'),
     meta: { 
-      title: 'Efimovs Agency | Conversion-Focused Websites',
+      title: 'Efimovs Agency',
       description: 'Efimovs Agency - Development of conversion-focused websites that turn visitors into clients.'
     }
   },
