@@ -49,15 +49,52 @@ const getInitialLanguage = () => {
 
 export const currentLang = ref(getInitialLanguage());
 
+const seoDescriptions = {
+  EN: 'Development of conversion-focused websites that turn visitors into clients.',
+  RU: 'Разработка конверсионных сайтов на чистом коде, которые превращают посетителей в клиентов.',
+  UA: 'Розробка конверсійних сайтів на чистому коді, які перетворюють відвідувачів на клієнтів.',
+  TR: 'Ziyaretçileri müşteriye dönüştüren, temiz kodlu dönüşüm odaklı web siteleri geliştirme.',
+  DE: 'Entwicklung von Conversion-Websites auf sauberem Code, die Besucher in Kunden verwandeln.',
+  FR: 'Développement de sites web de conversion en code propre qui transforment les visiteurs en clients.',
+  ES: 'Desarrollo de sitios web de conversión en código limpio que convierten visitantes en clientes.',
+};
+
 // ОПТИМИЗАЦИЯ SEO & ПАМЯТИ: Следим за сменой языка
 watch(currentLang, (newLang) => {
   // Сохраняем выбор, чтобы после F5 язык не сбрасывался
   localStorage.setItem('efimovs_lang', newLang.code);
 
-  // Динамически меняем атрибут <html> для SEO
+  // Динамически меняем атрибут <html>, canonical и meta description для глобального SEO
   if (typeof document !== 'undefined') {
     const htmlLang = newLang.code === 'UA' ? 'uk' : newLang.code.toLowerCase();
     document.documentElement.lang = htmlLang;
+
+    const pathname = typeof window !== 'undefined' && window.location.pathname === '/portfolio'
+      ? '/portfolio'
+      : '/';
+    const canonicalUrl = pathname === '/portfolio'
+      ? 'https://efimovs.agency/portfolio'
+      : (htmlLang === 'en' ? 'https://efimovs.agency/' : `https://efimovs.agency/?lang=${htmlLang}`);
+
+    const canonicalTag = document.querySelector('link[rel="canonical"]');
+    if (canonicalTag) {
+      canonicalTag.setAttribute('href', canonicalUrl);
+    }
+
+    const ogUrlTag = document.querySelector('meta[property="og:url"]');
+    if (ogUrlTag) {
+      ogUrlTag.setAttribute('content', canonicalUrl);
+    }
+
+    const localizedDesc = seoDescriptions[newLang.code] || seoDescriptions.EN;
+    const metaDescTag = document.querySelector('meta[name="description"]');
+    if (metaDescTag) {
+      metaDescTag.setAttribute('content', localizedDesc);
+    }
+    const ogDescTag = document.querySelector('meta[property="og:description"]');
+    if (ogDescTag) {
+      ogDescTag.setAttribute('content', localizedDesc);
+    }
   }
 }, { immediate: true });
 
