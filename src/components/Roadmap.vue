@@ -2,17 +2,14 @@
   <section class="roadmap-section" :class="{ 'tg-safe-mode': isTelegram }">
     <div class="container">
       
-      <!-- 🌟 Заголовок секции (ИДЕНТИЧНЫЙ FAQ И PRICING) -->
-      <div class="section-header">
+      <!-- 🌟 Заголовок секции в одну строку с автоподбором размера -->
+      <div ref="headerRef" class="section-header">
         <div v-if="isDesktop && !isTelegram" class="ambient-glow" v-once></div>
 
         <span class="kicker">{{ t('roadmap_kicker') }}</span>
-        
-        <div class="title-scroll-wrapper">
-          <h2 class="gradient-title">
-            {{ t('roadmap_title_1') }} {{ t('roadmap_title_2') }}
-          </h2>
-        </div>
+        <h2 ref="titleRef" class="gradient-title">
+          {{ roadmapTitle }}
+        </h2>
       </div>
 
       <!-- Сама линия и шаги -->
@@ -92,19 +89,50 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
-import { t } from '../composables/useLanguage';
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
+import { t, currentLang } from '../composables/useLanguage';
 
 defineEmits(['open-contact']);
 
+const headerRef = ref(null);
+const titleRef = ref(null);
 const isDesktop = ref(true);
 const isTelegram = ref(false);
 let resizeTimer = null;
+let resizeObserver = null;
+
+const roadmapTitle = computed(() => {
+  return `${t('roadmap_title_1') || ''} ${t('roadmap_title_2') || ''}`.trim();
+});
+
+const fitTitle = () => {
+  const el = titleRef.value;
+  const wrap = headerRef.value;
+  if (!el || !wrap) return;
+
+  el.style.fontSize = '';
+  const maxWidth = wrap.clientWidth;
+  if (!maxWidth) return;
+
+  let currentSize = parseFloat(window.getComputedStyle(el).fontSize);
+  const minSize = 18;
+
+  while (el.scrollWidth > maxWidth && currentSize > minSize) {
+    currentSize -= 0.5;
+    el.style.fontSize = `${currentSize}px`;
+  }
+};
+
+watch([roadmapTitle, () => currentLang.value?.code], () => {
+  nextTick(fitTitle);
+});
 
 const checkDevice = () => {
+  fitTitle();
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     isDesktop.value = window.innerWidth >= 1024;
+    nextTick(fitTitle);
   }, 100);
 };
 
@@ -113,12 +141,21 @@ onMounted(() => {
   if (/Telegram|FBAV|Instagram/i.test(ua)) {
     isTelegram.value = true;
   }
-  checkDevice();
+  isDesktop.value = window.innerWidth >= 1024;
+  fitTitle();
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(fitTitle);
+  }
+  if (typeof ResizeObserver !== 'undefined' && headerRef.value) {
+    resizeObserver = new ResizeObserver(fitTitle);
+    resizeObserver.observe(headerRef.value);
+  }
   window.addEventListener("resize", checkDevice, { passive: true });
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", checkDevice);
+  if (resizeObserver) resizeObserver.disconnect();
   clearTimeout(resizeTimer);
 });
 </script>
@@ -150,7 +187,7 @@ onBeforeUnmount(() => {
 }
 
 /* =========================================
-   ЗАГОЛОВОК (КАК В FAQ / PRICING)
+   ЗАГОЛОВОК
    ========================================= */
 .section-header {
   position: relative;
@@ -159,6 +196,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
   margin-bottom: 32px;
   gap: 16px;
 }
@@ -184,12 +222,6 @@ onBeforeUnmount(() => {
   margin-bottom: 0px;
 }
 
-.title-scroll-wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
 .gradient-title {
   font-size: 64px;
   font-weight: 500;
@@ -198,12 +230,14 @@ onBeforeUnmount(() => {
   line-height: 1.2;
   padding-bottom: 0.15em; /* Компенсация WebKit бага */
   padding-left: 0.25em; /* Оптическая компенсация для точки в конце */
+  padding-right: 4px;
+  max-width: 100%;
   background: linear-gradient(180deg, #ffffff 0%, #71717a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   color: transparent;
-  white-space: nowrap; /* Строго в одну строку для скролла */
+  white-space: nowrap;
 }
 
 /* =========================================
@@ -384,7 +418,7 @@ onBeforeUnmount(() => {
 
 @media (min-width: 768px) and (max-width: 1023px) {
   .gradient-title {
-    font-size: clamp(40px, 6vw, 54px) !important;
+    font-size: clamp(40px, 6vw, 54px);
   }
 }
 
@@ -394,7 +428,7 @@ onBeforeUnmount(() => {
   }
   
   .container {
-    padding: 0px 24px;
+    padding: 0px 16px;
   }
 
   .section-header { 
@@ -410,32 +444,9 @@ onBeforeUnmount(() => {
     margin-bottom: 0;
   }
 
-  /* 🌟 Обертка для мобильного скролла */
-  .title-scroll-wrapper {
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    -webkit-overflow-scrolling: touch;
-    display: flex;
-    justify-content: flex-start;
-  }
-
-  .title-scroll-wrapper::-webkit-scrollbar { display: none; }
-
-  .title-scroll-wrapper::before,
-  .title-scroll-wrapper::after {
-    content: "";
-    flex: 1 0 auto;
-  }
-  
-  /* Идеальный адаптивный заголовок строго в одну строку */
   .gradient-title { 
-    flex: 0 0 auto;
-    font-size: clamp(24px, 7.5vw, 36px) !important; 
-    padding: 0 16px 0.15em calc(16px + 0.25em) !important;
-    letter-spacing: -0.02em !important;
+    font-size: clamp(28px, 8vw, 40px); 
+    padding: 0 4px 0.15em calc(4px + 0.25em);
   }
 
   .timeline-wrapper {

@@ -4,14 +4,10 @@
 
     <div class="container">
       
-      <!-- 🌟 Заголовок с идеальным скроллом и центрированием -->
-      <div class="section-header">
+      <!-- 🌟 Заголовок в одну строку с автоподбором размера -->
+      <div ref="headerRef" class="section-header">
         <span class="kicker">{{ t('faq_kicker') }}</span>
-        
-        <div class="title-scroll-wrapper">
-          <h2 class="gradient-title" v-html="t('faq_title')"></h2>
-        </div>
-        
+        <h2 ref="titleRef" class="gradient-title" v-html="faqTitle"></h2>
         <p class="section-subtitle">{{ t('faq_sub') }}</p>
       </div>
 
@@ -63,7 +59,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { t, currentLang } from "../composables/useLanguage";
 
 defineEmits(['open-contact']);
@@ -74,7 +70,7 @@ const faqDict = {
     { question: "How is communication and development control structured?", answer: "We value your time, which is why we build a fully transparent yet unobtrusive process. A dedicated personal manager is assigned to your project for the entire development period.<br><br>If any questions arise during the work process, you can confidently reach out to them during their working hours. We highly respect our team's personal time, therefore, <b>outside of working hours, the manager is offline and will not respond to messages</b>, but will absolutely get back to you first thing at the start of the next business day." },
     { question: "What if we want to add a new feature during the development process?", answer: "Brilliant ideas often emerge during development. If a new feature (e.g., a complex integration system or a new section) was not included in the initial technical specification, we process it as a <b>Change Request</b>.<br><br>We transparently estimate the cost of adding the new feature to the project before proceeding with implementation. This process is always discussed individually with the manager." },
     { question: "Who owns the rights to the design and source code after the project is completed?", answer: "You receive 100% exclusive rights to the product. Upon final payment, we hand over absolutely all source materials: code repositories (GitHub), master design files (Figma), and full intellectual property rights.<br><br>No hidden licenses, code subscriptions, or vendor lock-in to our agency—the product becomes your full and independent business asset." },
-    { question: "Do you provide project support after release?", answer: "Absolutely. We don't just hand over the source code; we build a long-term partnership. We offer two collaboration options:<br><br><b>1. Hourly support.</b> Once the project is fully completed and accepted by you, any revisions or additions of new features are billed at the developer's hourly rate.<br><b>2. Monthly subscription.</b> After the project release, we can transition you to a subscription model. This means the project will be fully maintained on an ongoing basis as long as your subscription is active. This includes revisions, adding minor new features, and server monitoring.<br><br>The optimal support format is always discussed individually with your manager." },
+    { question: "Do you provide project support after release?", answer: "Absolutely. We don't just hand over the source code; we build a long-term partnership. We offer two collaboration options:<br><br><b>1. Hourly support.</b> Once the project is fully completed and accepted by you, any revisions or additions of new features are billed at the developer's hourly rate.<br><b>2. Monthly subscription.</b> After the project release, we can transition you to a subscription model. This means the project will fully maintained on an ongoing basis as long as your subscription is active. This includes revisions, adding minor new features, and server monitoring.<br><br>The optimal support format is always discussed individually with your manager." },
     { question: "Do you sign an NDA (Non-Disclosure Agreement)?", answer: "Certainly. The confidentiality of your business idea, trade secrets, and client databases is our absolute priority. We are ready to sign a strict Non-Disclosure Agreement (NDA) even before our first introductory call." }
   ],
   RU: [
@@ -131,10 +127,40 @@ const currentFaqs = computed(() => {
   return faqDict[currentLang.value.code] || faqDict.EN;
 });
 
+const headerRef = ref(null);
+const titleRef = ref(null);
 const activeIndex = ref(null);
 const isDesktop = ref(true);
 const isTelegram = ref(false);
 let resizeTimer = null;
+let resizeObserver = null;
+
+const faqTitle = computed(() => {
+  const raw = t('faq_title') || '';
+  return raw.replace(/<br\s*\/?>/gi, ' ');
+});
+
+const fitTitle = () => {
+  const el = titleRef.value;
+  const wrap = headerRef.value;
+  if (!el || !wrap) return;
+
+  el.style.fontSize = '';
+  const maxWidth = wrap.clientWidth;
+  if (!maxWidth) return;
+
+  let currentSize = parseFloat(window.getComputedStyle(el).fontSize);
+  const minSize = 18;
+
+  while (el.scrollWidth > maxWidth && currentSize > minSize) {
+    currentSize -= 0.5;
+    el.style.fontSize = `${currentSize}px`;
+  }
+};
+
+watch([faqTitle, () => currentLang.value.code], () => {
+  nextTick(fitTitle);
+});
 
 const toggleFaq = (index) => {
   activeIndex.value = activeIndex.value === index ? null : index;
@@ -159,9 +185,11 @@ const onLeave = (el) => {
 };
 
 const checkDevice = () => {
+  fitTitle();
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     isDesktop.value = window.innerWidth >= 1024;
+    nextTick(fitTitle);
   }, 100);
 };
 
@@ -171,11 +199,20 @@ onMounted(() => {
     isTelegram.value = true;
   }
   isDesktop.value = window.innerWidth >= 1024;
+  fitTitle();
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(fitTitle);
+  }
+  if (typeof ResizeObserver !== 'undefined' && headerRef.value) {
+    resizeObserver = new ResizeObserver(fitTitle);
+    resizeObserver.observe(headerRef.value);
+  }
   window.addEventListener("resize", checkDevice, { passive: true });
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", checkDevice);
+  if (resizeObserver) resizeObserver.disconnect();
   clearTimeout(resizeTimer);
 });
 </script>
@@ -222,6 +259,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
   margin-bottom: 60px;
   gap: 16px;
 }
@@ -235,12 +273,6 @@ onBeforeUnmount(() => {
   margin-bottom: 0;
 }
 
-.title-scroll-wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
 .gradient-title {
   font-size: 64px;
   font-weight: 500;
@@ -248,7 +280,8 @@ onBeforeUnmount(() => {
   letter-spacing: -0.04em;
   line-height: 1.2;
   padding-bottom: 0.15em;
-  padding-left: 0.25em;
+  padding-inline: 4px;
+  max-width: 100%;
   background: linear-gradient(180deg, #ffffff 0%, #71717a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -416,13 +449,13 @@ onBeforeUnmount(() => {
 
 @media (min-width: 768px) and (max-width: 1023px) {
   .gradient-title {
-    font-size: clamp(40px, 6vw, 54px) !important;
+    font-size: clamp(40px, 6vw, 54px);
   }
 }
 
 @media (max-width: 767px) {
   .faq-luxury { padding: 80px 0px; }
-  .container { padding: 0px 20px; }
+  .container { padding: 0px 16px; }
   
   .section-header { margin-bottom: 24px; gap: 12px; }
   
@@ -433,30 +466,9 @@ onBeforeUnmount(() => {
     margin-right: -0.45em;
   }
 
-  /* 🌟 Обертка для мобильного скролла */
-  .title-scroll-wrapper {
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    -webkit-overflow-scrolling: touch;
-    display: flex;
-    justify-content: flex-start;
-  }
-
-  .title-scroll-wrapper::-webkit-scrollbar { display: none; }
-
-  .title-scroll-wrapper::before,
-  .title-scroll-wrapper::after {
-    content: "";
-    flex: 1 0 auto;
-  }
-
   .gradient-title { 
-    flex: 0 0 auto;
-    font-size: clamp(24px, 7.5vw, 36px) !important; 
-    padding: 0 16px 0.15em calc(16px + 0.25em) !important;
+    font-size: clamp(28px, 8vw, 40px); 
+    padding: 0 4px 0.15em;
   }
 
   .section-subtitle { font-size: 14px; }

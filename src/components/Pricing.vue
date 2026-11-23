@@ -7,14 +7,11 @@
       
       <div class="header-group">
         
-        <div class="pricing-header">
+        <div ref="headerRef" class="pricing-header">
           <span class="kicker">{{ t('pr_kicker') || 'ІНВЕСТИЦІЇ' }}</span>
-          <!-- Обертка для идеального выравнивания и скролла -->
-          <div class="title-scroll-wrapper">
-            <h2 class="gradient-title">
-              {{ t('pr_title') || 'Вартість розробки' }}
-            </h2>
-          </div>
+          <h2 ref="titleRef" class="gradient-title">
+            {{ pricingTitle }}
+          </h2>
         </div>
 
         <!-- 3 Типы разработки -->
@@ -113,6 +110,8 @@
 import {
   ref,
   computed,
+  watch,
+  nextTick,
   onMounted,
   onBeforeUnmount,
   defineAsyncComponent,
@@ -137,7 +136,7 @@ const typeDescriptions = {
   layout: {
     EN: "You already have a website layout. We will write clean code, add functionality, and bring it to life.",
     RU: "У вас уже есть готовый макет сайта. Мы напишем чистый код, добавим функционал и оживим его.",
-    UA: "У вас вже є готовий макет сайту. Ми напишемо чистий код, добавимо функціонал та оживимо його."
+    UA: "У вас вже є готовий макет сайту. Ми напишем чистий код, додамо функціонал та оживимо його."
   },
   custom: {
     EN: "From unique design to the exact functionality you need. A solution for non-standard tasks.",
@@ -167,7 +166,7 @@ const pricingData = {
     { nameKey: "pl_n_simp", labelKey: "pl_l_simp", priceRange: "$800 - $1,500", originalName: "Simple Project", defLabel: "Base",
       desc: { RU: "Разработка дизайна с нуля под ваш стиль. Эксклюзивный одностраничный сайт, выделяющий вас среди конкурентов.", EN: "Custom design from scratch. An exclusive single-page site that makes you stand out.", UA: "Розробка дизайну з нуля под ваш стиль. Ексклюзивний односторінковий сайт, що виділяє вас серед конкурентів." } },
     { nameKey: "pl_n_med", labelKey: "pl_l_med", priceRange: "$1,500 - $3,500", originalName: "Medium Project", defLabel: "Optimal",
-      desc: { RU: "Премиальный многостраничный сайт. Уникальные эффекты, панель управления и автоматический сбор заявок клиентов.", EN: "Premium multi-page site. Unique effects, management panel, and automatic lead collection.", UA: "Преміальний багатосторінковий сайт. Унікальні ефекти, панель управління та автоматичний збір заявок клієнтів." } },
+      desc: { RU: "Премиальный многостраничный сайт. Уникальные эффекты, панель управления и автоматический сбор заявок клиентов.", EN: "Premium multi-page site. Unique effects, management panel, and automatic lead collection.", UA: "Преміальний багатосторінковий сайт. Унікальні ефекти, панель управління та автоматичний збір збір заявок клієнтів." } },
     { nameKey: "pl_n_comp", labelKey: "pl_l_comp", priceRange: "$3,500 - $6,000+", originalName: "Complex Project", defLabel: "Pro",
       desc: { RU: "Полноценная платформа. Личные кабинеты, надежная защита данных, автоматизация продаж и любой нестандартный функционал.", EN: "Full-scale platform. Personal accounts, high security, sales automation, and any custom features.", UA: "Повноцінна платформа. Особисті кабінети, надійний захист даних, автоматизація продажів та будь-який нестандартний функціонал." } }
   ]
@@ -176,6 +175,8 @@ const pricingData = {
 const activeType = ref(designTypes[0].key);
 const activeIndex = ref(0);
 
+const headerRef = ref(null);
+const titleRef = ref(null);
 const scrollContainer = ref(null);
 const isModalOpen = ref(false);
 
@@ -186,6 +187,31 @@ const isDesktop = ref(true);
 const isTelegram = ref(false);
 const activeMobileIndex = ref(0);
 let rafId = null;
+let resizeObserver = null;
+
+const pricingTitle = computed(() => t('pr_title') || 'Вартість розробки');
+
+const fitTitle = () => {
+  const el = titleRef.value;
+  const wrap = headerRef.value;
+  if (!el || !wrap) return;
+
+  el.style.fontSize = '';
+  const maxWidth = wrap.clientWidth;
+  if (!maxWidth) return;
+
+  let currentSize = parseFloat(window.getComputedStyle(el).fontSize);
+  const minSize = 18;
+
+  while (el.scrollWidth > maxWidth && currentSize > minSize) {
+    currentSize -= 0.5;
+    el.style.fontSize = `${currentSize}px`;
+  }
+};
+
+watch([pricingTitle, () => currentLang.value.code], () => {
+  nextTick(fitTitle);
+});
 
 const currentTypeDescription = computed(() => {
   const code = currentLang.value.code;
@@ -233,9 +259,11 @@ const openModalWithPlan = (plan) => {
 
 let resizeTimer;
 const checkDevice = () => {
+  fitTitle();
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     isDesktop.value = window.innerWidth >= 1024;
+    nextTick(fitTitle);
   }, 100);
 };
 
@@ -245,11 +273,19 @@ onMounted(() => {
     isTelegram.value = true;
   }
   checkDevice();
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(fitTitle);
+  }
+  if (typeof ResizeObserver !== 'undefined' && headerRef.value) {
+    resizeObserver = new ResizeObserver(fitTitle);
+    resizeObserver.observe(headerRef.value);
+  }
   window.addEventListener("resize", checkDevice, { passive: true });
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", checkDevice);
+  if (resizeObserver) resizeObserver.disconnect();
   if (rafId) cancelAnimationFrame(rafId);
   clearTimeout(resizeTimer);
 });
@@ -306,7 +342,7 @@ defineExpose({ setActiveType });
 }
 .header-group { max-width: 1240px; margin: 0 auto; }
 
-/* --- СТИЛИ ЗАГОЛОВКА (1:1 С PROJECTS.VUE НА ДЕСКТОПЕ) --- */
+/* --- СТИЛИ ЗАГОЛОВКА --- */
 .pricing-header { 
   margin-bottom: 40px; 
   display: flex; 
@@ -327,19 +363,14 @@ defineExpose({ setActiveType });
   margin-right: -0.25em; 
 }
 
-.title-scroll-wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
 .gradient-title { 
   font-size: 64px; 
   font-weight: 500; 
   letter-spacing: -0.04em; 
   line-height: 1.2; 
   padding-bottom: 0.15em;
-  padding-left: 0.25em; /* Оптическая компенсация точки/края */
+  padding-inline: 4px;
+  max-width: 100%;
   margin: 0; 
   background: linear-gradient(180deg, #ffffff 0%, #71717a 100%); 
   -webkit-background-clip: text; 
@@ -519,7 +550,7 @@ defineExpose({ setActiveType });
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
-  .gradient-title { font-size: clamp(40px, 5.5vw, 56px) !important; text-align: center; }
+  .gradient-title { font-size: clamp(40px, 5.5vw, 56px); text-align: center; }
   .cards-wrapper { grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 0 20px;}
   .card-content { padding: 30px 20px; }
   .plan-name { font-size: 22px; }
@@ -529,6 +560,7 @@ defineExpose({ setActiveType });
 
 @media (max-width: 767px) {
   .pricing-luxury { padding: 80px 0; }
+  .container { padding: 0 14px; }
   
   .pricing-header { margin-bottom: 32px; gap: 12px; }
   
@@ -539,29 +571,9 @@ defineExpose({ setActiveType });
     margin-right: -0.4em;
   }
   
-  .title-scroll-wrapper {
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    -webkit-overflow-scrolling: touch;
-    display: flex;
-    justify-content: flex-start;
-  }
-  
-  .title-scroll-wrapper::-webkit-scrollbar { display: none; }
-  
-  .title-scroll-wrapper::before,
-  .title-scroll-wrapper::after {
-    content: "";
-    flex: 1 0 auto;
-  }
-  
   .gradient-title { 
-    flex: 0 0 auto;
-    font-size: clamp(24px, 7.5vw, 36px) !important; 
-    padding: 0 16px 0.15em calc(16px + 0.25em) !important; 
+    font-size: clamp(28px, 8.2vw, 40px); 
+    padding: 0 4px 0.15em; 
   }
 
   .dynamic-service-context { height: auto; margin-bottom: 40px; padding: 0 10px; }

@@ -8,6 +8,16 @@
       <Expertise v-if="isVisible.expertise" @open-specific="(stack, service) => $emit('open-specific', stack, service)" />
     </div>
 
+    <!-- СРАВНЕНИЕ С КОНКУРЕНТАМИ ПЕРЕД ТАРИФАМИ -->
+    <div ref="comparisonRef" class="opt-contain section-wrapper">
+      <Comparison v-if="isVisible.comparison" @open-contact="$emit('open-contact')" />
+    </div>
+
+    <!-- ИНТЕРАКТИВНОЕ СРАВНЕНИЕ ИНТЕРФЕЙСА ДО / ПОСЛЕ -->
+    <div ref="showcaseRef" class="opt-contain section-wrapper">
+      <BeforeAfterShowcase v-if="isVisible.showcase" @open-contact="$emit('open-contact')" />
+    </div>
+
     <div ref="pricingRef" class="opt-contain section-wrapper">
       <Pricing 
         v-if="isVisible.pricing"
@@ -34,8 +44,9 @@
 import { defineAsyncComponent, reactive, ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import Main from '../components/Main.vue';
 
-// Асинхронный импорт с базовым кэшированием браузера
 const Expertise = defineAsyncComponent(() => import('../components/Expertise.vue'));
+const Comparison = defineAsyncComponent(() => import('../components/Comparison.vue'));
+const BeforeAfterShowcase = defineAsyncComponent(() => import('../components/BeforeAfterShowcase.vue'));
 const Pricing = defineAsyncComponent(() => import('../components/Pricing.vue'));
 const Projects = defineAsyncComponent(() => import('../components/Projects.vue'));
 const FAQ = defineAsyncComponent(() => import('../components/FAQ.vue'));
@@ -45,6 +56,8 @@ defineEmits(['open-contact', 'open-specific']);
 
 const isVisible = reactive({
   expertise: false,
+  comparison: false,
+  showcase: false,
   pricing: false,
   projects: false,
   faq: false,
@@ -52,6 +65,8 @@ const isVisible = reactive({
 });
 
 const expertiseRef = ref(null);
+const comparisonRef = ref(null);
+const showcaseRef = ref(null);
 const pricingRef = ref(null);
 const projectsRef = ref(null);
 const faqRef = ref(null);
@@ -62,7 +77,6 @@ let observer = null;
 onMounted(async () => {
   await nextTick();
   
-  // ОПТИМИЗАЦИЯ: Уменьшен margin. 800px триггерил загрузку всего сразу.
   const observerOptions = {
     root: null,
     rootMargin: '150px 0px', 
@@ -74,7 +88,6 @@ onMounted(async () => {
       if (entry.isIntersecting) {
         const sectionName = entry.target.dataset.section;
         isVisible[sectionName] = true;
-        // Отключаем наблюдение после первой отрисовки для экономии CPU
         observerInstance.unobserve(entry.target);
       }
     });
@@ -82,6 +95,8 @@ onMounted(async () => {
 
   const sections = [
     { el: expertiseRef.value, name: 'expertise' },
+    { el: comparisonRef.value, name: 'comparison' },
+    { el: showcaseRef.value, name: 'showcase' },
     { el: pricingRef.value, name: 'pricing' },
     { el: projectsRef.value, name: 'projects' },
     { el: faqRef.value, name: 'faq' },
@@ -106,13 +121,11 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .home-container {
-  /* Изолируем страницу для браузера */
   contain: content;
 }
 
 .section-wrapper {
   min-height: 20vh;
-  /* Указываем браузеру, что контент не влияет на внешний layout */
   contain: layout style;
 }
 </style>

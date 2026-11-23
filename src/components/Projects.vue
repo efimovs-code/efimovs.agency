@@ -4,14 +4,11 @@
 
     <div class="container">
       
-      <div class="section-header">
+      <div ref="headerRef" class="section-header">
         <span class="kicker">{{ t('projects_kicker') }}</span>
-        <!-- Обертка для идеального скролла длинных заголовков на мобильных -->
-        <div class="title-scroll-wrapper">
-          <h2 class="gradient-title">
-            {{ t('projects_title_1') }} {{ t('projects_title_2') }}
-          </h2>
-        </div>
+        <h2 ref="titleRef" class="gradient-title">
+          {{ projectsTitle }}
+        </h2>
       </div>
 
       <div class="desktop-grid gpu-scroll">
@@ -104,8 +101,38 @@
 </template>
 
 <script setup>
-import { onMounted, onBeforeUnmount, ref, computed } from "vue";
+import { onMounted, onBeforeUnmount, ref, computed, watch, nextTick } from "vue";
 import { t, currentLang } from "../composables/useLanguage";
+
+const headerRef = ref(null);
+const titleRef = ref(null);
+let resizeObserver = null;
+
+const projectsTitle = computed(() => {
+  return `${t('projects_title_1') || ''} ${t('projects_title_2') || ''}`.trim();
+});
+
+const fitTitle = () => {
+  const el = titleRef.value;
+  const wrap = headerRef.value;
+  if (!el || !wrap) return;
+
+  el.style.fontSize = '';
+  const maxWidth = wrap.clientWidth;
+  if (!maxWidth) return;
+
+  let currentSize = parseFloat(window.getComputedStyle(el).fontSize);
+  const minSize = 18;
+
+  while (el.scrollWidth > maxWidth && currentSize > minSize) {
+    currentSize -= 0.5;
+    el.style.fontSize = `${currentSize}px`;
+  }
+};
+
+watch([projectsTitle, () => currentLang.value?.code], () => {
+  nextTick(fitTitle);
+});
 
 const featuredProjects = computed(() => {
   const isRu = currentLang.value?.code === 'RU';
@@ -175,12 +202,14 @@ let lastWidth = 0;
 let resizeTimer = null;
 
 const checkDevice = () => {
+  fitTitle();
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     const currentWidth = window.innerWidth;
     if (currentWidth !== lastWidth) {
       isDesktop.value = currentWidth >= 1024;
       lastWidth = currentWidth;
+      nextTick(fitTitle);
     }
   }, 100); 
 };
@@ -188,11 +217,20 @@ const checkDevice = () => {
 onMounted(() => {
   lastWidth = window.innerWidth;
   isDesktop.value = window.innerWidth >= 1024;
+  fitTitle();
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(fitTitle);
+  }
+  if (typeof ResizeObserver !== 'undefined' && headerRef.value) {
+    resizeObserver = new ResizeObserver(fitTitle);
+    resizeObserver.observe(headerRef.value);
+  }
   window.addEventListener("resize", checkDevice, { passive: true });
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", checkDevice);
+  if (resizeObserver) resizeObserver.disconnect();
   clearTimeout(resizeTimer);
 });
 </script>
@@ -266,12 +304,6 @@ onBeforeUnmount(() => {
   margin-right: -0.25em; 
 }
 
-.title-scroll-wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
 .gradient-title { 
   font-size: 64px; 
   font-weight: 500; 
@@ -279,6 +311,8 @@ onBeforeUnmount(() => {
   line-height: 1.2; 
   padding-bottom: 0.15em;
   padding-left: 0.25em; /* Оптическая компенсация точки в конце */
+  padding-right: 4px;
+  max-width: 100%;
   margin: 0; 
   background: linear-gradient(180deg, #ffffff 0%, #71717a 100%); 
   -webkit-background-clip: text; 
@@ -504,7 +538,7 @@ onBeforeUnmount(() => {
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
-  .gradient-title { font-size: clamp(40px, 5.5vw, 56px) !important; text-align: center; }
+  .gradient-title { font-size: clamp(40px, 5.5vw, 56px); text-align: center; }
 }
 
 @media (max-width: 1023px) {
@@ -522,7 +556,6 @@ onBeforeUnmount(() => {
   .all-cases-action { margin-top: 50px; }
 }
 
-/* --- ИДЕАЛЬНЫЙ АДАПТИВНЫЙ СКРОЛЛ ЗАГОЛОВКА --- */
 @media (max-width: 767px) {
   .projects-section { padding: 80px 0px !important; background-color: transparent !important; }
   .container { padding: 0 16px; }
@@ -535,30 +568,9 @@ onBeforeUnmount(() => {
     margin-right: -0.4em;
   }
   
-  .title-scroll-wrapper {
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    -webkit-overflow-scrolling: touch;
-    display: flex;
-    justify-content: flex-start;
-  }
-  
-  .title-scroll-wrapper::-webkit-scrollbar { display: none; }
-  
-  .title-scroll-wrapper::before,
-  .title-scroll-wrapper::after {
-    content: "";
-    flex: 1 0 auto;
-  }
-  
   .gradient-title { 
-    flex: 0 0 auto;
-    font-size: clamp(24px, 7.5vw, 36px) !important; 
-    /* Сохраняем компенсацию точки на мобильных (16px дефолт + 0.25em компенсация) */
-    padding: 0 16px 0.15em calc(16px + 0.25em) !important; 
+    font-size: clamp(28px, 8.2vw, 40px); 
+    padding: 0 4px 0.15em calc(4px + 0.25em); 
   }
   
   .project-info { margin-top: 20px; }

@@ -12,12 +12,10 @@
           <!-- ЛЕВАЯ КОЛОНКА -->
           <div class="grid-column">
             
-            <!-- 🌟 Обновленный единый заголовок -->
-            <div class="column-header">
+            <!-- 🌟 Единый заголовок в одну строку -->
+            <div ref="leftHeaderRef" class="column-header">
               <span class="kicker">{{ t('ft_kicker_left') }}</span>
-              <div class="title-scroll-wrapper">
-                <h2 class="gradient-title">{{ t('ft_title_left') }}</h2>
-              </div>
+              <h2 ref="leftTitleRef" class="gradient-title">{{ leftTitle }}</h2>
             </div>
             
             <div class="column-body">
@@ -40,14 +38,16 @@
           <!-- ПРАВАЯ КОЛОНКА (ФОРМА И EMAIL) -->
           <div class="grid-column">
             
-            <!-- 🌟 Обновленный единый заголовок -->
-            <div class="column-header">
+            <!-- 🌟 Единый заголовок в одну строку -->
+            <div ref="rightHeaderRef" class="column-header">
               <span class="kicker">{{ t('ft_kicker_right') }}</span>
-              <div class="title-scroll-wrapper">
-                <a href="mailto:efimovs.agency@gmail.com" class="gradient-title email-link">
-                  efimovs.agency@gmail.com
-                </a>
-              </div>
+              <a
+                ref="rightTitleRef"
+                href="mailto:efimovs.agency@gmail.com"
+                class="gradient-title email-link"
+              >
+                efimovs.agency@gmail.com
+              </a>
             </div>
 
             <div class="column-body">
@@ -173,13 +173,47 @@
 </template>
 
 <script setup>
-import { onMounted, ref, reactive, onBeforeUnmount, nextTick } from "vue";
-import { t } from "../composables/useLanguage";
+import { onMounted, ref, reactive, computed, watch, onBeforeUnmount, nextTick } from "vue";
+import { t, currentLang } from "../composables/useLanguage";
 import EfimovsBadge from "./EfimovsBadge.vue";
 
 const emit = defineEmits(["openModal"]);
 const isDesktop = ref(true);
 const messageTextarea = ref(null);
+
+const leftHeaderRef = ref(null);
+const leftTitleRef = ref(null);
+const rightHeaderRef = ref(null);
+const rightTitleRef = ref(null);
+
+let resizeTimer = null;
+let resizeObserver = null;
+
+const leftTitle = computed(() => t('ft_title_left') || '');
+
+const fitElement = (el, wrap, minSize = 14) => {
+  if (!el || !wrap) return;
+
+  el.style.fontSize = '';
+  const maxWidth = wrap.clientWidth;
+  if (!maxWidth) return;
+
+  let currentSize = parseFloat(window.getComputedStyle(el).fontSize);
+
+  while (el.scrollWidth > maxWidth && currentSize > minSize) {
+    currentSize -= 0.5;
+    el.style.fontSize = `${currentSize}px`;
+  }
+};
+
+const fitTitles = () => {
+  fitElement(leftTitleRef.value, leftHeaderRef.value, 18);
+  fitElement(rightTitleRef.value, rightHeaderRef.value, 14);
+};
+
+watch([leftTitle, () => currentLang.value?.code], () => {
+  nextTick(fitTitles);
+});
 
 const formData = reactive({ name: '', email: '', message: '' });
 const isSubmitting = ref(false);
@@ -189,8 +223,6 @@ const isTextareaScrollable = ref(false);
 
 const errors = reactive({ name: '', email: '', message: '' });
 const shake = reactive({ name: false, email: false, message: false });
-
-let resizeTimer = null;
 
 const socials = [
   {
@@ -325,14 +357,25 @@ const submitB2BForm = async () => {
 };
 
 const onWindowResize = () => {
+  fitTitles();
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     isDesktop.value = window.innerWidth >= 1024;
+    nextTick(fitTitles);
   }, 100);
 };
 
 onMounted(() => {
   isDesktop.value = window.innerWidth >= 1024;
+  fitTitles();
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(fitTitles);
+  }
+  if (typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(fitTitles);
+    if (leftHeaderRef.value) resizeObserver.observe(leftHeaderRef.value);
+    if (rightHeaderRef.value) resizeObserver.observe(rightHeaderRef.value);
+  }
   window.addEventListener("resize", onWindowResize, { passive: true });
   
   if (messageTextarea.value) {
@@ -343,6 +386,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", onWindowResize);
+  if (resizeObserver) resizeObserver.disconnect();
   clearTimeout(resizeTimer);
 });
 </script>
@@ -433,12 +477,6 @@ onBeforeUnmount(() => {
   margin-bottom: 0px;
 }
 
-.title-scroll-wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: flex-start;
-}
-
 .gradient-title {
   display: block; 
   font-size: clamp(36px, 4vw, 56px);
@@ -447,22 +485,21 @@ onBeforeUnmount(() => {
   letter-spacing: -0.04em;
   line-height: 1.2;
   padding-bottom: 0.15em; /* Компенсация WebKit бага */
-  padding-right: 0.25em; /* Предотвращаем обрезку последней буквы */
+  padding-right: 4px; /* Предотвращаем обрезку последней буквы */
+  max-width: 100%;
   background: linear-gradient(180deg, #ffffff 0%, #71717a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   color: transparent;
-  white-space: nowrap; /* Строго в одну строку для скролла */
+  white-space: nowrap;
 }
 
-/* 🌟 ТОЧЕЧНАЯ АДАПТАЦИЯ РАЗМЕРА ПОЧТЫ ДЛЯ ИСКЛЮЧЕНИЯ ОБРЕЗКИ НА ВСЕХ ЭКРАНАХ 🌟 */
 .email-link {
   text-decoration: none;
   transition: opacity 0.4s ease;
-  font-size: clamp(20px, 2.7vw, 40px) !important;
-  letter-spacing: -0.03em !important;
-  max-width: 100%;
+  font-size: clamp(22px, 2.7vw, 40px);
+  letter-spacing: -0.03em;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -816,7 +853,7 @@ onBeforeUnmount(() => {
    🌟 АДАПТИВ ДЛЯ ПЛАНШЕТОВ И МОБИЛОК 🌟
    ========================================= */
 @media (max-width: 1023px) {
-  .container { padding: 0px 15px; }
+  .container { padding: 0px 24px; }
   .footer-content { padding: 80px 0px 40px 0px; }
   
   .footer-top-grid {
@@ -833,9 +870,6 @@ onBeforeUnmount(() => {
     margin-right: auto;
     max-width: 100%;
   }
-
-  /* Центрирование контента при сложении колонок на планшете */
-  .title-scroll-wrapper { justify-content: center; }
   
   .action-group { align-items: center; }
 
@@ -858,6 +892,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 767px) {
   .footer { min-height: auto; } 
+  .container { padding: 0px 16px; }
   
   .column-header { margin-bottom: 24px; gap: 12px; }
 
@@ -869,37 +904,14 @@ onBeforeUnmount(() => {
     margin-bottom: 0;
   }
 
-  /* 🌟 Обертка для мобильного скролла */
-  .title-scroll-wrapper {
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    -webkit-overflow-scrolling: touch;
-    display: flex;
-    justify-content: flex-start;
-  }
-
-  .title-scroll-wrapper::-webkit-scrollbar { display: none; }
-
-  .title-scroll-wrapper::before,
-  .title-scroll-wrapper::after {
-    content: "";
-    flex: 1 0 auto;
-  }
-  
-  /* Идеальный адаптивный заголовок строго в одну строку */
   .gradient-title { 
-    flex: 0 0 auto;
-    font-size: clamp(24px, 7.5vw, 36px) !important; 
-    padding: 0 16px 0.15em 16px !important;
-    letter-spacing: -0.02em !important;
-    margin-bottom: 0px !important;
+    font-size: clamp(28px, 8vw, 40px); 
+    padding: 0 4px 0.15em;
+    margin-bottom: 0px;
   }
   
   .email-link {
-    font-size: clamp(16px, 5.5vw, 28px) !important;
+    font-size: clamp(20px, 6.2vw, 32px);
   }
 
   .cta-description, .email-disclaimer {
@@ -938,14 +950,6 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 380px) {
-  .gradient-title { 
-    font-size: clamp(20px, 6.2vw, 24px) !important; 
-  }
-
-  .email-link {
-    font-size: clamp(14px, 5vw, 22px) !important;
-  }
-  
   .btn-outline-platinum-visual { padding: 18px 10px !important; }
 }
 
