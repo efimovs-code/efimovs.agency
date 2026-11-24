@@ -2,10 +2,10 @@
   <section
     ref="heroSection"
     class="hero"
-    :class="{ 'is-paused': !isVisible }"
-  >
+    :class="{ 'is-paused': !isVisible }">
+    
     <div class="container">
-      <!-- ЕДИНЫЙ ФЛАГМАНСКИЙ ЗАГОЛОВОК + КНОПКИ TESLA -->
+      <!-- HERO HEADING AND PRIMARY ACTION BUTTONS -->
       <div class="flagship-head">
         <span class="brand-eyebrow">EFIMOVS AGENCY</span>
 
@@ -19,38 +19,32 @@
 
         <div class="tesla-actions">
           <button
+            type="button"
             class="tesla-btn tesla-primary"
             @click="$emit('open-contact')"
-            @touchstart.passive="handleTouchStart"
-            @touchmove.passive="handleTouchMove"
-            @touchend="handleSmartClick(() => $emit('open-contact'), $event)"
           >
             {{ t('mobile_btn_primary') }}
           </button>
 
-          <a
-            href="/portfolio"
+          <router-link
+            to="/portfolio"
             class="tesla-btn tesla-secondary"
-            @click.prevent="navigateToPortfolio"
-            @touchstart.passive="handleTouchStart"
-            @touchmove.passive="handleTouchMove"
-            @touchend="handleSmartClick(navigateToPortfolio, $event)"
           >
             {{ t('mobile_btn_secondary') }}
-          </a>
+          </router-link>
         </div>
       </div>
 
-      <!-- ОДНА ПОЛНОЦЕННАЯ СТАТИЧНАЯ СЕРЕБРЯНАЯ ПОЛОСА (ДЕСКТОП + ПЛАНШЕТ) -->
+      <!-- STATIC SILVER DIVIDER LINE -->
       <div class="silver-bar-stage" aria-hidden="true">
         <div class="silver-static-cast"></div>
         <div class="silver-single-line"></div>
       </div>
 
-      <!-- МИНИМАЛИСТИЧНАЯ ПАНЕЛЬ БЫСТРОЙ СВЯЗИ БЕЗ АНКЕТ (ДЕСКТОП + ПЛАНШЕТ) -->
+      <!-- DIRECT MESSENGER CONTACT BAR -->
       <div class="direct-contact-bar">
         <span class="direct-label">
-          {{ tr('hero_direct_label', 'Написать напрямую без формы') }}
+          {{ t('hero_direct_label') }}
         </span>
 
         <div class="direct-channels">
@@ -91,13 +85,13 @@
         </div>
       </div>
 
-      <!-- МОБИЛЬНЫЙ ЖИВОЙ 4D MACBOOK SHOWCASE (ТОЛЬКО <= 767px) -->
+      <!-- MOBILE MACBOOK SHOWCASE (MOBILE ONLY <= 767PX) -->
       <div class="mobile-macbook-stage" aria-hidden="true">
         <div class="mobile-macbook-glow"></div>
         <div class="mobile-macbook-float">
           <img
             src="/hero-macbook.jpg"
-            alt="Efimovs Agency Flagship Web Architecture"
+            alt=""
             class="mobile-macbook-render"
             loading="eager"
             fetchpriority="high"
@@ -112,109 +106,64 @@
 
 <script setup>
 import { ref, watch, nextTick, onMounted, onBeforeUnmount } from "vue";
-import { useRouter } from "vue-router";
 import { t, telegramDirectUrl, whatsappDirectUrl, emailDirectUrl } from "../composables/useLanguage";
 
-const emit = defineEmits(["open-contact"]);
+// EVENTS AND REFS
+defineEmits(["open-contact"]);
 
-const router = useRouter();
 const heroSection = ref(null);
 const titleRef = ref(null);
 const isVisible = ref(true);
 
-let observer = null;
+let visibilityObserver = null;
 
-// Безопасный перевод с фолбэком, если ключ ещё не добавлен в словарь
-const tr = (key, fallback) => {
-  const translated = t(key);
-  return translated && translated !== key ? translated : fallback;
-};
-
-// Автоподгонка заголовка строго в 1 строку на ВСЕХ языках
+// KEEP HERO TITLE ON ONE LINE ACROSS ALL LANGUAGES
 const fitTitle = async () => {
   await nextTick();
-  const el = titleRef.value;
-  if (!el) return;
+  const titleEl = titleRef.value;
+  if (!titleEl) return;
 
-  el.style.fontSize = "";
-  const parentWidth = el.parentElement?.clientWidth || window.innerWidth - 40;
-  let currentSize = parseFloat(window.getComputedStyle(el).fontSize);
+  titleEl.style.fontSize = "";
+  const containerWidth = titleEl.parentElement?.clientWidth || window.innerWidth - 40;
+  const currentFontSize = parseFloat(window.getComputedStyle(titleEl).fontSize);
 
-  while (el.scrollWidth > parentWidth && currentSize > 16) {
-    currentSize -= 0.5;
-    el.style.fontSize = `${currentSize}px`;
+  if (titleEl.scrollWidth > containerWidth) {
+    const scaleRatio = containerWidth / titleEl.scrollWidth;
+    const fittedSize = Math.max(16, Math.floor(currentFontSize * scaleRatio));
+    titleEl.style.fontSize = `${fittedSize}px`;
   }
 };
 
 watch(() => t("mobile_hero_title"), fitTitle);
 
-const navigateToPortfolio = () => {
-  router.push("/portfolio");
-};
-
-let touchStartY = 0;
-let touchStartX = 0;
-let isDragging = false;
-
-const handleTouchStart = (e) => {
-  touchStartY = e.touches[0].clientY;
-  touchStartX = e.touches[0].clientX;
-  isDragging = false;
-};
-
-const handleTouchMove = (e) => {
-  if (!isDragging) {
-    const touchY = e.touches[0].clientY;
-    const touchX = e.touches[0].clientX;
-    if (Math.abs(touchY - touchStartY) > 10 || Math.abs(touchX - touchStartX) > 10) {
-      isDragging = true;
-    }
-  }
-};
-
-const handleSmartClick = (actionFn, e) => {
-  if (!isDragging) {
-    if (e && e.cancelable) e.preventDefault();
-    actionFn();
-  }
-  isDragging = false;
-};
-
+// LIFECYCLE AND VISIBILITY OBSERVER
 onMounted(() => {
   fitTitle();
   window.addEventListener("resize", fitTitle, { passive: true });
 
-  observer = new IntersectionObserver(
+  visibilityObserver = new IntersectionObserver(
     (entries) => {
-      if (isVisible.value !== entries[0].isIntersecting) {
-        isVisible.value = entries[0].isIntersecting;
-      }
+      isVisible.value = entries[0].isIntersecting;
     },
     { rootMargin: "0px 0px -100px 0px", threshold: 0 }
   );
 
   if (heroSection.value) {
-    observer.observe(heroSection.value);
+    visibilityObserver.observe(heroSection.value);
   }
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", fitTitle);
-  if (observer) {
-    if (heroSection.value) observer.unobserve(heroSection.value);
-    observer.disconnect();
-    observer = null;
+  if (visibilityObserver) {
+    visibilityObserver.disconnect();
+    visibilityObserver = null;
   }
 });
 </script>
 
 <style lang="scss" scoped>
-$platinum: #e5e4e2;
-
-.mobile-macbook-stage {
-  display: none;
-}
-
+/* KEYFRAME ANIMATIONS */
 @keyframes fadeInUp {
   0% {
     opacity: 0;
@@ -263,6 +212,11 @@ $platinum: #e5e4e2;
   }
 }
 
+/* HERO SECTION LAYOUT */
+.mobile-macbook-stage {
+  display: none;
+}
+
 .hero {
   min-height: 100svh;
   display: flex;
@@ -296,9 +250,7 @@ $platinum: #e5e4e2;
   z-index: 10;
 }
 
-/* ===============================================================
-   ВЕРХНИЙ ЗАГОЛОВОК + КНОПКИ TESLA
-   =============================================================== */
+/* HERO HEADING AND CTA BUTTONS */
 .flagship-head {
   display: flex;
   flex-direction: column;
@@ -406,9 +358,7 @@ $platinum: #e5e4e2;
   }
 }
 
-/* ===============================================================
-   ОДНА ПОЛНОЦЕННАЯ СТАТИЧНАЯ СЕРЕБРЯНАЯ ПОЛОСА
-   =============================================================== */
+/* STATIC SILVER DIVIDER LINE */
 .silver-bar-stage {
   position: relative;
   width: 100%;
@@ -454,9 +404,7 @@ $platinum: #e5e4e2;
   box-shadow: 0 0 18px rgba(255, 255, 255, 0.24);
 }
 
-/* ===============================================================
-   МИНИМАЛИСТИЧНАЯ ПАНЕЛЬ ПРЯМОЙ СВЯЗИ (БЕЗ ПОДСВЕТКИ И ЛИШНЕГО ТЕКСТА)
-   =============================================================== */
+/* DIRECT MESSENGER CONTACT BAR */
 .direct-contact-bar {
   position: relative;
   z-index: 12;
@@ -526,9 +474,7 @@ $platinum: #e5e4e2;
   }
 }
 
-/* ===============================================================
-   ПЛАНШЕТЫ (768px - 1023px)
-   =============================================================== */
+/* TABLET RESPONSIVE STYLES (768PX - 1023PX) */
 @media (min-width: 768px) and (max-width: 1023px) {
   .hero .container {
     padding: 0 24px;
@@ -554,9 +500,7 @@ $platinum: #e5e4e2;
   }
 }
 
-/* ===============================================================
-   МОБИЛЬНАЯ ВЕРСИЯ (<= 767px) — ОСТАЁТСЯ 4D MACBOOK
-   =============================================================== */
+/* MOBILE RESPONSIVE STYLES (<= 767PX) */
 @media (max-width: 767px) {
   .silver-bar-stage,
   .direct-contact-bar {

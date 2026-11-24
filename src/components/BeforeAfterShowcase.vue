@@ -2,17 +2,17 @@
   <section class="ba-section">
     <div class="container">
       <div ref="headerRef" class="section-header">
-        <span class="kicker">{{ localized.kicker }}</span>
+        <span class="kicker">{{ t('ba_kicker') }}</span>
         <h2 ref="titleRef" class="gradient-title ba-single-title">
-          {{ localized.title }}
+          {{ baTitle }}
         </h2>
         <p class="section-sub">
-          {{ localized.subBefore }}<span class="sub-highlight">{{ localized.subAccent }}</span>{{ localized.subAfter }}
+          {{ t('ba_sub_before') }}<span class="sub-highlight">{{ t('ba_sub_accent') }}</span>{{ t('ba_sub_after') }}
         </p>
       </div>
     </div>
 
-    <!-- СЦЕНА СРАВНЕНИЯ СРЕДНЕГО РАЗМЕРА -->
+    <!-- INTERACTIVE COMPARISON STAGE -->
     <div
       ref="stageRef"
       class="ba-stage-full"
@@ -20,42 +20,54 @@
       :style="{ '--split': split + '%' }"
       @pointerdown="onPointerDown"
     >
-      <!-- СЛОЙ 1 (БАЗОВЫЙ): ПОСЛЕ -->
+      <!-- LAYER 1 (BASE): AFTER -->
       <div class="layer layer-after" aria-hidden="true">
         <img
           src="/images/after.jpg"
-          alt="analogue.co"
+          alt="Modern high-converting website"
           class="site-screenshot"
           draggable="false"
+          decoding="async"
         />
       </div>
 
-      <!-- СЛОЙ 2 (ВЕРХНИЙ, ОБРЕЗАЕТСЯ ПОЛЗУНКОМ): ДО -->
+      <!-- LAYER 2 (CLIPPED OVERLAY): BEFORE -->
       <div class="layer layer-before" aria-hidden="true">
         <img
           src="/images/before.jpg"
-          alt="berkshirehathaway.com"
+          alt="Outdated cluttered website"
           class="site-screenshot"
           draggable="false"
+          decoding="async"
         />
       </div>
 
-      <!-- ВЕРТИКАЛЬНАЯ ЛИНИЯ И РУЧКА ПОЛЗУНКА -->
+      <!-- DIVIDER LINE AND DRAG HANDLE -->
       <div class="divider-line">
         <div
           class="divider-handle"
           role="slider"
-          aria-label="Сравнить сайты до и после"
+          tabindex="0"
+          :aria-label="t('ba_aria_slider')"
+          aria-valuemin="3"
+          aria-valuemax="97"
           :aria-valuenow="Math.round(split)"
+          @keydown="onSliderKeydown"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M9 18L3 12L9 6M15 6L21 12L15 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M9 18L3 12L9 6M15 6L21 12L15 18"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
           </svg>
         </div>
       </div>
     </div>
 
-    <!-- КНОПКА В ТОЧНОСТИ КАК В Expertise.vue -->
+    <!-- SECTION CTA -->
     <div class="container">
       <div class="section-cta-wrapper">
         <button
@@ -63,7 +75,7 @@
           class="main-action-btn"
           @click="$emit('open-contact')"
         >
-          {{ localized.cta }}
+          {{ t('ba_cta') }}
         </button>
       </div>
     </div>
@@ -72,48 +84,21 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
-import { currentLang } from '../composables/useLanguage';
+import { t, currentLang } from '../composables/useLanguage.js';
 
 defineEmits(['open-contact']);
-
-const langCode = computed(() => currentLang.value?.code || 'RU');
-
-const contentDict = {
-  RU: {
-    kicker: 'СТАТИСТИКА GOOGLE',
-    title: '75% закрывают неудобный сайт',
-    subBefore: 'Люди уходят, если ',
-    subAccent: 'не понимают, как купить',
-    subAfter: '. Потяните ползунок и сравните.',
-    cta: 'ОБНОВИТЬ МОЙ САЙТ'
-  },
-  UA: {
-    kicker: 'СТАТИСТИКА GOOGLE',
-    title: '75% закривають незручний сайт',
-    subBefore: 'Люди йдуть, якщо ',
-    subAccent: 'не розуміють, як купити',
-    subAfter: '. Потягніть повзунок і порівняйте.',
-    cta: 'ОНОВИТИ МІЙ САЙТ'
-  },
-  EN: {
-    kicker: 'GOOGLE DATA',
-    title: '75% leave a clunky site',
-    subBefore: 'Visitors drop off when ',
-    subAccent: 'buying feels unclear',
-    subAfter: '. Drag the slider to compare.',
-    cta: 'UPGRADE MY WEBSITE'
-  }
-};
-
-const localized = computed(() => contentDict[langCode.value] || contentDict.EN);
 
 const headerRef = ref(null);
 const titleRef = ref(null);
 const stageRef = ref(null);
 const split = ref(50);
 const isDragging = ref(false);
+
 let resizeObserver = null;
 
+const baTitle = computed(() => t('ba_title'));
+
+// AUTO-SCALE HEADING FONT SIZE TO PREVENT LINE WRAPPING
 const fitTitle = () => {
   const el = titleRef.value;
   const wrap = headerRef.value;
@@ -132,7 +117,7 @@ const fitTitle = () => {
   }
 };
 
-watch(() => localized.value.title, () => {
+watch([baTitle, () => currentLang.value.code], () => {
   nextTick(fitTitle);
 });
 
@@ -159,11 +144,22 @@ const stopDrag = () => {
 };
 
 const onPointerDown = (e) => {
+  if (e.button !== undefined && e.button !== 0) return;
   isDragging.value = true;
   updateFromClientX(e.clientX);
   window.addEventListener('pointermove', onPointerMove);
   window.addEventListener('pointerup', stopDrag);
   window.addEventListener('pointercancel', stopDrag);
+};
+
+const onSliderKeydown = (e) => {
+  if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    split.value = clampSplit(split.value - 4);
+  } else if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    split.value = clampSplit(split.value + 4);
+  }
 };
 
 onMounted(() => {
@@ -186,16 +182,11 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
 .ba-section {
   position: relative;
   width: 100%;
   padding: 96px 0;
+  box-sizing: border-box;
   font-family: "Plus Jakarta Sans", sans-serif;
   color: #fff;
   overflow-x: clip;
@@ -208,6 +199,7 @@ onBeforeUnmount(() => {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 40px;
+  box-sizing: border-box;
   position: relative;
   z-index: 2;
 }
@@ -242,7 +234,7 @@ onBeforeUnmount(() => {
   font-weight: 500;
 }
 
-/* СЦЕНА СРЕДНЕГО КОМФОРТНОГО РАЗМЕРА НА ДЕСКТОПЕ */
+/* COMPARISON STAGE */
 .ba-stage-full {
   position: relative;
   width: calc(100% - 48px);
@@ -276,6 +268,7 @@ onBeforeUnmount(() => {
   z-index: 2;
   pointer-events: none;
   clip-path: inset(0 calc(100% - var(--split)) 0 0);
+  will-change: clip-path;
 }
 
 .site-screenshot {
@@ -285,7 +278,7 @@ onBeforeUnmount(() => {
   margin-top: -3.2%;
 }
 
-/* Линия разделителя */
+/* DIVIDER LINE & HANDLE */
 .divider-line {
   position: absolute;
   top: 0;
@@ -297,6 +290,7 @@ onBeforeUnmount(() => {
   z-index: 10;
   transform: translateX(-50%);
   pointer-events: none;
+  will-change: left;
 }
 
 .divider-handle {
@@ -312,15 +306,25 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8), 0 0 0 6px rgba(255, 255, 255, 0.2);
+  pointer-events: auto;
+  outline: none;
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.8),
+    0 0 0 6px rgba(255, 255, 255, 0.2);
   transition: transform 0.15s ease;
+
+  &:focus-visible {
+    box-shadow:
+      0 8px 30px rgba(0, 0, 0, 0.8),
+      0 0 0 8px rgba(255, 255, 255, 0.45);
+  }
 }
 
 .ba-stage-full.dragging .divider-handle {
   transform: translate(-50%, -50%) scale(1.1);
 }
 
-/* --- СТИЛИ КНОПКИ В ТОЧНОСТИ КАК В Expertise.vue --- */
+/* SECTION CTA */
 .section-cta-wrapper {
   margin-top: clamp(40px, 5vw, 60px);
   display: flex;
@@ -329,7 +333,7 @@ onBeforeUnmount(() => {
 }
 
 .main-action-btn {
-  background-color: #E6E6E6;
+  background-color: #e6e6e6;
   color: #050505;
   border: none;
   border-radius: 100px;
@@ -356,8 +360,8 @@ onBeforeUnmount(() => {
   }
 }
 
-/* Адаптив */
-@media (max-width: 1024px) {
+/* RESPONSIVE */
+@media (max-width: 1023px) {
   .ba-section {
     padding: 72px 0;
   }

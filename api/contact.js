@@ -1,54 +1,49 @@
-import nodemailer from 'nodemailer';
-
 export default async function handler(req, res) {
-  // Блокируем любые запросы, кроме POST
+  // --- ALLOW POST REQUESTS ONLY
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { name, email, message } = req.body;
+  // --- CHECK TELEGRAM CREDENTIALS
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
 
-  // Базовая серверная валидация
-  if (!name || !email || !message) {
-    return res.status(400).json({ error: 'Please fill out all fields.' });
+  if (!token || !chatId) {
+    return res.status(500).json({
+      error: 'Telegram environment variables (TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID) are missing',
+    });
   }
 
+  // --- VALIDATE REQUEST BODY
+  const { text } = req.body || {};
+
+  if (typeof text !== 'string' || !text.trim()) {
+    return res.status(400).json({ error: 'Message text is required' });
+  }
+
+  // --- SEND MESSAGE VIA TELEGRAM BOT API
   try {
-    // Подключаемся к SMTP серверу Gmail
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: 'efimovs.agency@gmail.com',
-        pass: process.env.GMAIL_APP_PASSWORD // Подтягиваем пароль из защищенного окружения
-      }
+    const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        parse_mode: 'Markdown',
+      }),
     });
 
-    // Формируем структуру письма
-    const mailOptions = {
-      from: 'Efimovs Agency Platform <efimovs.agency@gmail.com>',
-      to: 'efimovs.agency@gmail.com', // Куда будет приходить заявка
-      replyTo: email, // Чтобы ответить клиенту в один клик
-      subject: `New Website Message | ${name}`, // <-- Обновленная тема письма
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
-          <h2 style="color: #000;">New Incoming Message</h2> <!-- <-- Обновленный заголовок -->
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-          <p><strong>Message:</strong></p>
-          <p style="background: #f9f9f9; padding: 15px; border-radius: 4px; white-space: pre-wrap;">${message}</p>
-        </div>
-      `
-    };
+    const data = await response.json().catch(() => ({}));
 
-    // Отправляем письмо
-    await transporter.sendMail(mailOptions);
+    if (response.ok && data.ok) {
+      return res.status(200).json({ success: true });
+    }
 
-    // Возвращаем успешный ответ на фронтенд
-    return res.status(200).json({ success: true, message: 'Message sent successfully' });
-    
-  } catch (error) {
-    console.error('Nodemailer Error:', error);
-    return res.status(500).json({ error: 'Failed to send message.' });
+    return res.status(500).json({
+      error: data.description || 'Failed to send message via Telegram API',
+    });
+  } catch (err) {
+    console.error('Telegram API Error:', err);
+    return res.status(500).json({ error: err?.message || 'Failed to send message' });
   }
 }

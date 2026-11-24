@@ -1,12 +1,10 @@
-/* =========================================
-   ИМПОРТ ЛОКАЛЬНЫХ ШРИФТОВ (FONTSOURCE)
-   ========================================= */
+/* --- LOCAL FONTS IMPORT (FONTSOURCE) */
 /* Montserrat */
 @import '@fontsource/montserrat/300.css';
-@import '@fontsource/montserrat/400.css'; 
+@import '@fontsource/montserrat/400.css';
 @import '@fontsource/montserrat/500.css';
 @import '@fontsource/montserrat/700.css';
-@import '@fontsource/montserrat/900.css'; 
+@import '@fontsource/montserrat/900.css';
 
 /* Plus Jakarta Sans */
 @import '@fontsource/plus-jakarta-sans/400.css';
@@ -15,30 +13,24 @@
 @import '@fontsource/plus-jakarta-sans/700.css';
 @import '@fontsource/plus-jakarta-sans/800.css';
 
-/* =========================================
-   VARIABLES
-   ========================================= */
+/* --- THEME VARIABLES */
 $font-main: 'Montserrat', sans-serif;
 $color-text-main: #ffffff;
-$color-bg: #000000; /* Уведен в абсолютный черный для контраста со стеклом */
+$color-bg: #000000;
 
+/* --- DOCUMENT & RESET */
 html {
   background-color: $color-bg;
   scroll-behavior: auto !important;
-  /* Блокируем изменение масштаба при повороте экрана и появлении панелей */
   -webkit-text-size-adjust: 100%;
-  
-  /* Убрали !important, чтобы JS модалки мог гибко управлять скроллом */
-  overflow-y: scroll; 
+  overflow-y: scroll;
   scrollbar-gutter: stable;
-
-  /* 🌟 ДОБАВЛЕНО: Блокируем "резинку" (pull-to-refresh) на iOS/Mac для плавности Lenis */
   overscroll-behavior-y: none;
 }
 
-/* 🌟 ИСПРАВЛЕНО: КРИТИЧЕСКАЯ ОШИБКА. 
-   Заменили "-" на правильную звездочку "*". Добавили ::before и ::after. */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
@@ -46,8 +38,11 @@ html {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* 🌟 Блокировка Layout Shifts при рендере графики */
-img, picture, video, canvas {
+/* --- MEDIA & SVG DEFAULTS (PREVENT LAYOUT SHIFTS) */
+img,
+picture,
+video,
+canvas {
   display: block;
   max-width: 100%;
 }
@@ -57,7 +52,6 @@ svg {
   flex-shrink: 0;
 }
 
-/* Страховка для SVG без атрибутов width/height до загрузки scoped-CSS */
 svg:not([width]):not([height]) {
   width: 1.5em;
   height: 1.5em;
@@ -68,26 +62,15 @@ body {
   color: $color-text-main;
   font-family: $font-main;
   width: 100%;
-  
-  /* Контент сам растянет высоту, жесткие рамки убраны для плавности анимаций */
   padding-bottom: env(safe-area-inset-bottom);
-  
-  /* Разрешаем стандартную манипуляцию касаниями для всего тела страницы */
-  touch-action: manipulation; 
-
-  /* Принудительное кристальное сглаживание шрифтов для Apple Pro эстетики */
+  touch-action: manipulation;
+  overscroll-behavior-y: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-
-  /* 🌟 ДОБАВЛЕНО: Дублируем для надежности в Safari */
-  overscroll-behavior-y: none;
 }
 
-/* =========================================
-   GLOBAL SECTION HEADERS (Typography & Layout)
-   ========================================= */
-
+/* --- GLOBAL SECTION HEADERS & TYPOGRAPHY */
 .section-header,
 .pricing-header,
 .faq-header {
@@ -118,19 +101,15 @@ body {
   font-weight: 500;
   letter-spacing: -0.04em;
   line-height: 1.1;
-  
-  /* ФИКС ОБРЕЗАНИЯ БУКВ: Внутренний отступ для хвостиков + компенсация внешним */
   padding-bottom: 10px;
-  margin-bottom: -10px;
   margin-top: 0;
-
+  margin-bottom: -10px;
   background: linear-gradient(180deg, #ffffff 0%, #71717a 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
 
-  /* Идеальная плавная адаптивность для мобильных устройств */
   @media (max-width: 767px) {
     font-size: clamp(32px, 8.5vw, 42px);
     padding-bottom: 8px;
@@ -142,27 +121,18 @@ body {
   }
 }
 
-/* =========================================
-   🚀 OPTIMIZATION & HARDWARE ACCELERATION
-   ========================================= */
-
+/* --- PERFORMANCE & GPU HELPERS */
 .opt-contain {
-  /* Строгая изоляция. Если меняется внутри - браузер не перерисовывает весь сайт */
   contain: paint layout;
 }
 
-/* Применять ТОЛЬКО к мелким элементам (карточки, кнопки), НИКОГДА к целым секциям! */
+/* Apply only to small interactive elements (cards, buttons), never to full sections */
 .opt-gpu {
-  -webkit-transform: translateZ(0);
   transform: translateZ(0);
-  /* will-change удален из глобального класса, чтобы не жрать VRAM видеокарты на ПК */
   backface-visibility: hidden;
 }
 
-/* =========================================
-   🚀 GLOBAL MODAL LOCK (Monolithic Glassmorphism)
-   ========================================= */
-
+/* --- GLOBAL MODAL SCROLL & INTERACTION LOCK */
 body.global-modal-open {
   overflow: hidden !important;
   touch-action: none !important;
@@ -170,7 +140,6 @@ body.global-modal-open {
 }
 
 body.global-modal-open .app-shell {
-  /* Убираем pointer-events, чтобы случайно не кликнуть по сайту сквозь оверлей */
   pointer-events: none !important;
   user-select: none !important;
   transition: filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);

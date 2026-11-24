@@ -1,13 +1,12 @@
 <template>
   <section class="cmp-section">
     <div class="cmp-container">
-      
-      <!-- Заголовок в едином стиле сайта -->
+      <!-- SECTION HEADER -->
       <div ref="headerRef" class="section-header">
-        <span class="kicker">{{ localizedContent.kicker }}</span>
-        <h2 ref="titleRef" class="gradient-title">{{ localizedContent.title }}</h2>
+        <span class="kicker">{{ t('cmp_kicker') }}</span>
+        <h2 ref="titleRef" class="gradient-title">{{ cmpTitle }}</h2>
         <p ref="subtitleRef" class="section-subtitle">
-          {{ localizedContent.subBefore }}<span class="subtitle-brand">Efimovs Agency</span>{{ localizedContent.subAfter }}
+          {{ t('cmp_sub_before') }}<span class="subtitle-brand">Efimovs Agency</span>{{ cmpSubAfter }}
         </p>
       </div>
 
@@ -18,7 +17,7 @@
           '--active-glow': selectedPlatform.glow
         }"
       >
-        <!-- DESKTOP: 1. Efimovs Agency | 2. Конструкторы | 3. Что сравниваем -->
+        <!-- DESKTOP TABLE -->
         <template v-if="isDesktop">
           <div class="table-head">
             <div class="col-our">
@@ -64,7 +63,7 @@
                   class="platform-dropdown-menu"
                   role="listbox"
                 >
-                  <span class="dropdown-caption">{{ localizedContent.dropdownHint }}</span>
+                  <span class="dropdown-caption">{{ t('cmp_dropdown_hint') }}</span>
                   <button
                     v-for="item in platforms"
                     :key="item.id"
@@ -88,38 +87,38 @@
               </Transition>
             </div>
 
-            <div class="col-crit">{{ localizedContent.colCrit }}</div>
+            <div class="col-crit">{{ t('cmp_col_crit') }}</div>
           </div>
 
           <div class="table-body">
             <div
-              v-for="(row, idx) in localizedContent.rows"
-              :key="idx"
+              v-for="(row, idx) in comparisonRows"
+              :key="row.critKey"
               class="table-row"
             >
-              <!-- Статичная колонка Efimovs Agency -->
+              <!-- STATIC EFIMOVS AGENCY COLUMN -->
               <div class="col-our">
-                {{ row.our }}
+                {{ t(row.ourKey) }}
               </div>
 
-              <!-- Обновляется ТОЛЬКО колонка выбранного сервиса -->
+              <!-- DYNAMIC COMPETITOR COLUMN -->
               <div class="col-other">
                 <Transition name="cell-fade" mode="out-in">
                   <span :key="selectedPlatform.id + '-' + langCode" class="cell-text">
-                    {{ selectedPlatform.issues[idx] }}
+                    {{ t(selectedPlatform.issueKeys[idx]) }}
                   </span>
                 </Transition>
               </div>
 
-              <!-- Статичная колонка критериев -->
+              <!-- STATIC CRITERIA COLUMN -->
               <div class="col-crit">
-                {{ row.crit }}
+                {{ t(row.critKey) }}
               </div>
             </div>
           </div>
         </template>
 
-        <!-- MOBILE / TABLET: Без изменений -->
+        <!-- MOBILE & TABLET SEGMENTED VIEW -->
         <template v-else>
           <div ref="mobileDropdownRef" class="mobile-switch-wrap dropdown-anchor">
             <div class="segmented-control" role="tablist">
@@ -172,14 +171,14 @@
               </button>
             </div>
 
-            <!-- Выпадающий список сервисов -->
+            <!-- PLATFORM DROPDOWN -->
             <Transition name="dropdown-pop">
               <div
                 v-if="isDropdownOpen"
                 class="platform-dropdown-menu is-mobile"
                 role="listbox"
               >
-                <span class="dropdown-caption">{{ localizedContent.dropdownHint }}</span>
+                <span class="dropdown-caption">{{ t('cmp_dropdown_hint') }}</span>
                 <button
                   v-for="item in platforms"
                   :key="item.id"
@@ -204,37 +203,40 @@
           </div>
 
           <Transition name="tab-fade" mode="out-in">
-            <div :key="activeTab + '-' + selectedPlatform.id + '-' + langCode" class="mobile-list">
+            <div
+              :key="activeTab + '-' + selectedPlatform.id + '-' + langCode"
+              class="mobile-list"
+              role="tabpanel"
+            >
               <div
-                v-for="(row, idx) in localizedContent.rows"
-                :key="idx"
+                v-for="(row, idx) in comparisonRows"
+                :key="row.critKey"
                 class="mobile-row"
               >
-                <span class="mobile-crit">{{ row.crit }}</span>
+                <span class="mobile-crit">{{ t(row.critKey) }}</span>
 
                 <div v-if="activeTab === 'our'" class="mobile-val is-our">
-                  {{ row.our }}
+                  {{ t(row.ourKey) }}
                 </div>
 
                 <div v-else class="mobile-val is-other">
-                  {{ selectedPlatform.issues[idx] }}
+                  {{ t(selectedPlatform.issueKeys[idx]) }}
                 </div>
               </div>
             </div>
           </Transition>
         </template>
 
-        <!-- Подвал с кнопкой в точном стиле expertise.js -->
+        <!-- TABLE FOOTER CTA -->
         <div class="table-footer">
           <button
             type="button"
             class="main-action-btn"
             @click="$emit('open-contact')"
           >
-            {{ localizedContent.cta }}
+            {{ t('cmp_cta') }}
           </button>
         </div>
-
       </div>
     </div>
   </section>
@@ -242,111 +244,23 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
-import { currentLang } from '../composables/useLanguage';
+import { t, currentLang } from '../composables/useLanguage.js';
 
 defineEmits(['open-contact']);
 
-const langCode = computed(() => currentLang.value?.code || 'RU');
+const langCode = computed(() => currentLang.value?.code || 'EN');
+const cmpTitle = computed(() => t('cmp_title'));
+const cmpSubAfter = computed(() => t('cmp_sub_after'));
 
-const contentDict = {
-  RU: {
-    kicker: 'МЫ ПРОТИВ КОНСТРУКТОРОВ',
-    title: 'Почему стоит выбрать нас?',
-    subBefore: 'Сравните ',
-    subAfter: ' с известными сервисами',
-    dropdownHint: 'Выберите сервис',
-    colCrit: 'Что сравниваем',
-    cta: 'Обсудить проект',
-    rows: [
-      {
-        crit: 'Ежемесячные платежи',
-        our: '$0 в месяц — вы платите один раз за создание сайта, без вечной аренды.'
-      },
-      {
-        crit: 'Кому принадлежит сайт',
-        our: 'На 100% ваш навсегда — сайт принадлежит только вам, его никто не отключит.'
-      },
-      {
-        crit: 'Комиссия с ваших продаж',
-        our: '0% комиссии — все деньги от клиентов идут напрямую вам, без посредников.'
-      },
-      {
-        crit: 'Скорость на телефоне',
-        our: 'Открывается мгновенно — клиенты не ждут загрузку и не уходят к конкурентам.'
-      },
-      {
-        crit: 'Дизайн и впечатление',
-        our: 'Индивидуальный дизайн под вас — сайт выглядит дорого и вызывает доверие с первой секунды.'
-      }
-    ]
-  },
-  UA: {
-    kicker: 'МИ ПРОТИ КОНСТРУКТОРІВ',
-    title: 'Чому варто обрати нас?',
-    subBefore: 'Порівняйте ',
-    subAfter: ' з відомими сервісами',
-    dropdownHint: 'Оберіть сервіс',
-    colCrit: 'Що порівнюємо',
-    cta: 'Обговорити проєкт',
-    rows: [
-      {
-        crit: 'Щомісячні платежі',
-        our: '$0 на місяць — ви платите один раз за створення сайту, без вічної оренди.'
-      },
-      {
-        crit: 'Кому належить сайт',
-        our: 'На 100% ваш назавжди — сайт належить лише вам, його ніхто не вимкне.'
-      },
-      {
-        crit: 'Комісія з ваших продажів',
-        our: '0% комісії — усі гроші від клієнтів ідуть напряму вам, без посередників.'
-      },
-      {
-        crit: 'Швидкість на телефоні',
-        our: 'Відкривається миттєво — клієнти не чекають завантаження і не йдуть до конкурентів.'
-      },
-      {
-        crit: 'Дизайн і враження',
-        our: 'Індивідуальний дизайн під вас — сайт виглядає дорого та викликає довіру з першої секунди.'
-      }
-    ]
-  },
-  EN: {
-    kicker: 'CUSTOM VS BUILDERS',
-    title: 'Why Choose Efimovs Agency?',
-    subBefore: 'Compare ',
-    subAfter: ' with popular platforms',
-    dropdownHint: 'Select a platform',
-    colCrit: 'What we compare',
-    cta: 'Discuss project',
-    rows: [
-      {
-        crit: 'Monthly payments',
-        our: '$0 per month — you pay once to build your website, with zero ongoing rent.'
-      },
-      {
-        crit: 'Who owns the website',
-        our: '100% yours forever — full ownership with zero risk of anyone shutting it down.'
-      },
-      {
-        crit: 'Commission on your sales',
-        our: '0% commission — every dollar from your customers goes straight to you.'
-      },
-      {
-        crit: 'Speed on mobile phones',
-        our: 'Opens instantly — visitors never wait around or leave for a faster competitor.'
-      },
-      {
-        crit: 'Design & first impression',
-        our: 'Custom-crafted for your brand — looks premium and builds trust from second one.'
-      }
-    ]
-  }
-};
+const comparisonRows = [
+  { critKey: 'cmp_r1_crit', ourKey: 'cmp_r1_our' },
+  { critKey: 'cmp_r2_crit', ourKey: 'cmp_r2_our' },
+  { critKey: 'cmp_r3_crit', ourKey: 'cmp_r3_our' },
+  { critKey: 'cmp_r4_crit', ourKey: 'cmp_r4_our' },
+  { critKey: 'cmp_r5_crit', ourKey: 'cmp_r5_our' },
+];
 
-const localizedContent = computed(() => contentDict[langCode.value] || contentDict.EN);
-
-const platformsData = [
+const platforms = [
   {
     id: 'shopify',
     name: 'Shopify',
@@ -358,29 +272,13 @@ const platformsData = [
       <path d="M9.7 6.2V5.3C9.7 4.03 10.73 3 12 3C13.27 3 14.3 4.03 14.3 5.3V6.2" stroke="#E8F5D0" stroke-width="1.5" stroke-linecap="round"/>
       <path d="M13.6 11.1C13.1 10.8 12.4 10.6 11.8 10.6C10.9 10.6 10.3 11 10.3 11.7C10.3 12.4 10.9 12.7 11.9 13.1C13.1 13.5 13.8 14.1 13.8 15.2C13.8 16.5 12.7 17.4 11.2 17.4C10.3 17.4 9.5 17.1 8.9 16.7L9.4 15.4C10 15.8 10.6 16 11.2 16C11.9 16 12.3 15.7 12.3 15.2C12.3 14.6 11.8 14.3 10.9 14C9.7 13.5 8.9 12.9 8.9 11.8C8.9 10.5 10 9.4 11.7 9.4C12.5 9.4 13.3 9.6 13.9 9.9L13.6 11.1Z" fill="#FFFFFF"/>
     `,
-    issues: {
-      RU: [
-        'От $39 до $399 каждый месяц за сам сервис + ещё $100–$300/мес за нужные функции.',
-        'Вы берёте магазин в аренду: перестали платить каждый месяц — его сразу закрыли.',
-        'Забирает до 2% с каждой вашей продажи сверху, кроме обычной комиссии банка.',
-        'Чем больше функций вы подключаете, тем медленнее открываются страницы с товарами.',
-        'Стандартные шаблоны — ваш магазин выглядит точно так же, как тысячи других.'
-      ],
-      UA: [
-        'Від $39 до $399 щомісяця за сам сервіс + ще $100–$300/міс за потрібні функції.',
-        'Ви берете магазин в оренду: перестали платить щомісяця — його одразу закрили.',
-        'Забирає до 2% з кожного вашого продажу зверху, окрім звичайної комісії банку.',
-        'Чим більше функцій ви підключаєте, тим повільніше відкриваються сторінки з товарами.',
-        'Стандартні шаблони — ваш магазин виглядає так само, як тисячі інших.'
-      ],
-      EN: [
-        '$39 to $399 every month just for the plan, plus $100–$300/mo for basic store add-ons.',
-        'You are renting your store: stop paying the monthly bill and it gets shut off.',
-        'Takes up to 2% extra from every single sale on top of standard bank fees.',
-        'The more features you add, the slower your product pages load on mobile.',
-        'Standard templates make your store look just like thousands of competitors.'
-      ]
-    }
+    issueKeys: [
+      'cmp_shopify_1',
+      'cmp_shopify_2',
+      'cmp_shopify_3',
+      'cmp_shopify_4',
+      'cmp_shopify_5',
+    ],
   },
   {
     id: 'webflow',
@@ -391,29 +289,13 @@ const platformsData = [
       <rect x="2" y="2" width="20" height="20" rx="5.5" fill="#146EF5"/>
       <path d="M18.5 7.5L15.4 16.8H12.5L13.8 12.5C12.8 14.1 11.2 15.8 8.7 16.8V13.7C10.2 13 11.3 11.7 11.9 10.2H8.7V7.5H12.9V10.4L14.1 7.5H18.5Z" fill="#FFFFFF"/>
     `,
-    issues: {
-      RU: [
-        'От $29 до $212 каждый месяц просто за то, чтобы сайт работал и не отключался.',
-        'Вы привязаны к сервису: перенести готовый рабочий сайт к себе нельзя.',
-        'Забирает до 2% с каждого заказа и ограничивает, сколько товаров можно добавить.',
-        'Когда на сайте много страниц и товаров, всё начинает заметно притормаживать.',
-        'Любая нестандартная идея или сложный калькулятор требуют дорогих доработок.'
-      ],
-      UA: [
-        'Від $29 до $212 щомісяця просто за те, щоб сайт працював і не вимикався.',
-        'Ви прив’язані до сервісу: перенести готовий робочий сайт до себе неможливо.',
-        'Забирає до 2% з кожного замовлення й обмежує, скільки товарів можна додати.',
-        'Коли на сайті багато сторінок і товарів, усе починає помітно пригальмовувати.',
-        'Будь-яка нестандартна ідея чи складний калькулятор вимагають дорогих доробок.'
-      ],
-      EN: [
-        '$29 to $212 every single month just to keep your website live and running.',
-        'You stay tied to their service — moving a working site to your own hosting is impossible.',
-        'Takes up to 2% per order and puts strict limits on how many products you can list.',
-        'Once your site grows with more pages and items, loading speeds start to drop.',
-        'Any custom feature or interactive calculator requires costly workarounds.'
-      ]
-    }
+    issueKeys: [
+      'cmp_webflow_1',
+      'cmp_webflow_2',
+      'cmp_webflow_3',
+      'cmp_webflow_4',
+      'cmp_webflow_5',
+    ],
   },
   {
     id: 'wix',
@@ -424,29 +306,13 @@ const platformsData = [
       <rect x="2" y="2" width="20" height="20" rx="5.5" fill="#F7B529"/>
       <path d="M6.2 8.2H8.1L9.5 13.8L11.1 8.2H12.9L14.5 13.8L15.9 8.2H17.8L15.5 16.2H13.6L12 10.8L10.4 16.2H8.5L6.2 8.2Z" fill="#09090B"/>
     `,
-    issues: {
-      RU: [
-        'От $17 до $159 каждый месяц пожизненно, иначе на вашем сайте будет чужая реклама.',
-        'Сайт навсегда заперт внутри Wix — забрать его себе или перенести в другое место нельзя.',
-        'Берёт повышенный процент с каждой оплаты и ограничивает удобные способы приёма денег.',
-        'Сайты на Wix тяжело грузятся на телефонах, из-за чего клиенты уходят и Google хуже их показывает.',
-        'Шаблонные блоки и устаревшие эффекты, которые сразу выдают дешёвый конструктор.'
-      ],
-      UA: [
-        'Від $17 до $159 щомісяця довічно, інакше на вашому сайті буде чужа реклама.',
-        'Сайт назавжди замкнений усередині Wix — забрати його собі чи перенести неможливо.',
-        'Бере підвищений відсоток із кожної оплати й обмежує зручні способи прийому грошей.',
-        'Сайти на Wix важко вантажаться на телефонах, через що клієнти йдуть і Google гірше їх показує.',
-        'Шаблонні блоки та застарілі ефекти, які одразу видають дешевий конструктор.'
-      ],
-      EN: [
-        '$17 to $159 every month forever, otherwise Wix displays its own ads on your site.',
-        'Locked inside Wix permanently — you can never move or export your site elsewhere.',
-        'Charges higher fees per payment and limits which payment methods you can connect.',
-        'Heavy pages load slowly on phones, driving visitors away and hurting Google rankings.',
-        'Cookie-cutter blocks and dated effects that immediately look like a cheap template.'
-      ]
-    }
+    issueKeys: [
+      'cmp_wix_1',
+      'cmp_wix_2',
+      'cmp_wix_3',
+      'cmp_wix_4',
+      'cmp_wix_5',
+    ],
   },
   {
     id: 'tilda',
@@ -457,29 +323,13 @@ const platformsData = [
       <circle cx="12" cy="12" r="10" fill="#FF6B4A"/>
       <path d="M16.9 13.4C16 14.5 14.9 15 13.7 15C12.5 15 11.5 14.3 10.6 13.6C9.9 13 9.3 12.6 8.7 12.6C8.1 12.6 7.6 13 7.2 13.7L5.7 12.5C6.5 11.2 7.6 10.6 8.8 10.6C10 10.6 11 11.3 11.9 12C12.6 12.6 13.2 13 13.8 13C14.4 13 14.9 12.6 15.4 11.9L16.9 13.4Z" fill="#FFFFFF"/>
     `,
-    issues: {
-      RU: [
-        '$15–$30 каждый месяц за каждый сайт + платные сервисы для приёма заявок и оплат.',
-        'Сайт работает, пока вы платите аренду. Забыли оплатить тариф — сайт пропал из сети.',
-        'Неудобная корзина для больших продаж и жёсткие ограничения по количеству товаров.',
-        'На телефоне насыщенные страницы грузятся долго — часть людей закрывает сайт, не дождавшись.',
-        'Однотипные блоки, которые ваши клиенты видели уже на сотнях других сайтов.'
-      ],
-      UA: [
-        '$15–$30 щомісяця за кожен сайт + платні сервіси для прийому заявок і оплат.',
-        'Сайт працює, поки ви платите оренду. Забули оплатити тариф — сайт зник із мережі.',
-        'Незручний кошик для великих продажів і жорсткі обмеження за кількістю товарів.',
-        'На телефоні насичені сторінки вантажаться довго — частина людей закриває сайт, не дочекавшись.',
-        'Однотипні блоки, які ваші клієнти бачили вже на сотнях інших сайтів.'
-      ],
-      EN: [
-        '$15–$30 every month per site, plus extra paid services for forms and payments.',
-        'Your site only stays online while you pay rent — miss a payment and it goes offline.',
-        'Clunky checkout for growing stores and strict limits on how many items you can sell.',
-        'Rich pages take too long to load on phones, causing visitors to leave early.',
-        'Familiar standard blocks your customers have already seen on hundreds of sites.'
-      ]
-    }
+    issueKeys: [
+      'cmp_tilda_1',
+      'cmp_tilda_2',
+      'cmp_tilda_3',
+      'cmp_tilda_4',
+      'cmp_tilda_5',
+    ],
   },
   {
     id: 'wordpress',
@@ -490,30 +340,14 @@ const platformsData = [
       <circle cx="12" cy="12" r="10" fill="#21759B"/>
       <path d="M12 3.8C7.48 3.8 3.8 7.48 3.8 12C3.8 16.52 7.48 20.2 12 20.2C16.52 20.2 20.2 16.52 20.2 12C20.2 7.48 16.52 3.8 12 3.8ZM4.9 12C4.9 10.97 5.12 9.99 5.51 9.1L8.92 18.44C6.53 17.28 4.9 14.83 4.9 12ZM12 19.1C11.3 19.1 10.62 18.99 9.98 18.8L12.12 12.59L14.31 18.59C14.33 18.63 14.35 18.66 14.37 18.69C13.63 18.95 12.83 19.1 12 19.1ZM12.98 8.67C13.41 8.65 13.8 8.6 13.8 8.6C14.19 8.55 14.14 7.98 13.75 8.01C13.75 8.01 12.59 8.1 11.84 8.1C11.14 8.1 9.96 8.01 9.96 8.01C9.57 7.98 9.52 8.57 9.91 8.6C9.91 8.6 10.28 8.65 10.67 8.67L11.79 11.73L10.22 16.43L7.61 8.67C8.04 8.65 8.43 8.6 8.43 8.6C8.82 8.55 8.77 7.98 8.38 8.01C8.38 8.01 7.22 8.1 6.47 8.1C6.33 8.1 6.17 8.1 6.01 8.09C7.27 6.17 9.48 4.9 12 4.9C13.85 4.9 15.54 5.61 16.8 6.77C16.77 6.77 16.74 6.76 16.71 6.76C16.01 6.76 15.51 7.37 15.51 8.03C15.51 8.62 15.85 9.12 16.21 9.71C16.49 10.19 16.8 10.8 16.8 11.68C16.8 12.29 16.57 13 16.26 13.98L15.54 16.38L12.98 8.67ZM15.61 18.09L17.77 11.83C18.18 10.82 18.31 10.01 18.31 9.29C18.31 9.03 18.29 8.79 18.26 8.56C18.79 9.58 19.1 10.75 19.1 12C19.1 14.64 17.66 16.94 15.61 18.09Z" fill="#FFFFFF"/>
     `,
-    issues: {
-      RU: [
-        'Постоянные траты на платные шаблоны, дополнения и мастера, который всё это чинит.',
-        'Формально сайт ваш, но он держится на чужих дополнениях — одно обновление может всё сломать.',
-        'Чтобы принимать оплаты, рассрочки и вести учёт заказов, нужно докупать платные модули.',
-        'Без дорогой настройки и постоянной чистки сайт со временем начинает сильно тормозить.',
-        'Часто взламывают через устаревшие дополнения, а после обновлений может съехать вёрстка.'
-      ],
-      UA: [
-        'Постійні витрати на платні шаблони, доповнення та майстра, який усе це лагодить.',
-        'Формально сайт ваш, але він тримається на чужих доповненнях — одне оновлення може все зламати.',
-        'Щоб приймати оплати, розстрочки та вести облік замовлень, потрібно докуповувати платні модулі.',
-        'Без дорогого налаштування та постійного чищення сайт із часом починає сильно гальмувати.',
-        'Часто зламують через застарілі доповнення, а після оновлень може поїхати вигляд сторінок.'
-      ],
-      EN: [
-        'Ongoing bills for paid themes, add-ons, and a developer to keep fixing things.',
-        'Held together by dozens of third-party add-ons — one update can break the whole site.',
-        'Accepting payments, subscriptions, or managing orders requires buying extra add-ons.',
-        'Without expensive tuning and regular cleanup, the site gets sluggish over time.',
-        'Vulnerable to hacks through outdated add-ons, and updates often break page layouts.'
-      ]
-    }
-  }
+    issueKeys: [
+      'cmp_wordpress_1',
+      'cmp_wordpress_2',
+      'cmp_wordpress_3',
+      'cmp_wordpress_4',
+      'cmp_wordpress_5',
+    ],
+  },
 ];
 
 const selectedPlatformId = ref('shopify');
@@ -523,21 +357,15 @@ const isDesktop = ref(true);
 
 const desktopDropdownRef = ref(null);
 const mobileDropdownRef = ref(null);
+const headerRef = ref(null);
+const titleRef = ref(null);
+const subtitleRef = ref(null);
 
-const platforms = computed(() => {
-  const code = langCode.value;
-  return platformsData.map((item) => ({
-    id: item.id,
-    name: item.name,
-    color: item.color,
-    glow: item.glow,
-    svg: item.svg,
-    issues: item.issues[code] || item.issues.EN
-  }));
-});
+let mediaQuery = null;
+let resizeObserver = null;
 
 const selectedPlatform = computed(() => {
-  return platforms.value.find((p) => p.id === selectedPlatformId.value) || platforms.value[0];
+  return platforms.find((p) => p.id === selectedPlatformId.value) || platforms[0];
 });
 
 const toggleDropdown = () => {
@@ -582,20 +410,14 @@ const handleKeydown = (event) => {
   }
 };
 
-const headerRef = ref(null);
-const titleRef = ref(null);
-const subtitleRef = ref(null);
-
-let resizeTimer = null;
-let resizeObserver = null;
-
+// AUTO-SCALE HEADER TEXT TO PREVENT LINE WRAPPING
 const fitSingleLine = (el, maxWidth, minSize) => {
   if (!el || !maxWidth) return;
   el.style.fontSize = '';
   let currentSize = parseFloat(window.getComputedStyle(el).fontSize);
 
   while (el.scrollWidth > maxWidth && currentSize > minSize) {
-    currentSize -= 0.2;
+    currentSize -= 0.5;
     el.style.fontSize = `${currentSize}px`;
   }
 };
@@ -610,25 +432,21 @@ const fitHeaderTexts = () => {
   fitSingleLine(subtitleRef.value, maxWidth, 12);
 };
 
-watch([() => localizedContent.value.title, () => localizedContent.value.subAfter, langCode], () => {
+watch([cmpTitle, cmpSubAfter, langCode], () => {
   nextTick(fitHeaderTexts);
 });
 
-const checkDevice = () => {
-  fitHeaderTexts();
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => {
-    const nextDesktop = window.innerWidth >= 1024;
-    if (nextDesktop !== isDesktop.value) {
-      isDesktop.value = nextDesktop;
-      isDropdownOpen.value = false;
-    }
-    nextTick(fitHeaderTexts);
-  }, 100);
+const handleMediaChange = (e) => {
+  isDesktop.value = e.matches;
+  isDropdownOpen.value = false;
+  nextTick(fitHeaderTexts);
 };
 
 onMounted(() => {
-  isDesktop.value = window.innerWidth >= 1024;
+  mediaQuery = window.matchMedia('(min-width: 1024px)');
+  isDesktop.value = mediaQuery.matches;
+  mediaQuery.addEventListener('change', handleMediaChange);
+
   fitHeaderTexts();
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(fitHeaderTexts);
@@ -637,17 +455,19 @@ onMounted(() => {
     resizeObserver = new ResizeObserver(fitHeaderTexts);
     resizeObserver.observe(headerRef.value);
   }
-  window.addEventListener('resize', checkDevice, { passive: true });
+  window.addEventListener('resize', fitHeaderTexts, { passive: true });
   document.addEventListener('click', handleClickOutside);
   document.addEventListener('keydown', handleKeydown);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', checkDevice);
+  if (mediaQuery) {
+    mediaQuery.removeEventListener('change', handleMediaChange);
+  }
+  window.removeEventListener('resize', fitHeaderTexts);
   document.removeEventListener('click', handleClickOutside);
   document.removeEventListener('keydown', handleKeydown);
   if (resizeObserver) resizeObserver.disconnect();
-  clearTimeout(resizeTimer);
 });
 </script>
 
@@ -667,9 +487,10 @@ onBeforeUnmount(() => {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 40px;
+  box-sizing: border-box;
 }
 
-/* --- ЗАГОЛОВОК --- */
+/* SECTION HEADER */
 .section-header {
   display: flex;
   flex-direction: column;
@@ -723,7 +544,7 @@ onBeforeUnmount(() => {
   font-weight: 500;
 }
 
-/* --- ОСНОВНОЙ КОНТЕЙНЕР --- */
+/* GLASS TABLE CONTAINER */
 .glass-shell {
   position: relative;
   width: 100%;
@@ -733,7 +554,7 @@ onBeforeUnmount(() => {
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
 }
 
-/* --- ЯКОРЬ И ВЫПАДАЮЩЕЕ МЕНЮ --- */
+/* PLATFORM SELECTOR DROPDOWN */
 .dropdown-anchor {
   position: relative;
 }
@@ -832,7 +653,9 @@ onBeforeUnmount(() => {
 
 .dropdown-pop-enter-active,
 .dropdown-pop-leave-active {
-  transition: opacity 0.22s cubic-bezier(0.19, 1, 0.22, 1), transform 0.22s cubic-bezier(0.19, 1, 0.22, 1);
+  transition:
+    opacity 0.22s cubic-bezier(0.19, 1, 0.22, 1),
+    transform 0.22s cubic-bezier(0.19, 1, 0.22, 1);
   transform-origin: top left;
 }
 
@@ -847,7 +670,7 @@ onBeforeUnmount(() => {
   transform: translateY(-6px) scale(0.97);
 }
 
-/* --- DESKTOP TABLE: 1. Efimovs Agency | 2. Конструкторы | 3. Что сравниваем --- */
+/* DESKTOP TABLE GRID */
 .table-head,
 .table-row {
   position: relative;
@@ -993,7 +816,7 @@ onBeforeUnmount(() => {
   transform: translateY(-3px);
 }
 
-/* --- MOBILE SEGMENTED SWITCH --- */
+/* MOBILE SEGMENTED SWITCH */
 .mobile-switch-wrap {
   position: relative;
   z-index: 10;
@@ -1132,7 +955,7 @@ onBeforeUnmount(() => {
   transform: translateY(-4px);
 }
 
-/* --- FOOTER & КНОПКА (В ТОЧНОМ СТИЛЕ expertise.js) --- */
+/* FOOTER CTA */
 .table-footer {
   position: relative;
   z-index: 1;
@@ -1147,7 +970,7 @@ onBeforeUnmount(() => {
 }
 
 .main-action-btn {
-  background-color: #E6E6E6;
+  background-color: #e6e6e6;
   color: #050505;
   border: none;
   border-radius: 100px;
@@ -1174,7 +997,7 @@ onBeforeUnmount(() => {
   transform: scale(0.98);
 }
 
-/* --- АДАПТИВ --- */
+/* RESPONSIVE */
 @media (max-width: 1023px) {
   .cmp-container {
     max-width: 640px;
