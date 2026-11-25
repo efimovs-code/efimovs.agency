@@ -20,12 +20,12 @@ $color-bg: #000000;
 
 // DOCUMENT & RESET
 html {
+  height: 100%;
   background-color: $color-bg;
   scroll-behavior: auto !important;
   -webkit-text-size-adjust: 100%;
   overflow-x: clip;
-  overflow-y: scroll;
-  scrollbar-gutter: stable;
+  overflow-y: auto;
   overscroll-behavior-y: none;
 }
 
@@ -63,7 +63,7 @@ body {
   color: $color-text-main;
   font-family: $font-main;
   width: 100%;
-  min-height: 100svh;
+  min-height: 100%;
   overflow-x: clip;
   padding-bottom: env(safe-area-inset-bottom);
   touch-action: manipulation;
@@ -126,7 +126,7 @@ body {
 
 // PERFORMANCE & GPU HELPERS
 .opt-contain {
-  contain: paint layout;
+  contain: style;
 }
 
 // APPLY ONLY TO SMALL INTERACTIVE ELEMENTS, NEVER TO FULL SECTIONS
@@ -153,5 +153,4 @@ body.global-modal-open {
 body.global-modal-open .app-shell {
   pointer-events: none !important;
   user-select: none !important;
-  transition: filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }

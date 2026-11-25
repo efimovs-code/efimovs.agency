@@ -111,7 +111,7 @@ onBeforeUnmount(() => {
   position: relative;
   z-index: 1;
   isolation: isolate;
-  contain: layout;
+  contain: style;
   font-family: "Plus Jakarta Sans", sans-serif;
   color: #fff;
   -webkit-font-smoothing: antialiased;
@@ -370,6 +370,9 @@ onBeforeUnmount(() => {
   .expertise-card {
     border-radius: 24px;
     min-height: auto;
+    background: rgba(18, 18, 20, 0.92);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     border-color: rgba(255, 255, 255, 0.08);
   }
 

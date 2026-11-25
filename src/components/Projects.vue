@@ -1,6 +1,11 @@
 <template>
   <!-- Main featured projects section -->
-  <section class="projects-section" id="projects">
+  <section
+    ref="sectionRef"
+    class="projects-section"
+    :class="{ 'is-paused': !isVisible }"
+    id="projects"
+  >
     <!-- Decorative ambient glow on desktop -->
     <div class="ambient-glow" aria-hidden="true"></div>
 
@@ -74,7 +79,6 @@
                 <img
                   :src="project.image"
                   :alt="project.title"
-                  loading="lazy"
                   decoding="async"
                 />
               </div>
@@ -99,8 +103,12 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { t } from '../composables/useLanguage';
+
+const sectionRef = ref(null);
+const isVisible = ref(true);
+let visibilityObserver = null;
 
 // Combine two title parts into a single section heading
 const projectsTitle = computed(() => {
@@ -140,6 +148,25 @@ const featuredProjects = computed(() => [
     image: '/images/qrcafe-1.png',
   },
 ]);
+
+onMounted(() => {
+  if (typeof IntersectionObserver !== 'undefined' && sectionRef.value) {
+    visibilityObserver = new IntersectionObserver(
+      (entries) => {
+        isVisible.value = entries[0].isIntersecting;
+      },
+      { rootMargin: '120px 0px 120px 0px', threshold: 0 }
+    );
+    visibilityObserver.observe(sectionRef.value);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (visibilityObserver) {
+    visibilityObserver.disconnect();
+    visibilityObserver = null;
+  }
+});
 </script>
 
 <style scoped>
@@ -152,8 +179,13 @@ const featuredProjects = computed(() => [
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  contain: paint style;
+  overflow-x: clip;
+  contain: style;
   isolation: isolate;
+}
+
+.projects-section.is-paused .marquee-set {
+  animation-play-state: paused !important;
 }
 
 .ambient-glow {
@@ -511,8 +543,9 @@ const featuredProjects = computed(() => [
   }
 
   .marquee-wrapper {
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
+    width: calc(100% + 80px);
+    margin-left: -40px;
+    margin-right: -40px;
     overflow: hidden;
     position: relative;
     touch-action: pan-y;
@@ -569,6 +602,12 @@ const featuredProjects = computed(() => [
 
   .container {
     padding: 0 16px;
+  }
+
+  .marquee-wrapper {
+    width: calc(100% + 32px);
+    margin-left: -16px;
+    margin-right: -16px;
   }
 
   .section-header {

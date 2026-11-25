@@ -18,7 +18,6 @@
               stroke-linecap="round"
               stroke-linejoin="round"
               class="back-arrow"
-              aria-hidden="true"
             >
               <line x1="20" y1="12" x2="4" y2="12"></line>
               <polyline points="10 18 4 12 10 6"></polyline>
@@ -73,10 +72,8 @@
                       v-for="opt in designOptions"
                       :key="opt.key"
                       role="button"
-                      tabindex="0"
                       :class="['luxury-card', 'design-card', { active: form.designType === opt.key }]"
                       @click="form.designType = opt.key"
-                      @keydown.enter.prevent="form.designType = opt.key"
                     >
                       <div class="card-text-wrapper">
                         <span class="card-title">{{ t(opt.titleKey) }}</span>
@@ -91,11 +88,9 @@
                       v-for="(plan, idx) in computedPlans"
                       :key="plan.name"
                       role="button"
-                      tabindex="0"
                       :class="['plan-card-large', { active: form.plan === plan.name }]"
                       :style="{ transitionDelay: idx * 50 + 'ms' }"
                       @click="form.plan = plan.name"
-                      @keydown.enter.prevent="form.plan = plan.name"
                     >
                       <div class="plan-info">
                         <span class="plan-badge">{{ t(plan.labelKey) }}</span>
@@ -116,7 +111,7 @@
                         <input
                           id="refLinkInput"
                           v-model="form.refLink"
-                          type="url"
+                          type="text"
                           placeholder="https://..."
                           autocomplete="off"
                           class="luxury-input"
@@ -134,10 +129,8 @@
                           v-for="(ms, idx) in messengers"
                           :key="ms.name"
                           role="button"
-                          tabindex="0"
                           :class="['ms-card', 'color-variant-' + idx, { active: form.messenger === ms.name }]"
                           @click="selectMessenger(ms.name)"
-                          @keydown.enter.prevent="selectMessenger(ms.name)"
                         >
                           <div class="ms-content">
                             <div class="ms-icon-wrapper" v-html="ms.icon"></div>
@@ -171,11 +164,9 @@
                         <div v-if="form.messenger === 'WhatsApp'" class="phone-smart-wrapper fixed-height">
                           <div
                             role="button"
-                            tabindex="0"
                             class="country-trigger"
                             :class="{ active: isCountryOpen }"
                             @click.stop="toggleCountryDropdown"
-                            @keydown.enter.prevent.stop="toggleCountryDropdown"
                           >
                             <span class="flag-text">{{ selectedCountry.code }}</span>
                             <span class="dial-code">{{ selectedCountry.dial_code }}</span>
@@ -186,7 +177,6 @@
                               fill="none"
                               stroke="currentColor"
                               stroke-width="2"
-                              aria-hidden="true"
                             >
                               <polyline points="6 9 12 15 18 9"></polyline>
                             </svg>
@@ -208,7 +198,7 @@
                             <div v-if="isCountryOpen" class="country-dropdown" @wheel.stop @touchmove.stop>
                               <div class="search-wrap">
                                 <div class="search-icon">
-                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="11" cy="11" r="8"></circle>
                                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                                   </svg>
@@ -265,7 +255,7 @@
                   <!-- STEP 5: SUCCESS CONFIRMATION -->
                   <div v-else-if="step === 5" class="success-screen">
                     <div class="success-circle">
-                      <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true">
+                      <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
                     </div>
@@ -324,23 +314,23 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted, nextTick, onBeforeUnmount } from 'vue';
-import { t } from '../composables/useLanguage';
+import { ref, reactive, computed, watch, onMounted, nextTick, onUnmounted } from "vue";
+import { t } from "../composables/useLanguage";
 
 // PROPS AND EVENTS
 const props = defineProps({
   isOpen: Boolean,
   initialDesignType: {
     type: String,
-    default: '',
+    default: ""
   },
   initialPlan: {
     type: String,
-    default: '',
-  },
+    default: ""
+  }
 });
 
-defineEmits(['close']);
+defineEmits(["close"]);
 
 // STATE
 const step = ref(1);
@@ -348,86 +338,88 @@ const startStep = ref(1);
 const loading = ref(false);
 
 const isCountryOpen = ref(false);
-const phoneBody = ref('');
-const searchQuery = ref('');
-const selectedCountry = ref({ name: 'Ukraine', dial_code: '+380', code: 'UA' });
+const phoneBody = ref("");
+const searchQuery = ref("");
+const selectedCountry = ref({ name: "Ukraine", dial_code: "+380", code: "UA" });
 const searchInput = ref(null);
+
+let unlockTimeout = null;
 
 // STATIC DATA OPTIONS
 const countries = [
-  { name: 'Australia', dial_code: '+61', code: 'AU' },
-  { name: 'Austria', dial_code: '+43', code: 'AT' },
-  { name: 'Canada', dial_code: '+1', code: 'CA' },
-  { name: 'France', dial_code: '+33', code: 'FR' },
-  { name: 'Germany', dial_code: '+49', code: 'DE' },
-  { name: 'Israel', dial_code: '+972', code: 'IL' },
-  { name: 'Italy', dial_code: '+39', code: 'IT' },
-  { name: 'Poland', dial_code: '+48', code: 'PL' },
-  { name: 'Spain', dial_code: '+34', code: 'ES' },
-  { name: 'Switzerland', dial_code: '+41', code: 'CH' },
-  { name: 'Ukraine', dial_code: '+380', code: 'UA' },
-  { name: 'UAE', dial_code: '+971', code: 'AE' },
-  { name: 'United Kingdom', dial_code: '+44', code: 'GB' },
-  { name: 'United States', dial_code: '+1', code: 'US' },
+  { name: "Australia", dial_code: "+61", code: "AU" },
+  { name: "Austria", dial_code: "+43", code: "AT" },
+  { name: "Canada", dial_code: "+1", code: "CA" },
+  { name: "France", dial_code: "+33", code: "FR" },
+  { name: "Germany", dial_code: "+49", code: "DE" },
+  { name: "Israel", dial_code: "+972", code: "IL" },
+  { name: "Italy", dial_code: "+39", code: "IT" },
+  { name: "Poland", dial_code: "+48", code: "PL" },
+  { name: "Spain", dial_code: "+34", code: "ES" },
+  { name: "Switzerland", dial_code: "+41", code: "CH" },
+  { name: "Ukraine", dial_code: "+380", code: "UA" },
+  { name: "UAE", dial_code: "+971", code: "AE" },
+  { name: "United Kingdom", dial_code: "+44", code: "GB" },
+  { name: "United States", dial_code: "+1", code: "US" }
 ];
 
 const designOptions = [
-  { key: 'custom', titleKey: 'mod_opt_custom_title', descKey: 'mod_opt_custom_desc' },
-  { key: 'template', titleKey: 'mod_opt_template_title', descKey: 'mod_opt_template_desc' },
-  { key: 'layout', titleKey: 'mod_opt_layout_title', descKey: 'mod_opt_layout_desc' },
+  { key: "custom", titleKey: "mod_opt_custom_title", descKey: "mod_opt_custom_desc" },
+  { key: "template", titleKey: "mod_opt_template_title", descKey: "mod_opt_template_desc" },
+  { key: "layout", titleKey: "mod_opt_layout_title", descKey: "mod_opt_layout_desc" }
 ];
 
 const basePlans = [
-  { name: 'Simple Project', labelKey: 'pl_l_simp', nameKey: 'pl_n_simp' },
-  { name: 'Medium Project', labelKey: 'pl_l_med', nameKey: 'pl_n_med' },
-  { name: 'Complex Project', labelKey: 'pl_l_comp', nameKey: 'pl_n_comp' },
+  { name: "Simple Project", labelKey: "pl_l_simp", nameKey: "pl_n_simp" },
+  { name: "Medium Project", labelKey: "pl_l_med", nameKey: "pl_n_med" },
+  { name: "Complex Project", labelKey: "pl_l_comp", nameKey: "pl_n_comp" }
 ];
 
 const messengers = [
   {
-    name: 'Telegram',
-    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.13-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>',
+    name: "Telegram",
+    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.13-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>'
   },
   {
-    name: 'WhatsApp',
-    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.0357 2C6.51179 2 2.01786 6.49393 2.01786 12.0179C2.01786 13.7796 2.48125 15.5036 3.34732 17.0161L2 22L7.09821 20.6607C8.55625 21.5018 10.258 22.0179 12.0179 22.0179C17.5418 22.0179 22.0357 17.5239 22.0357 12C22.0357 6.49393 17.5418 2 12.0357 2ZM12.0357 20.1348C10.5071 20.1348 8.98393 19.7241 7.65089 18.9571L7.32946 18.7616L4.32143 19.5643L5.12411 16.5562L4.92857 16.2348C4.14375 14.8786 3.73304 13.3339 3.73304 11.7857C3.73304 7.20625 7.45446 3.48482 12.0357 3.48482C16.617 3.48482 20.3384 7.20625 20.3384 11.7857C20.3205 16.383 16.5991 20.1348 12.0357 20.1348ZM16.7946 14.558C16.5446 14.433 15.2946 13.8259 15.0625 13.7366C14.8304 13.6473 14.6696 13.6116 14.5089 13.8616C14.3482 14.1116 13.8839 14.6473 13.7411 14.8259C13.5982 14.9866 13.4554 15.0223 13.2054 14.8973C12.9554 14.7723 12.1518 14.5045 11.1875 13.6652C10.4554 13.0045 9.9375 12.2009 9.8125 11.9509C9.6875 11.7009 9.79464 11.5759 9.91964 11.4509C10.0268 11.3438 10.1696 11.1652 10.2946 11.0223C10.4196 10.8795 10.4732 10.7723 10.5446 10.6116C10.6161 10.4509 10.5804 10.3259 10.5268 10.2009C10.4732 10.0759 10.0089 8.95089 9.83036 8.48661C9.63393 8.04018 9.45536 8.11161 9.33036 8.11161C9.20536 8.11161 9.0625 8.11161 8.90179 8.11161C8.74107 8.11161 8.47321 8.18304 8.24107 8.43304C8.00893 8.68304 7.36607 9.29018 7.36607 10.5223C7.36607 11.7545 8.24107 12.9509 8.38393 13.1295C8.50893 13.308 10.0804 15.7366 12.4821 16.7723C13.0536 17.0223 13.4821 17.1652 13.8214 17.2723C14.3929 17.4509 14.9107 17.433 15.3214 17.3795C15.7857 17.308 16.7321 16.808 16.9286 16.2545C17.125 15.7009 17.125 15.2188 17.0714 15.1295C17.0179 15.0223 16.8839 14.9866 16.6518 14.8616L16.7946 14.558Z"/></svg>',
+    name: "WhatsApp",
+    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.0357 2C6.51179 2 2.01786 6.49393 2.01786 12.0179C2.01786 13.7796 2.48125 15.5036 3.34732 17.0161L2 22L7.09821 20.6607C8.55625 21.5018 10.258 22.0179 12.0179 22.0179C17.5418 22.0179 22.0357 17.5239 22.0357 12C22.0357 6.49393 17.5418 2 12.0357 2ZM12.0357 20.1348C10.5071 20.1348 8.98393 19.7241 7.65089 18.9571L7.32946 18.7616L4.32143 19.5643L5.12411 16.5562L4.92857 16.2348C4.14375 14.8786 3.73304 13.3339 3.73304 11.7857C3.73304 7.20625 7.45446 3.48482 12.0357 3.48482C16.617 3.48482 20.3384 7.20625 20.3384 11.7857C20.3205 16.383 16.5991 20.1348 12.0357 20.1348ZM16.7946 14.558C16.5446 14.433 15.2946 13.8259 15.0625 13.7366C14.8304 13.6473 14.6696 13.6116 14.5089 13.8616C14.3482 14.1116 13.8839 14.6473 13.7411 14.8259C13.5982 14.9866 13.4554 15.0223 13.2054 14.8973C12.9554 14.7723 12.1518 14.5045 11.1875 13.6652C10.4554 13.0045 9.9375 12.2009 9.8125 11.9509C9.6875 11.7009 9.79464 11.5759 9.91964 11.4509C10.0268 11.3438 10.1696 11.1652 10.2946 11.0223C10.4196 10.8795 10.4732 10.7723 10.5446 10.6116C10.6161 10.4509 10.5804 10.3259 10.5268 10.2009C10.4732 10.0759 10.0089 8.95089 9.83036 8.48661C9.63393 8.04018 9.45536 8.11161 9.33036 8.11161C9.20536 8.11161 9.0625 8.11161 8.90179 8.11161C8.74107 8.11161 8.47321 8.18304 8.24107 8.43304C8.00893 8.68304 7.36607 9.29018 7.36607 10.5223C7.36607 11.7545 8.24107 12.9509 8.38393 13.1295C8.50893 13.308 10.0804 15.7366 12.4821 16.7723C13.0536 17.0223 13.4821 17.1652 13.8214 17.2723C14.3929 17.4509 14.9107 17.433 15.3214 17.3795C15.7857 17.308 16.7321 16.808 16.9286 16.2545C17.125 15.7009 17.125 15.2188 17.0714 15.1295C17.0179 15.0223 16.8839 14.9866 16.6518 14.8616L16.7946 14.558Z"/></svg>'
   },
   {
-    name: 'Email',
-    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>',
-  },
+    name: "Email",
+    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>'
+  }
 ];
 
 const pricingData = {
-  template: ['$300 - $600', '$700 - $1,200', '$1,400 - $2,500+'],
-  layout: ['$400 - $800', '$900 - $1,800', '$2,000 - $4,000+'],
-  custom: ['$800 - $1,500', '$1,500 - $3,500', '$3,500 - $6,000+'],
+  template: ["$300 - $600", "$700 - $1,200", "$1,400 - $2,500+"],
+  layout: ["$400 - $800", "$900 - $1,800", "$2,000 - $4,000+"],
+  custom: ["$800 - $1,500", "$1,500 - $3,500", "$3,500 - $6,000+"]
 };
 
 const form = reactive({
-  designType: '',
-  plan: '',
-  refLink: '',
-  contact: '@',
-  name: '',
-  messenger: 'Telegram',
+  designType: "",
+  plan: "",
+  refLink: "",
+  contact: "@",
+  name: "",
+  messenger: "Telegram"
 });
 
 // COMPUTED PROPERTIES
 const computedPlans = computed(() => {
-  const prices = pricingData[form.designType || 'template'];
+  const prices = pricingData[form.designType || "template"];
   return basePlans.map((plan, index) => ({
     ...plan,
-    priceRange: prices[index],
+    priceRange: prices[index]
   }));
 });
 
 const contactLabel = computed(() =>
-  form.messenger === 'WhatsApp' ? t('mod_ph_phone') : t('mod_ph_contact')
+  form.messenger === "WhatsApp" ? t("mod_ph_phone") : t("mod_ph_contact")
 );
 
 const contactPlaceholder = computed(() =>
-  form.messenger === 'Telegram' ? '@username' : 'email@example.com'
+  form.messenger === "Telegram" ? "@username" : "email@example.com"
 );
 
 const filteredCountries = computed(() => {
@@ -455,13 +447,13 @@ const isValid = computed(() => {
   if (step.value === 4) {
     if (form.name.trim().length < 2) return false;
 
-    if (form.messenger === 'WhatsApp') {
+    if (form.messenger === "WhatsApp") {
       return phoneBody.value.length >= 7 && phoneBody.value.length <= 15;
     }
-    if (form.messenger === 'Telegram') {
-      return form.contact.startsWith('@') && form.contact.length > 2;
+    if (form.messenger === "Telegram") {
+      return form.contact.startsWith("@") && form.contact.length > 2;
     }
-    if (form.messenger === 'Email') {
+    if (form.messenger === "Email") {
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contact);
     }
   }
@@ -472,10 +464,10 @@ const isValid = computed(() => {
 const isMobileViewport = () => window.innerWidth < 1024;
 
 const mapPlanToBudget = (planName) => {
-  if (planName === 'Simple Project') return '< $1,000';
-  if (planName === 'Medium Project') return '$1,000 — $3,000';
-  if (planName === 'Complex Project') return '$3,000 — $6,000';
-  return 'Більше $6,000';
+  if (planName === "Simple Project") return "< $1,000";
+  if (planName === "Medium Project") return "$1,000 — $3,000";
+  if (planName === "Complex Project") return "$3,000 — $6,000";
+  return "Більше $6,000";
 };
 
 const toggleCountryDropdown = () => {
@@ -488,23 +480,23 @@ const toggleCountryDropdown = () => {
 const selectCountry = (country) => {
   selectedCountry.value = country;
   isCountryOpen.value = false;
-  searchQuery.value = '';
+  searchQuery.value = "";
 };
 
 const filterPhoneInput = (e) => {
-  phoneBody.value = e.target.value.replace(/\D/g, '');
+  phoneBody.value = e.target.value.replace(/\D/g, "");
 };
 
 const selectMessenger = (name) => {
   form.messenger = name;
-  form.contact = name === 'Telegram' ? '@' : '';
-  phoneBody.value = '';
+  form.contact = name === "Telegram" ? "@" : "";
+  phoneBody.value = "";
 };
 
 const handleContactInput = (e) => {
-  if (form.messenger === 'Telegram') {
+  if (form.messenger === "Telegram") {
     const val = e.target.value;
-    form.contact = !val.startsWith('@') ? '@' + val.replace(/@/g, '') : val;
+    form.contact = !val.startsWith("@") ? "@" + val.replace(/@/g, "") : val;
   }
 };
 
@@ -524,32 +516,52 @@ const closeCountryDropdown = () => {
   isCountryOpen.value = false;
 };
 
-// PREVENT IOS RUBBER-BAND SCROLL OUTSIDE MODAL CONTENT
+// SCROLL LOCK MANAGEMENT
 const lockTouch = (e) => {
-  if (
-    isMobileViewport() &&
-    !e.target.closest('.country-dropdown') &&
-    !e.target.closest('.m-content')
-  ) {
+  if (isMobileViewport() && !e.target.closest(".country-dropdown") && !e.target.closest(".m-content")) {
     if (e.touches && e.touches.length > 1) return;
     e.preventDefault();
   }
 };
 
-// RESET FORM STATE WHEN MODAL OPENS OR CLOSES
+const setMobileBackground = (isHidden) => {
+  if (!isMobileViewport()) return;
+  document.body.style.backgroundColor = isHidden ? "#000000" : "";
+};
+
+const clearScrollLock = () => {
+  document.documentElement.style.removeProperty("overflow");
+  document.body.style.removeProperty("overflow");
+  document.documentElement.style.removeProperty("overscroll-behavior");
+  document.body.style.removeProperty("overscroll-behavior");
+};
+
+// MODAL OPEN AND CLOSE WATCHER
 watch(
   () => props.isOpen,
   (open) => {
-    if (open) {
-      document.addEventListener('touchmove', lockTouch, { passive: false });
+    if (unlockTimeout) {
+      clearTimeout(unlockTimeout);
+      unlockTimeout = null;
+    }
 
-      form.designType = '';
-      form.plan = '';
-      form.refLink = '';
-      form.name = '';
-      phoneBody.value = '';
-      form.contact = form.messenger === 'Telegram' ? '@' : '';
-      isCountryOpen.value = false;
+    if (open) {
+      if (window.lenis) window.lenis.stop();
+
+      document.documentElement.style.setProperty("overflow", "hidden", "important");
+      document.body.style.setProperty("overflow", "hidden", "important");
+      document.documentElement.style.setProperty("overscroll-behavior", "none", "important");
+      document.body.style.setProperty("overscroll-behavior", "none", "important");
+
+      setMobileBackground(true);
+      document.addEventListener("touchmove", lockTouch, { passive: false });
+
+      form.designType = "";
+      form.plan = "";
+      form.refLink = "";
+      form.name = "";
+      phoneBody.value = "";
+      form.contact = form.messenger === "Telegram" ? "@" : "";
 
       if (props.initialDesignType && props.initialPlan) {
         form.designType = props.initialDesignType;
@@ -561,8 +573,12 @@ watch(
         startStep.value = 1;
       }
     } else {
-      document.removeEventListener('touchmove', lockTouch);
-      isCountryOpen.value = false;
+      setMobileBackground(false);
+      unlockTimeout = setTimeout(() => {
+        clearScrollLock();
+        if (window.lenis) window.lenis.start();
+        document.removeEventListener("touchmove", lockTouch);
+      }, 200);
     }
   },
   { immediate: true }
@@ -573,17 +589,17 @@ const sendRequest = async () => {
   loading.value = true;
 
   const finalContact =
-    form.messenger === 'WhatsApp'
+    form.messenger === "WhatsApp"
       ? `${selectedCountry.value.dial_code} ${phoneBody.value}`
       : form.contact;
 
-  const text = `💎 *NEW WEB LEAD*\n--------------------\n👤 ${form.name}\n📞 ${finalContact} (${form.messenger})\n--------------------\n🎨 Тип разработки: ${selectedDesignLabel.value}\n💎 Тариф: ${selectedPlanLabel.value}\n💰 Ожидаемый бюджет: ${mapPlanToBudget(form.plan)}\n🔗 Ссылка: ${form.refLink || 'Нет'}`;
+  const text = `💎 *NEW WEB LEAD*\n--------------------\n👤 ${form.name}\n📞 ${finalContact} (${form.messenger})\n--------------------\n🎨 Тип разработки: ${selectedDesignLabel.value}\n💎 Тариф: ${selectedPlanLabel.value}\n💰 Ожидаемый бюджет: ${mapPlanToBudget(form.plan)}\n🔗 Ссылка: ${form.refLink || "Нет"}`;
 
   try {
-    const response = await fetch('/api/send-telegram', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
+    const response = await fetch("/api/send-telegram", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text })
     });
 
     const result = await response.json();
@@ -591,10 +607,10 @@ const sendRequest = async () => {
     if (response.ok && result.success) {
       step.value = 5;
     } else {
-      throw new Error(result.error || 'Failed to send');
+      throw new Error(result.error || "Failed to send");
     }
-  } catch {
-    alert(t('mod_err_send'));
+  } catch (e) {
+    alert(t("mod_err_send"));
   } finally {
     loading.value = false;
   }
@@ -602,12 +618,16 @@ const sendRequest = async () => {
 
 // LIFECYCLE
 onMounted(() => {
-  window.addEventListener('click', closeCountryDropdown);
+  window.addEventListener("click", closeCountryDropdown);
 });
 
-onBeforeUnmount(() => {
-  window.removeEventListener('click', closeCountryDropdown);
-  document.removeEventListener('touchmove', lockTouch);
+onUnmounted(() => {
+  if (unlockTimeout) clearTimeout(unlockTimeout);
+  window.removeEventListener("click", closeCountryDropdown);
+  document.removeEventListener("touchmove", lockTouch);
+  if (window.lenis) window.lenis.start();
+  clearScrollLock();
+  setMobileBackground(false);
 });
 </script>
 
@@ -624,10 +644,11 @@ onBeforeUnmount(() => {
 .m-overlay {
   position: fixed;
   inset: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
   z-index: 999999;
-  background: rgba(0, 0, 0, 0.72);
+  background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   display: flex;
@@ -643,14 +664,14 @@ onBeforeUnmount(() => {
   width: 100%;
   max-width: 640px;
   min-height: 500px;
-  max-height: 92vh;
+  max-height: 95vh;
   background: #000000;
   border-radius: 32px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
   overflow: hidden;
   padding: 40px 50px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   display: flex;
   flex-direction: column;
   transform: translate3d(0, 0, 0);
@@ -692,13 +713,14 @@ onBeforeUnmount(() => {
   flex: 1;
   width: 100%;
   -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
   overscroll-behavior-y: contain;
   display: flex;
   flex-direction: column;
 }
 
 .m-content::-webkit-scrollbar {
-  width: 0;
+  width: 0px;
   display: none;
 }
 
@@ -1478,7 +1500,7 @@ onBeforeUnmount(() => {
 
 .modal-luxury-enter-active,
 .modal-luxury-leave-active {
-  transition: opacity 0.18s ease-out;
+  transition: opacity 0.15s ease-out;
 }
 
 .modal-luxury-enter-from,
@@ -1498,9 +1520,7 @@ onBeforeUnmount(() => {
 
 .dropdown-anim-enter-active,
 .dropdown-anim-leave-active {
-  transition:
-    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.2s;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s;
 }
 
 .dropdown-anim-enter-from,
@@ -1558,287 +1578,271 @@ onBeforeUnmount(() => {
 /* COMPACT DESKTOP HEIGHT (<= 900PX) */
 @media (max-height: 900px) and (min-width: 768px) {
   .m-window {
-    padding: 30px 40px;
+    padding: 30px 40px !important;
   }
   .m-close-text {
     top: 30px;
     left: 40px;
   }
   .m-header {
-    margin-bottom: 20px;
-    padding-top: 10px;
-    margin-top: 20px;
+    margin-bottom: 20px !important;
+    padding-top: 10px !important;
+    margin-top: 20px !important;
   }
   .m-headline {
-    font-size: 32px;
-    margin-bottom: 15px;
+    font-size: 32px !important;
+    margin-bottom: 15px !important;
   }
   .sub-text {
-    margin-top: -10px;
-    margin-bottom: 15px;
+    margin-top: -10px !important;
+    margin-bottom: 15px !important;
   }
   .m-plans-list {
-    gap: 8px;
+    gap: 8px !important;
   }
   .plan-card-large {
-    padding: 15px 20px;
+    padding: 15px 20px !important;
   }
   .ms-card {
-    height: 75px;
+    height: 75px !important;
   }
   .ms-icon-wrapper,
   .ms-icon-wrapper svg {
-    width: 24px;
-    height: 24px;
+    width: 24px !important;
+    height: 24px !important;
   }
   .input-group {
-    margin-bottom: 18px;
+    margin-bottom: 18px !important;
   }
   .m-footer {
-    margin-top: 20px;
+    margin-top: 20px !important;
   }
   .btn-silver-action {
-    padding: 15px 35px;
+    padding: 15px 35px !important;
   }
 }
 
 /* MOBILE RESPONSIVE STYLES (<= 767PX) */
 @media (max-width: 767px) {
   .m-overlay {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    background: #000000;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    align-items: stretch;
-    justify-content: flex-start;
-    padding: 0;
-    transform: none;
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    background: #000000 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    padding: 0 !important;
+    transform: none !important;
   }
-
-  /* SOLID BLACK BLEED SHIELD FOR IOS TELEGRAM TOOLBAR ANIMATIONS */
-  .m-overlay::before {
-    content: '';
-    position: fixed;
-    top: -120px;
-    bottom: -120px;
-    left: 0;
-    right: 0;
-    background: #000000;
-    z-index: -1;
-    pointer-events: none;
-  }
-
   .m-window {
-    border-radius: 0;
-    border: none;
-    padding: 0;
-    width: 100%;
-    min-height: 0;
-    height: 100%;
-    max-height: 100%;
-    background: #000000;
-    transform: none;
+    border-radius: 0 !important;
+    border: none !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    background: #000000 !important;
+    transform: none !important;
   }
-
   .m-close-text {
-    top: calc(20px + env(safe-area-inset-top));
-    left: 20px;
-    font-size: 11px;
+    top: 24px !important;
+    left: 20px !important;
+    font-size: 11px !important;
   }
-
   .m-close-text .back-arrow {
-    width: 16px;
-    height: 16px;
+    width: 16px !important;
+    height: 16px !important;
   }
-
   .m-content {
-    padding: calc(64px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom)) 20px;
-    flex: 1 1 auto;
-    min-height: 0;
-    justify-content: flex-start;
+    padding: 70px 20px 20px 20px !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    justify-content: flex-start !important;
   }
-
   .m-header {
-    margin-top: 0;
-    margin-bottom: 20px;
-    padding-top: 0;
+    margin-bottom: 20px !important;
+    padding-top: 0 !important;
   }
-
   .m-headline {
-    font-size: 26px;
+    font-size: 26px !important;
   }
-
   .sub-text {
-    font-size: 14px;
-    margin-bottom: 15px;
+    font-size: 14px !important;
+    margin-bottom: 15px !important;
   }
-
   .m-body {
-    display: flex;
-    flex-direction: column;
-    flex: 0 0 auto;
-    padding: 5px 0;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 0 0 auto !important;
+    padding: 5px 0 !important;
   }
-
   .m-grid-cards {
-    gap: 10px;
+    gap: 10px !important;
   }
-
   .luxury-card {
-    min-height: 55px;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    min-height: 55px !important;
+    border-radius: 14px !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
   }
-
   .design-card {
-    padding: 16px 14px;
+    padding: 16px 14px !important;
   }
-
   .design-card .card-title {
-    font-size: 15px;
+    font-size: 15px !important;
   }
-
   .design-card .card-desc {
-    font-size: 12px;
+    font-size: 12px !important;
   }
-
   .plan-card-large {
-    padding: 16px 20px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 14px;
+    padding: 16px 20px !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 14px !important;
   }
-
   .luxury-card.active,
   .plan-card-large.active {
-    border: 1px solid #ffffff;
-    background: #080808;
+    border: 1px solid #ffffff !important;
+    background: #080808 !important;
   }
-
   .plan-info {
-    gap: 2px;
+    gap: 2px !important;
   }
-
   .plan-title {
-    font-size: 16px;
+    font-size: 16px !important;
   }
-
   .plan-badge {
-    font-size: 10px;
+    font-size: 10px !important;
   }
-
   .quote-main {
-    font-size: 12px;
+    font-size: 12px !important;
   }
-
   .messenger-selector {
-    margin-bottom: 24px;
+    margin-bottom: 24px !important;
   }
-
   .messenger-grid {
-    gap: 8px;
+    gap: 8px !important;
   }
-
   .ms-card {
-    height: 60px;
+    height: 60px !important;
   }
-
   .ms-icon-wrapper svg {
-    width: 20px;
-    height: 20px;
+    width: 20px !important;
+    height: 20px !important;
   }
-
   .ms-name {
-    font-size: 9px;
+    font-size: 9px !important;
     letter-spacing: 1px;
   }
-
   .input-group {
-    margin-bottom: 12px;
+    margin-bottom: 12px !important;
   }
-
   .input-group label {
-    margin-bottom: 8px;
-    font-size: 11px;
+    margin-bottom: 8px !important;
+    font-size: 11px !important;
   }
-
   .form-row {
-    flex-direction: column;
-    gap: 24px;
+    flex-direction: column !important;
+    gap: 24px !important;
   }
-
   .input-group.half {
-    width: 100%;
+    width: 100% !important;
   }
-
   .input-group.step-4-bottom {
-    margin-top: 15px;
-    margin-bottom: 0;
+    margin-top: 15px !important;
+    margin-bottom: 0 !important;
   }
-
   .country-trigger {
-    min-width: 105px;
-    height: 48px;
-    margin-bottom: 0;
-    background: rgba(10, 10, 10, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    min-width: 105px !important;
+    height: 48px !important;
+    margin-bottom: 0 !important;
+    background: rgba(10, 10, 10, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
   }
-
   .country-trigger.active {
-    border-color: rgba(255, 255, 255, 0.9);
+    border-color: rgba(255, 255, 255, 0.9) !important;
   }
-
   .luxury-input,
   .phone-input {
-    padding-bottom: 12px;
-    touch-action: manipulation;
+    padding-bottom: 12px !important;
+    touch-action: manipulation !important;
   }
-
   .country-search {
-    touch-action: manipulation;
+    touch-action: manipulation !important;
   }
-
   .phone-smart-wrapper {
     width: 100%;
   }
-
   .flag-text,
   .dial-code {
-    font-size: 13px;
+    font-size: 13px !important;
   }
-
   .m-footer {
-    flex-direction: column-reverse;
-    gap: 10px;
-    padding-bottom: 0;
-    margin-top: 0;
-    padding-top: 20px;
+    flex-direction: column-reverse !important;
+    gap: 10px !important;
+    padding-bottom: 0 !important;
+    margin-top: 0 !important;
+    padding-top: 20px !important;
   }
-
   .btn-silver-action {
-    width: 100%;
-    padding: 15px;
-    border-radius: 12px;
+    width: 100% !important;
+    padding: 15px !important;
+    border-radius: 12px !important;
   }
-
   .btn-silver-action .btn-text {
-    font-size: 14px;
+    font-size: 14px !important;
   }
-
   .btn-text-back {
-    width: 100%;
-    padding: 12px;
-    font-size: 13px;
+    width: 100% !important;
+    padding: 12px !important;
+    font-size: 13px !important;
   }
-
   .country-dropdown {
-    width: calc(100vw - 40px);
-    max-height: 220px;
-    touch-action: pan-y;
+    width: calc(100vw - 40px) !important;
+    max-height: 220px !important;
+    touch-action: pan-y !important;
+  }
+}
+
+/* SMALL MOBILE SCREEN HEIGHT (<= 700PX) */
+@media (max-width: 767px) and (max-height: 700px) {
+  .m-close-text {
+    top: 18px !important;
+    left: 16px !important;
+  }
+  .m-content {
+    padding-top: 60px !important;
+  }
+  .m-header {
+    margin-bottom: 10px !important;
+  }
+  .m-headline {
+    font-size: 22px !important;
+  }
+  .m-grid-cards {
+    gap: 8px !important;
+  }
+  .design-card {
+    padding: 12px 10px !important;
+  }
+  .plan-card-large {
+    padding: 10px 14px !important;
+  }
+  .ms-card {
+    height: 55px !important;
+  }
+  .input-group {
+    margin-bottom: 10px !important;
+  }
+  .btn-silver-action {
+    padding: 12px !important;
+  }
+  .m-footer {
+    padding-top: 12px !important;
+    gap: 8px !important;
   }
 }
 </style>

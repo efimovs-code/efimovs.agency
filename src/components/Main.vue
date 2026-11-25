@@ -4,6 +4,7 @@
     ref="heroSection"
     class="hero"
     :class="{ 'is-paused': !isVisible }"
+    :style="{ '--hero-h': heroHeight }"
   >
     <div class="container">
       <!-- HERO HEADING AND PRIMARY ACTION BUTTONS -->
@@ -116,6 +117,11 @@ const heroSection = ref(null);
 const titleRef = ref(null);
 const isVisible = ref(true);
 
+// LOCK INITIAL VIEWPORT HEIGHT IN PIXELS SO TELEGRAM TOOLBAR COLLAPSE NEVER JUMPS THE HERO
+const heroHeight = ref(
+  typeof window !== 'undefined' ? `${window.innerHeight}px` : '100vh'
+);
+
 let visibilityObserver = null;
 let lastWidth = 0;
 
@@ -136,12 +142,21 @@ const fitTitle = async () => {
   }
 };
 
-// IGNORE VERTICAL RESIZE EVENTS TRIGGERED BY TELEGRAM TOOLBARS
+// IGNORE VERTICAL RESIZE EVENTS TRIGGERED BY TELEGRAM TOOLBARS ON MOBILE/TABLET
 const handleResize = () => {
   const currentWidth = window.innerWidth;
+
+  if (currentWidth >= 1024) {
+    lastWidth = currentWidth;
+    heroHeight.value = `${window.innerHeight}px`;
+    fitTitle();
+    return;
+  }
+
   if (currentWidth === lastWidth) return;
 
   lastWidth = currentWidth;
+  heroHeight.value = `${window.innerHeight}px`;
   fitTitle();
 };
 
@@ -150,6 +165,7 @@ watch(() => t('mobile_hero_title'), fitTitle);
 // LIFECYCLE AND VISIBILITY OBSERVER
 onMounted(() => {
   lastWidth = window.innerWidth;
+  heroHeight.value = `${window.innerHeight}px`;
   fitTitle();
 
   if (document.fonts && document.fonts.ready) {
@@ -235,7 +251,7 @@ onBeforeUnmount(() => {
 }
 
 .hero {
-  min-height: 100svh;
+  min-height: var(--hero-h, 100vh);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -492,6 +508,10 @@ onBeforeUnmount(() => {
 
 // TABLET RESPONSIVE STYLES (768PX - 1023PX)
 @media (min-width: 768px) and (max-width: 1023px) {
+  .hero {
+    min-height: var(--hero-h, 100vh);
+  }
+
   .hero .container {
     padding: 0 24px;
     gap: 32px;
@@ -524,7 +544,7 @@ onBeforeUnmount(() => {
   }
 
   .hero {
-    min-height: 100svh;
+    min-height: var(--hero-h, 100vh);
     height: auto;
     padding: 112px 0 28px;
     background: #000000;

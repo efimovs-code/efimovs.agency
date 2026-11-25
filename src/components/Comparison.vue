@@ -363,6 +363,7 @@ const subtitleRef = ref(null);
 
 let mediaQuery = null;
 let resizeObserver = null;
+let lastWidth = 0;
 
 const selectedPlatform = computed(() => {
   return platforms.find((p) => p.id === selectedPlatformId.value) || platforms[0];
@@ -432,6 +433,15 @@ const fitHeaderTexts = () => {
   fitSingleLine(subtitleRef.value, maxWidth, 12);
 };
 
+// IGNORE VERTICAL RESIZE EVENTS TRIGGERED BY TELEGRAM TOOLBARS
+const handleResize = () => {
+  const currentWidth = window.innerWidth;
+  if (currentWidth === lastWidth) return;
+
+  lastWidth = currentWidth;
+  fitHeaderTexts();
+};
+
 watch([cmpTitle, cmpSubAfter, langCode], () => {
   nextTick(fitHeaderTexts);
 });
@@ -443,6 +453,7 @@ const handleMediaChange = (e) => {
 };
 
 onMounted(() => {
+  lastWidth = window.innerWidth;
   mediaQuery = window.matchMedia('(min-width: 1024px)');
   isDesktop.value = mediaQuery.matches;
   mediaQuery.addEventListener('change', handleMediaChange);
@@ -455,7 +466,7 @@ onMounted(() => {
     resizeObserver = new ResizeObserver(fitHeaderTexts);
     resizeObserver.observe(headerRef.value);
   }
-  window.addEventListener('resize', fitHeaderTexts, { passive: true });
+  window.addEventListener('resize', handleResize, { passive: true });
   document.addEventListener('click', handleClickOutside);
   document.addEventListener('keydown', handleKeydown);
 });
@@ -464,7 +475,7 @@ onBeforeUnmount(() => {
   if (mediaQuery) {
     mediaQuery.removeEventListener('change', handleMediaChange);
   }
-  window.removeEventListener('resize', fitHeaderTexts);
+  window.removeEventListener('resize', handleResize);
   document.removeEventListener('click', handleClickOutside);
   document.removeEventListener('keydown', handleKeydown);
   if (resizeObserver) resizeObserver.disconnect();
@@ -585,6 +596,9 @@ onBeforeUnmount(() => {
   right: 16px;
   top: calc(100% + 4px);
   width: 224px;
+  background: rgba(16, 16, 18, 0.98);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .dropdown-caption {

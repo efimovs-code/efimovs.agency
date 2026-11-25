@@ -404,7 +404,7 @@ onBeforeUnmount(() => {
 <style scoped>
 /* --- BASE LAYOUT */
 .footer {
-  contain: content;
+  contain: style;
   position: relative;
   background: #000000 !important;
   padding: 0;
@@ -925,7 +925,7 @@ onBeforeUnmount(() => {
   }
 
   .footer-content {
-    padding: 80px 0 40px 0;
+    padding: 80px 0 calc(40px + env(safe-area-inset-bottom, 0px)) 0;
   }
 
   .footer-top-grid {

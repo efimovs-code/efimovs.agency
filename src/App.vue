@@ -74,14 +74,14 @@ import { gsap } from 'gsap';
 
 import Header from './components/Header.vue';
 
-// ASYNC GLOBAL COMPONENTS
+/* ASYNC GLOBAL COMPONENTS */
 const Footer = defineAsyncComponent(() => import('./components/Footer.vue'));
 const ContactModal = defineAsyncComponent(() => import('./components/ContactModal.vue'));
 
 const route = useRoute();
 const router = useRouter();
 
-// ROUTER & UI STATE
+/* ROUTER & UI STATE */
 const isPortfolioPage = computed(
   () => route.name === 'Portfolio' || route.name === 'Careers'
 );
@@ -103,7 +103,7 @@ let savedModalScrollY = 0;
 let removeBeforeEach = null;
 let removeAfterEach = null;
 
-// ROUTE MOUNT & SCROLL RESTORATION
+/* ROUTE MOUNT & SCROLL RESTORATION */
 const onRouteMounted = () => {
   isPageMounted.value = true;
   nextTick(() => {
@@ -140,7 +140,7 @@ removeAfterEach = router.afterEach((to, from) => {
   });
 });
 
-// MODAL SCROLL LOCK (PREVENTS BACKGROUND SHIFT IN IOS TELEGRAM WEBVIEW)
+/* MODAL SCROLL LOCK (PREVENTS BACKGROUND SHIFT IN IOS TELEGRAM WEBVIEW) */
 watch(isModalOpen, (isOpen) => {
   if (isOpen) {
     savedModalScrollY = lenis ? lenis.scroll : window.scrollY;
@@ -166,7 +166,7 @@ const openWithStack = (stackName, serviceName = '') => {
   isModalOpen.value = true;
 };
 
-// DESKTOP STARFIELD PARALLAX
+/* DESKTOP STARFIELD PARALLAX */
 const updateStars = (currentScroll) => {
   if (!isDesktop.value || currentScroll === lastScrollY) return;
   lastScrollY = currentScroll;
@@ -187,7 +187,7 @@ const updateStars = (currentScroll) => {
   }
 };
 
-// LENIS SMOOTH SCROLL (DESKTOP ONLY)
+/* LENIS SMOOTH SCROLL (DESKTOP ONLY) */
 const onTick = (time) => {
   if (!lenis) return;
   lenis.raf(time * 1000);
@@ -224,7 +224,7 @@ const destroyLenis = () => {
   }
 };
 
-// RESPONSIVE DEVICE CHECK (IGNORES VERTICAL TOOLBAR RESIZES)
+/* RESPONSIVE DEVICE CHECK (IGNORES VERTICAL TOOLBAR RESIZES) */
 const checkDevice = () => {
   const currentWidth = window.innerWidth;
   if (currentWidth === lastWidth) return;
@@ -242,7 +242,7 @@ const checkDevice = () => {
   }
 };
 
-// LIFECYCLE
+/* LIFECYCLE */
 onMounted(() => {
   if ('scrollRestoration' in history) {
     history.scrollRestoration = 'manual';
@@ -272,6 +272,18 @@ onBeforeUnmount(() => {
 
 <style>
 /* GLOBAL HEADER & MODAL OVERRIDES */
+html.global-modal-open,
+body.global-modal-open {
+  overflow: hidden !important;
+}
+
+body.global-modal-open {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+}
+
 body.global-modal-open .header {
   opacity: 0 !important;
   pointer-events: none !important;
@@ -321,13 +333,21 @@ html.lenis body {
 
 /* ROOT CONTAINERS */
 html {
+  height: 100%;
+  background-color: #000000;
   overflow-anchor: none;
   scrollbar-width: thin;
   scrollbar-color: #333333 #000000;
 }
 
+body {
+  min-height: 100%;
+  background-color: #000000;
+}
+
 #app {
   width: 100%;
+  min-height: 100%;
   position: relative;
   z-index: 1;
 }
@@ -336,17 +356,16 @@ html {
   position: relative;
   z-index: 10;
   width: 100%;
-  min-height: 100svh;
+  min-height: 100%;
 }
 
-/* AMBIENT STARLIGHT BACKGROUND (LOCKED TO LARGE VIEWPORT HEIGHT) */
+/* AMBIENT STARLIGHT BACKGROUND (STATIC INSET BLEED, NO VH UNITS) */
 .starlight-bg {
   position: fixed;
-  top: 0;
+  top: -100px;
+  bottom: -100px;
   left: 0;
-  width: 100%;
-  height: 100vh;
-  height: 100lvh;
+  right: 0;
   background-color: #000000;
   z-index: -999;
   overflow: hidden;
@@ -400,7 +419,7 @@ html {
   top: -800px;
   left: 0;
   width: 100%;
-  height: calc(100vh + 1600px);
+  height: calc(100% + 1600px);
   will-change: transform;
   backface-visibility: hidden;
   z-index: 3;

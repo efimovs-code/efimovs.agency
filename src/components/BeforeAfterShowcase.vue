@@ -95,6 +95,7 @@ const split = ref(50);
 const isDragging = ref(false);
 
 let resizeObserver = null;
+let lastWidth = 0;
 
 const baTitle = computed(() => t('ba_title'));
 
@@ -115,6 +116,15 @@ const fitTitle = () => {
     currentSize -= 0.5;
     el.style.fontSize = `${currentSize}px`;
   }
+};
+
+// IGNORE VERTICAL RESIZE EVENTS TRIGGERED BY TELEGRAM TOOLBARS
+const handleResize = () => {
+  const currentWidth = window.innerWidth;
+  if (currentWidth === lastWidth) return;
+
+  lastWidth = currentWidth;
+  fitTitle();
 };
 
 watch([baTitle, () => currentLang.value.code], () => {
@@ -163,6 +173,7 @@ const onSliderKeydown = (e) => {
 };
 
 onMounted(() => {
+  lastWidth = window.innerWidth;
   fitTitle();
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(fitTitle);
@@ -171,13 +182,13 @@ onMounted(() => {
     resizeObserver = new ResizeObserver(fitTitle);
     resizeObserver.observe(headerRef.value);
   }
-  window.addEventListener('resize', fitTitle, { passive: true });
+  window.addEventListener('resize', handleResize, { passive: true });
 });
 
 onBeforeUnmount(() => {
   stopDrag();
   if (resizeObserver) resizeObserver.disconnect();
-  window.removeEventListener('resize', fitTitle);
+  window.removeEventListener('resize', handleResize);
 });
 </script>
 

@@ -316,7 +316,7 @@ onBeforeUnmount(() => {
 <style scoped>
 /* --- BASE LAYOUT */
 .faq-luxury {
-  contain: layout style;
+  contain: style;
   padding: 150px 0;
   background-color: transparent !important;
   color: #ffffff;

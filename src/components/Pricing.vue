@@ -168,7 +168,7 @@ const pricingData = {
     { nameKey: "pl_n_med", labelKey: "pl_l_med", priceRange: "$1,500 - $3,500", originalName: "Medium Project", defLabel: "Optimal",
       desc: { RU: "Премиальный многостраничный сайт. Уникальные эффекты, панель управления и автоматический сбор заявок клиентов.", EN: "Premium multi-page site. Unique effects, management panel, and automatic lead collection.", UA: "Преміальний багатосторінковий сайт. Унікальні ефекти, панель управління та автоматичний збір збір заявок клієнтів." } },
     { nameKey: "pl_n_comp", labelKey: "pl_l_comp", priceRange: "$3,500 - $6,000+", originalName: "Complex Project", defLabel: "Pro",
-      desc: { RU: "Полноценная платформа. Личные кабинеты, надежная защита данных, автоматизация продаж и любой нестандартный функционал.", EN: "Full-scale platform. Personal accounts, high security, sales automation, and any custom features.", UA: "Повноцінна платформа. Особисті кабінети, надійний захист даних, автоматизація продажів та будь-який нестандартний функціонал." } }
+      desc: { RU: "Полноценная платформа. Личные кабинеты, надежная защита данных, автоматизация продаж и любой нестандартный функционал.", EN: "Full-scale platform. Personal accounts, high security, sales automation, and any custom features.", UA: "Повноцінна платформа. Особисті кабінети, надійний захист даних, автоматизация продажів та будь-який нестандартний функціонал." } }
   ]
 };
 
@@ -188,6 +188,7 @@ const isTelegram = ref(false);
 const activeMobileIndex = ref(0);
 let rafId = null;
 let resizeObserver = null;
+let lastWidth = 0;
 
 const pricingTitle = computed(() => t('pr_title') || 'Вартість розробки');
 
@@ -237,11 +238,14 @@ const onCarouselScroll = () => {
   if (isDesktop.value || !scrollContainer.value) return;
   if (rafId) cancelAnimationFrame(rafId);
   rafId = requestAnimationFrame(() => {
-    const cardWidth = window.innerWidth * 0.76; 
+    const container = scrollContainer.value;
+    if (!container) return;
+    const firstCard = container.firstElementChild;
+    const cardWidth = firstCard ? firstCard.offsetWidth : window.innerWidth * 0.76;
     const gap = 16;
     const itemFullWidth = cardWidth + gap;
     
-    let rawIndex = Math.round(scrollContainer.value.scrollLeft / itemFullWidth);
+    const rawIndex = Math.round(container.scrollLeft / itemFullWidth);
     const maxIndex = currentPlans.value.length - 1;
     const safeIndex = Math.max(0, Math.min(rawIndex, maxIndex));
 
@@ -258,21 +262,32 @@ const openModalWithPlan = (plan) => {
 };
 
 let resizeTimer;
-const checkDevice = () => {
+const syncViewport = () => {
+  isDesktop.value = window.innerWidth >= 1024;
+  fitTitle();
+};
+
+// IGNORE VERTICAL RESIZE EVENTS TRIGGERED BY TELEGRAM TOOLBARS
+const handleResize = () => {
+  const currentWidth = window.innerWidth;
+  if (currentWidth === lastWidth) return;
+
+  lastWidth = currentWidth;
   fitTitle();
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
-    isDesktop.value = window.innerWidth >= 1024;
+    isDesktop.value = currentWidth >= 1024;
     nextTick(fitTitle);
   }, 100);
 };
 
 onMounted(() => {
+  lastWidth = window.innerWidth;
   const ua = navigator.userAgent || navigator.vendor || window.opera;
   if (/Telegram|FBAV|Instagram/i.test(ua)) {
     isTelegram.value = true;
   }
-  checkDevice();
+  syncViewport();
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(fitTitle);
   }
@@ -280,11 +295,11 @@ onMounted(() => {
     resizeObserver = new ResizeObserver(fitTitle);
     resizeObserver.observe(headerRef.value);
   }
-  window.addEventListener("resize", checkDevice, { passive: true });
+  window.addEventListener("resize", handleResize, { passive: true });
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("resize", checkDevice);
+  window.removeEventListener("resize", handleResize);
   if (resizeObserver) resizeObserver.disconnect();
   if (rafId) cancelAnimationFrame(rafId);
   clearTimeout(resizeTimer);
@@ -307,7 +322,7 @@ defineExpose({ setActiveType });
 
 <style scoped>
 .pricing-luxury { 
-  contain: content;
+  contain: style;
   padding: clamp(80px, 10vw, 120px) 0; 
   background-color: transparent !important; 
   color: #fff; 
@@ -633,9 +648,9 @@ defineExpose({ setActiveType });
   }
 
   .pricing-carousel {
-    width: 100vw;
-    margin-left: calc(-50vw + 50%); 
-    margin-right: calc(-50vw + 50%);
+    width: calc(100% + 28px);
+    margin-left: -14px;
+    margin-right: -14px;
     padding-top: 10px;
     padding-bottom: 50px; 
   }

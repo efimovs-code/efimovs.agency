@@ -135,7 +135,7 @@ onBeforeUnmount(() => {
   background: transparent;
   color: #ffffff;
   z-index: 10;
-  contain: paint style;
+  contain: style;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
