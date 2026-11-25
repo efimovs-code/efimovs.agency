@@ -1,4 +1,5 @@
 <template>
+  <!-- FIXED TOP HEADER -->
   <Teleport to="body">
     <header
       class="header"
@@ -10,10 +11,10 @@
 
         <!-- MOBILE LANGUAGE SWITCHER (LEFT) -->
         <div
-          class="mobile-lang-wrapper"
           v-show="isMobile"
-          :style="{ visibility: isMenuOpen ? 'hidden' : 'visible' }"
           ref="mobileLangDropdownRef"
+          class="mobile-lang-wrapper"
+          :style="{ visibility: isMenuOpen ? 'hidden' : 'visible' }"
         >
           <button
             type="button"
@@ -43,7 +44,7 @@
           </button>
 
           <transition name="dropdown-fade">
-            <div class="lang-dropdown mobile-dropdown-position" v-show="isMobileLangDropdownOpen">
+            <div v-show="isMobileLangDropdownOpen" class="lang-dropdown mobile-dropdown-position">
               <div class="lang-dropdown-inner" data-lenis-prevent>
                 <button
                   v-for="lang in languages"
@@ -70,9 +71,9 @@
 
         <!-- BRAND LOGO -->
         <div
+          v-show="!isMenuOpen || !isMobile"
           class="logo"
           @click="scrollToTopAndClose"
-          v-show="!isMenuOpen || !isMobile"
         >
           <img src="/icons/transparent.png" alt="Efimovs Agency" class="brand-logo-ea" />
         </div>
@@ -81,40 +82,40 @@
         <nav class="nav desktop-nav">
           <a
             href="#services"
-            @click.prevent="scrollToSection('services')"
             class="nav-link"
             :class="{ 'is-active': activeSection === 'services' }"
+            @click.prevent="scrollToSection('services')"
           >
             <span>{{ t('services') }}</span>
           </a>
           <a
             href="#plans"
-            @click.prevent="scrollToSection('plans')"
             class="nav-link"
             :class="{ 'is-active': activeSection === 'plans' }"
+            @click.prevent="scrollToSection('plans')"
           >
             <span>{{ t('packages') }}</span>
           </a>
           <a
             href="#projects"
-            @click.prevent="scrollToSection('projects')"
             class="nav-link"
             :class="{ 'is-active': activeSection === 'projects' }"
+            @click.prevent="scrollToSection('projects')"
           >
             <span>{{ t('projects') }}</span>
           </a>
           <a
             href="#contacts"
-            @click.prevent="scrollToSection('contacts')"
             class="nav-link"
             :class="{ 'is-active': activeSection === 'contacts' }"
+            @click.prevent="scrollToSection('contacts')"
           >
             <span>{{ t('contacts') }}</span>
           </a>
         </nav>
 
         <!-- DESKTOP LANGUAGE SWITCHER (RIGHT) -->
-        <div class="desktop-lang-wrapper" v-show="!isMobile" ref="langDropdownRef">
+        <div v-show="!isMobile" ref="langDropdownRef" class="desktop-lang-wrapper">
           <button
             type="button"
             class="lang-trigger"
@@ -143,7 +144,7 @@
           </button>
 
           <transition name="dropdown-fade">
-            <div class="lang-dropdown" v-show="isLangMenuOpen">
+            <div v-show="isLangMenuOpen" class="lang-dropdown">
               <div class="lang-dropdown-inner" data-lenis-prevent>
                 <button
                   v-for="lang in languages"
@@ -169,7 +170,7 @@
         </div>
 
         <!-- MOBILE BURGER TRIGGER -->
-        <div class="header-mobile-wrapper" v-show="isMobile">
+        <div v-show="isMobile" class="header-mobile-wrapper">
           <button
             type="button"
             class="burger-btn"
@@ -178,8 +179,8 @@
             aria-label="Menu"
             @click="toggleMenu"
           >
-            <span class="line" v-once></span>
-            <span class="line" v-once></span>
+            <span class="line"></span>
+            <span class="line"></span>
           </button>
         </div>
       </div>
@@ -206,7 +207,7 @@
                   @keydown.enter.prevent="handleMobileNav('services')"
                 >
                   <span class="nav-text">{{ t('services') }}</span>
-                  <div class="nav-line" v-once><div class="line-fill"></div></div>
+                  <div class="nav-line"><div class="line-fill"></div></div>
                 </div>
                 <div
                   class="mobile-nav-item"
@@ -216,7 +217,7 @@
                   @keydown.enter.prevent="handleMobileNav('plans')"
                 >
                   <span class="nav-text">{{ t('packages') }}</span>
-                  <div class="nav-line" v-once><div class="line-fill"></div></div>
+                  <div class="nav-line"><div class="line-fill"></div></div>
                 </div>
                 <div
                   class="mobile-nav-item"
@@ -226,7 +227,7 @@
                   @keydown.enter.prevent="handleMobileNav('projects')"
                 >
                   <span class="nav-text">{{ t('projects') }}</span>
-                  <div class="nav-line" v-once><div class="line-fill"></div></div>
+                  <div class="nav-line"><div class="line-fill"></div></div>
                 </div>
                 <div
                   class="mobile-nav-item"
@@ -236,7 +237,7 @@
                   @keydown.enter.prevent="handleMobileNav('contacts')"
                 >
                   <span class="nav-text">{{ t('contacts') }}</span>
-                  <div class="nav-line" v-once><div class="line-fill"></div></div>
+                  <div class="nav-line"><div class="line-fill"></div></div>
                 </div>
               </nav>
             </div>
@@ -255,6 +256,7 @@ import { languages, currentLang, t } from '../composables/useLanguage.js';
 const route = useRoute();
 const router = useRouter();
 
+// UI AND NAVIGATION STATE
 const isMenuOpen = ref(false);
 const isMobile = ref(false);
 const activeSection = ref('');
@@ -270,9 +272,11 @@ let mediaQuery = null;
 let programmaticScrollTimeout = null;
 let scrollRafId = null;
 let cancelActiveScroll = null;
+let savedMenuScrollY = 0;
 
 const sections = ['services', 'plans', 'projects', 'contacts'];
 
+// LANGUAGE SELECTION
 const setLang = (lang) => {
   currentLang.value = lang;
   isLangMenuOpen.value = false;
@@ -300,17 +304,40 @@ const handleClickOutside = (event) => {
   }
 };
 
-const unlockBodyScroll = () => {
+// IOS TELEGRAM WEBVIEW SAFE BODY SCROLL LOCK
+const lockBodyScroll = () => {
+  savedMenuScrollY = window.scrollY;
+  document.documentElement.style.overflow = 'hidden';
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${savedMenuScrollY}px`;
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.width = '100%';
+  document.body.style.touchAction = 'none';
+};
+
+const unlockBodyScroll = (restorePosition = true) => {
+  const hadFixedLock = document.body.style.position === 'fixed';
   document.documentElement.style.overflow = '';
   document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  document.body.style.width = '';
   document.body.style.touchAction = '';
+
+  if (hadFixedLock && restorePosition) {
+    window.scrollTo({ top: savedMenuScrollY, behavior: 'instant' });
+  }
 };
 
 const handleMediaChange = (e) => {
   isMobile.value = e.matches;
   if (!e.matches && isMenuOpen.value) {
     isMenuOpen.value = false;
-    unlockBodyScroll();
+    unlockBodyScroll(true);
   }
 };
 
@@ -410,16 +437,16 @@ const executeSmartScroll = (id) => {
 
       const trackShiftMobile = () => {
         if (cancelled || elapsed > 2000) return;
-        elapsed += 50;
+        elapsed += 80;
         const currentY = el.getBoundingClientRect().top + window.scrollY;
-        if (Math.abs(currentY - lastY) > 50) {
+        if (Math.abs(currentY - lastY) > 120) {
           lastY = currentY;
           doNativeScroll();
         }
-        shiftTimerId = setTimeout(trackShiftMobile, 50);
+        shiftTimerId = setTimeout(trackShiftMobile, 80);
       };
 
-      shiftTimerId = setTimeout(trackShiftMobile, 50);
+      shiftTimerId = setTimeout(trackShiftMobile, 80);
       return;
     }
 
@@ -464,21 +491,20 @@ const scrollToSection = async (id) => {
   executeSmartScroll(id);
 };
 
+// MOBILE DRAWER ACTIONS
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
   if (isMenuOpen.value) {
     isMobileLangDropdownOpen.value = false;
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-    document.body.style.touchAction = 'none';
+    lockBodyScroll();
   } else {
-    unlockBodyScroll();
+    unlockBodyScroll(true);
   }
 };
 
 const handleMobileNav = (id) => {
   toggleMenu();
-  setTimeout(() => scrollToSection(id), 400);
+  setTimeout(() => scrollToSection(id), 360);
 };
 
 const scrollToTopAndClose = async () => {
@@ -490,7 +516,7 @@ const scrollToTopAndClose = async () => {
   let delay = 0;
   if (isMenuOpen.value) {
     toggleMenu();
-    if (isMobile.value) delay = 400;
+    if (isMobile.value) delay = 360;
   }
   if (route.path !== '/') await router.push('/');
 
@@ -509,6 +535,7 @@ const scrollToTopAndClose = async () => {
   }, delay);
 };
 
+// LIFECYCLE
 onMounted(() => {
   mediaQuery = window.matchMedia('(max-width: 767px)');
   isMobile.value = mediaQuery.matches;
@@ -530,12 +557,12 @@ onBeforeUnmount(() => {
   if (scrollRafId) cancelAnimationFrame(scrollRafId);
   if (programmaticScrollTimeout) clearTimeout(programmaticScrollTimeout);
 
-  unlockBodyScroll();
+  unlockBodyScroll(false);
 });
 </script>
 
 <style lang="scss">
-/* LANGUAGE FLAGS & DROPDOWN */
+// LANGUAGE FLAGS & DROPDOWN
 .lang-flag {
   width: 24px;
   height: 24px;
@@ -545,7 +572,9 @@ onBeforeUnmount(() => {
   opacity: 1;
   filter: saturate(1.25) contrast(1.1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-  transition: all 0.3s ease;
+  transition:
+    filter 0.3s ease,
+    border-color 0.3s ease;
   flex-shrink: 0;
 }
 
@@ -581,15 +610,14 @@ onBeforeUnmount(() => {
   right: 0;
   width: 230px;
   border-radius: 16px;
-  background-color: rgba(15, 15, 15, 0.85);
+  background-color: rgba(15, 15, 15, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-  -webkit-backdrop-filter: saturate(180%) blur(40px);
-  backdrop-filter: saturate(180%) blur(40px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  backdrop-filter: saturate(180%) blur(24px);
   overflow: hidden;
   z-index: 1000;
-  transform: translateZ(0);
-  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
 }
 
 .mobile-dropdown-position {
@@ -668,17 +696,17 @@ onBeforeUnmount(() => {
 .dropdown-fade-enter-active,
 .dropdown-fade-leave-active {
   transition:
-    opacity 0.3s ease,
-    transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    opacity 0.28s ease,
+    transform 0.28s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .dropdown-fade-enter-from,
 .dropdown-fade-leave-to {
   opacity: 0;
-  transform: translateY(-10px) scale(0.98);
+  transform: translate3d(0, -10px, 0) scale(0.98);
 }
 
-/* MOBILE DRAWER */
+// MOBILE DRAWER
 .mobile-overlay {
   display: flex;
   position: fixed;
@@ -687,7 +715,7 @@ onBeforeUnmount(() => {
   pointer-events: auto;
   justify-content: flex-end;
   overflow: hidden;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.65);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
@@ -711,7 +739,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
-  padding: 100px 20px calc(24px + env(safe-area-inset-bottom));
+  padding: calc(88px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));
   overflow-y: auto;
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
@@ -739,7 +767,7 @@ onBeforeUnmount(() => {
 .mobile-nav-item {
   position: relative;
   cursor: pointer;
-  padding: 24px 0;
+  padding: clamp(18px, 2.5svh, 24px) 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -790,7 +818,7 @@ onBeforeUnmount(() => {
 
 .luxury-menu-enter-active,
 .luxury-menu-leave-active {
-  transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .luxury-menu-enter-from,
@@ -800,23 +828,12 @@ onBeforeUnmount(() => {
 
 .luxury-menu-enter-active .mobile-drawer,
 .luxury-menu-leave-active .mobile-drawer {
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .luxury-menu-enter-from .mobile-drawer,
 .luxury-menu-leave-to .mobile-drawer {
   transform: translate3d(100%, 0, 0);
-}
-
-@media (max-height: 700px) and (max-width: 767px) {
-  .mobile-scroll-container {
-    padding-top: 80px;
-    padding-bottom: calc(20px + env(safe-area-inset-bottom));
-  }
-
-  .mobile-nav-item {
-    padding: 18px 0;
-  }
 }
 </style>
 
@@ -837,10 +854,11 @@ onBeforeUnmount(() => {
   top: 0;
   left: 0;
   width: 100%;
-  padding: 15px 0;
+  padding: calc(15px + env(safe-area-inset-top)) 0 15px;
   z-index: 999999;
   animation: headerEnter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
   will-change: transform;
 }
 
@@ -867,12 +885,11 @@ onBeforeUnmount(() => {
   border-radius: 100px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
-  background-color: rgba(10, 10, 10, 0.78);
-  -webkit-backdrop-filter: saturate(180%) blur(40px);
-  backdrop-filter: saturate(180%) blur(40px);
+  background-color: rgba(10, 10, 10, 0.84);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  backdrop-filter: saturate(180%) blur(24px);
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
-  will-change: transform;
 }
 
 .header.is-menu-open .header-glass {
@@ -893,7 +910,6 @@ onBeforeUnmount(() => {
   flex-shrink: 0;
   position: relative;
   z-index: 2;
-  transform: translateZ(10px);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -901,8 +917,6 @@ onBeforeUnmount(() => {
   height: 55px;
   width: auto;
   object-fit: contain;
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
   transition: filter 0.4s ease;
 }
 
@@ -922,7 +936,7 @@ onBeforeUnmount(() => {
   gap: 45px;
   position: absolute;
   left: 50%;
-  transform: translateX(-50%) translateZ(10px);
+  transform: translateX(-50%);
   z-index: 2;
 }
 
@@ -949,7 +963,7 @@ onBeforeUnmount(() => {
   }
 }
 
-/* LANGUAGE TRIGGER */
+// LANGUAGE TRIGGER
 .desktop-lang-wrapper,
 .mobile-lang-wrapper {
   position: absolute;
@@ -957,7 +971,6 @@ onBeforeUnmount(() => {
   align-items: center;
   height: 100%;
   z-index: 2;
-  transform: translateZ(10px);
 }
 
 .desktop-lang-wrapper {
@@ -1003,9 +1016,9 @@ onBeforeUnmount(() => {
 .header-mobile-wrapper {
   display: flex;
   z-index: 2;
-  transform: translateZ(10px);
 }
 
+// RESPONSIVE ADJUSTMENTS
 @media (max-width: 1100px) {
   .header-top {
     height: 60px;
@@ -1035,7 +1048,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 800px) {
   .header {
-    padding: 10px 0;
+    padding: calc(10px + env(safe-area-inset-top)) 0 10px;
   }
   .header-top {
     height: 56px;
@@ -1059,7 +1072,7 @@ onBeforeUnmount(() => {
   }
 
   .header {
-    padding: 12px 0;
+    padding: calc(12px + env(safe-area-inset-top)) 0 12px;
   }
 
   .header-top {
@@ -1088,7 +1101,7 @@ onBeforeUnmount(() => {
   .logo {
     position: absolute;
     left: 50%;
-    transform: translateX(-50%) translateZ(10px);
+    transform: translateX(-50%);
     margin-left: 0;
   }
 

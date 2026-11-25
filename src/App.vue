@@ -1,8 +1,7 @@
 <template>
   <div id="app">
     <div class="app-shell">
-
-      <!-- --- GLOBAL HEADER -->
+      <!-- GLOBAL HEADER -->
       <div class="header-wrapper">
         <Header
           v-if="!isPortfolioPage"
@@ -11,7 +10,7 @@
         />
       </div>
 
-      <!-- --- ACTIVE ROUTE VIEW -->
+      <!-- ACTIVE ROUTE VIEW -->
       <main class="site-content">
         <router-view v-slot="{ Component }">
           <component
@@ -25,13 +24,13 @@
         </router-view>
       </main>
 
-      <!-- --- GLOBAL FOOTER -->
+      <!-- GLOBAL FOOTER -->
       <Footer
         v-if="!isPortfolioPage && isPageMounted"
         @openModal="openWithStack(null)"
       />
 
-      <!-- --- GLOBAL CONTACT MODAL -->
+      <!-- GLOBAL CONTACT MODAL -->
       <Teleport to="body">
         <ContactModal
           :isOpen="isModalOpen"
@@ -41,18 +40,19 @@
           @close="isModalOpen = false"
         />
       </Teleport>
-
     </div>
 
-    <!-- --- AMBIENT STARLIGHT BACKGROUND -->
-    <div class="starlight-bg opt-gpu" aria-hidden="true">
+    <!-- AMBIENT STARLIGHT BACKGROUND -->
+    <div class="starlight-bg" aria-hidden="true">
       <div class="luxury-vignette"></div>
 
-      <div ref="starLayerFar" class="star-layer layer-far opt-gpu"></div>
-      <div ref="starLayerMid" class="star-layer layer-mid opt-gpu"></div>
-      <div ref="starLayerNear" class="star-layer layer-near opt-gpu"></div>
-
-      <div class="shooting-star"></div>
+      <!-- Render parallax star layers only on desktop -->
+      <template v-if="isDesktop">
+        <div ref="starLayerFar" class="star-layer layer-far"></div>
+        <div ref="starLayerMid" class="star-layer layer-mid"></div>
+        <div ref="starLayerNear" class="star-layer layer-near"></div>
+        <div class="shooting-star"></div>
+      </template>
     </div>
   </div>
 </template>
@@ -74,14 +74,14 @@ import { gsap } from 'gsap';
 
 import Header from './components/Header.vue';
 
-// --- ASYNC GLOBAL COMPONENTS
+// ASYNC GLOBAL COMPONENTS
 const Footer = defineAsyncComponent(() => import('./components/Footer.vue'));
 const ContactModal = defineAsyncComponent(() => import('./components/ContactModal.vue'));
 
 const route = useRoute();
 const router = useRouter();
 
-// --- STATE & REFS
+// ROUTER & UI STATE
 const isPortfolioPage = computed(
   () => route.name === 'Portfolio' || route.name === 'Careers'
 );
@@ -99,10 +99,11 @@ const starLayerNear = ref(null);
 let lenis = null;
 let lastWidth = 0;
 let lastScrollY = -1;
+let savedModalScrollY = 0;
 let removeBeforeEach = null;
 let removeAfterEach = null;
 
-// --- ROUTE MOUNT & SCROLL RESTORATION
+// ROUTE MOUNT & SCROLL RESTORATION
 const onRouteMounted = () => {
   isPageMounted.value = true;
   nextTick(() => {
@@ -139,14 +140,23 @@ removeAfterEach = router.afterEach((to, from) => {
   });
 });
 
-// --- MODAL SCROLL LOCK
+// MODAL SCROLL LOCK (PREVENTS BACKGROUND SHIFT IN IOS TELEGRAM WEBVIEW)
 watch(isModalOpen, (isOpen) => {
   if (isOpen) {
+    savedModalScrollY = lenis ? lenis.scroll : window.scrollY;
+    document.documentElement.classList.add('global-modal-open');
     document.body.classList.add('global-modal-open');
+    document.body.style.top = `-${savedModalScrollY}px`;
     if (lenis) lenis.stop();
   } else {
+    document.documentElement.classList.remove('global-modal-open');
     document.body.classList.remove('global-modal-open');
-    if (lenis) lenis.start();
+    document.body.style.top = '';
+    window.scrollTo({ top: savedModalScrollY, behavior: 'instant' });
+    if (lenis) {
+      lenis.start();
+      lenis.scrollTo(savedModalScrollY, { immediate: true, force: true });
+    }
   }
 });
 
@@ -156,7 +166,7 @@ const openWithStack = (stackName, serviceName = '') => {
   isModalOpen.value = true;
 };
 
-// --- DESKTOP STARFIELD PARALLAX (UPDATES ONLY WHEN SCROLL CHANGES)
+// DESKTOP STARFIELD PARALLAX
 const updateStars = (currentScroll) => {
   if (!isDesktop.value || currentScroll === lastScrollY) return;
   lastScrollY = currentScroll;
@@ -177,7 +187,7 @@ const updateStars = (currentScroll) => {
   }
 };
 
-// --- LENIS SMOOTH SCROLL SETUP (DESKTOP ONLY)
+// LENIS SMOOTH SCROLL (DESKTOP ONLY)
 const onTick = (time) => {
   if (!lenis) return;
   lenis.raf(time * 1000);
@@ -214,7 +224,7 @@ const destroyLenis = () => {
   }
 };
 
-// --- RESPONSIVE DEVICE CHECK
+// RESPONSIVE DEVICE CHECK (IGNORES VERTICAL TOOLBAR RESIZES)
 const checkDevice = () => {
   const currentWidth = window.innerWidth;
   if (currentWidth === lastWidth) return;
@@ -232,7 +242,7 @@ const checkDevice = () => {
   }
 };
 
-// --- LIFECYCLE
+// LIFECYCLE
 onMounted(() => {
   if ('scrollRestoration' in history) {
     history.scrollRestoration = 'manual';
@@ -240,9 +250,6 @@ onMounted(() => {
 
   lastWidth = window.innerWidth;
   isDesktop.value = lastWidth >= 1024;
-
-  document.documentElement.style.overflow = '';
-  document.body.style.overflow = '';
 
   if (isDesktop.value) {
     initLenis();
@@ -256,13 +263,15 @@ onBeforeUnmount(() => {
   if (removeAfterEach) removeAfterEach();
 
   destroyLenis();
+  document.documentElement.classList.remove('global-modal-open');
   document.body.classList.remove('global-modal-open');
+  document.body.style.top = '';
   window.removeEventListener('resize', checkDevice);
 });
 </script>
 
 <style>
-/* --- GLOBAL HEADER & MODAL OVERRIDES */
+/* GLOBAL HEADER & MODAL OVERRIDES */
 body.global-modal-open .header {
   opacity: 0 !important;
   pointer-events: none !important;
@@ -276,11 +285,10 @@ body.global-modal-open .header {
   width: 100%;
   z-index: 9999;
   opacity: 1;
-  transform: translateY(0);
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
   pointer-events: auto;
-  transition:
-    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .app-shell {
@@ -289,7 +297,7 @@ body.global-modal-open .header {
   width: 100%;
 }
 
-/* --- LENIS SCROLL HELPERS */
+/* LENIS SCROLL HELPERS */
 html.lenis,
 html.lenis body {
   height: auto;
@@ -311,23 +319,11 @@ html.lenis body {
   pointer-events: none;
 }
 
-/* --- ROOT DOCUMENT & NATIVE MOBILE SCROLL */
-html,
-body {
-  background-color: #000000;
-  color: #ffffff;
-  margin: 0;
-  padding: 0;
+/* ROOT CONTAINERS */
+html {
   overflow-anchor: none;
-  width: 100%;
-  min-height: 100%;
-  -webkit-text-size-adjust: 100%;
-  overflow-x: clip;
-}
-
-html.scroll-locked,
-body.scroll-locked {
-  overflow: hidden !important;
+  scrollbar-width: thin;
+  scrollbar-color: #333333 #000000;
 }
 
 #app {
@@ -340,27 +336,21 @@ body.scroll-locked {
   position: relative;
   z-index: 10;
   width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 100svh;
 }
 
-/* --- AMBIENT STARLIGHT BACKGROUND */
+/* AMBIENT STARLIGHT BACKGROUND (LOCKED TO LARGE VIEWPORT HEIGHT) */
 .starlight-bg {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
+  height: 100lvh;
   background-color: #000000;
   z-index: -999;
   overflow: hidden;
   pointer-events: none;
-}
-
-.opt-gpu {
-  transform: translateZ(0);
-  will-change: transform;
-  backface-visibility: hidden;
 }
 
 .luxury-vignette {
@@ -412,6 +402,7 @@ body.scroll-locked {
   width: 100%;
   height: calc(100vh + 1600px);
   will-change: transform;
+  backface-visibility: hidden;
   z-index: 3;
 }
 
@@ -463,7 +454,7 @@ body.scroll-locked {
   opacity: 0.6;
 }
 
-/* --- CUSTOM SCROLLBAR */
+/* CUSTOM SCROLLBAR */
 ::-webkit-scrollbar {
   width: 8px;
   background-color: #000000;
@@ -484,28 +475,6 @@ body.scroll-locked {
   ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, #f1f1f1 0%, #d7d7d7 50%, #8d8d8d 100%);
     border: 1px solid #000000;
-  }
-}
-
-html {
-  scrollbar-width: thin;
-  scrollbar-color: #333333 #000000;
-  scrollbar-gutter: stable;
-}
-
-/* --- MOBILE & TABLET PERFORMANCE OVERRIDES */
-@media (max-width: 1023px) {
-  .star-layer {
-    will-change: auto;
-    animation: none;
-    display: none;
-  }
-
-  .starlight-bg {
-    width: 100vw;
-    height: 100dvh;
-    top: 0;
-    left: 0;
   }
 }
 </style>

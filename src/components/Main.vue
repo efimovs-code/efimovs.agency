@@ -1,9 +1,10 @@
 <template>
+  <!-- HERO SECTION -->
   <section
     ref="heroSection"
     class="hero"
-    :class="{ 'is-paused': !isVisible }">
-    
+    :class="{ 'is-paused': !isVisible }"
+  >
     <div class="container">
       <!-- HERO HEADING AND PRIMARY ACTION BUTTONS -->
       <div class="flagship-head">
@@ -55,7 +56,7 @@
             class="channel-pill"
           >
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+              <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
             </svg>
             <span>Telegram</span>
           </a>
@@ -67,7 +68,7 @@
             class="channel-pill"
           >
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zM12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.489l4.614-1.464A11.94 11.94 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/>
+              <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zM12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.489l4.614-1.464A11.94 11.94 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z" />
             </svg>
             <span>WhatsApp</span>
           </a>
@@ -77,8 +78,8 @@
             class="channel-pill"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect width="20" height="16" x="2" y="4" rx="2"/>
-              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+              <rect width="20" height="16" x="2" y="4" rx="2" />
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
             </svg>
             <span>Email</span>
           </a>
@@ -105,47 +106,63 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick, onMounted, onBeforeUnmount } from "vue";
-import { t, telegramDirectUrl, whatsappDirectUrl, emailDirectUrl } from "../composables/useLanguage";
+import { ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
+import { t, telegramDirectUrl, whatsappDirectUrl, emailDirectUrl } from '../composables/useLanguage';
 
 // EVENTS AND REFS
-defineEmits(["open-contact"]);
+defineEmits(['open-contact']);
 
 const heroSection = ref(null);
 const titleRef = ref(null);
 const isVisible = ref(true);
 
 let visibilityObserver = null;
+let lastWidth = 0;
 
-// KEEP HERO TITLE ON ONE LINE ACROSS ALL LANGUAGES
+// FIT LONG HERO TITLES ON ONE LINE ACROSS ALL LANGUAGES
 const fitTitle = async () => {
   await nextTick();
   const titleEl = titleRef.value;
   if (!titleEl) return;
 
-  titleEl.style.fontSize = "";
+  titleEl.style.fontSize = '';
   const containerWidth = titleEl.parentElement?.clientWidth || window.innerWidth - 40;
   const currentFontSize = parseFloat(window.getComputedStyle(titleEl).fontSize);
 
-  if (titleEl.scrollWidth > containerWidth) {
+  if (containerWidth > 0 && titleEl.scrollWidth > containerWidth) {
     const scaleRatio = containerWidth / titleEl.scrollWidth;
     const fittedSize = Math.max(16, Math.floor(currentFontSize * scaleRatio));
     titleEl.style.fontSize = `${fittedSize}px`;
   }
 };
 
-watch(() => t("mobile_hero_title"), fitTitle);
+// IGNORE VERTICAL RESIZE EVENTS TRIGGERED BY TELEGRAM TOOLBARS
+const handleResize = () => {
+  const currentWidth = window.innerWidth;
+  if (currentWidth === lastWidth) return;
+
+  lastWidth = currentWidth;
+  fitTitle();
+};
+
+watch(() => t('mobile_hero_title'), fitTitle);
 
 // LIFECYCLE AND VISIBILITY OBSERVER
 onMounted(() => {
+  lastWidth = window.innerWidth;
   fitTitle();
-  window.addEventListener("resize", fitTitle, { passive: true });
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(fitTitle);
+  }
+
+  window.addEventListener('resize', handleResize, { passive: true });
 
   visibilityObserver = new IntersectionObserver(
     (entries) => {
       isVisible.value = entries[0].isIntersecting;
     },
-    { rootMargin: "0px 0px -100px 0px", threshold: 0 }
+    { rootMargin: '0px 0px -100px 0px', threshold: 0 }
   );
 
   if (heroSection.value) {
@@ -154,7 +171,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("resize", fitTitle);
+  window.removeEventListener('resize', handleResize);
   if (visibilityObserver) {
     visibilityObserver.disconnect();
     visibilityObserver = null;
@@ -163,7 +180,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
-/* KEYFRAME ANIMATIONS */
+// KEYFRAME ANIMATIONS
 @keyframes fadeInUp {
   0% {
     opacity: 0;
@@ -177,13 +194,13 @@ onBeforeUnmount(() => {
 
 @keyframes macbookLevitateMobile {
   0% {
-    transform: perspective(900px) rotateX(2.2deg) rotateY(-2.2deg) translate3d(0, 0px, 0) scale(1);
+    transform: perspective(900px) rotateX(2.2deg) rotateY(-2.2deg) translate3d(0, 0, 0) scale(1);
   }
   50% {
     transform: perspective(900px) rotateX(-1.8deg) rotateY(2.2deg) translate3d(0, -10px, 14px) scale(1.022);
   }
   100% {
-    transform: perspective(900px) rotateX(2.2deg) rotateY(-2.2deg) translate3d(0, 0px, 0) scale(1);
+    transform: perspective(900px) rotateX(2.2deg) rotateY(-2.2deg) translate3d(0, 0, 0) scale(1);
   }
 }
 
@@ -212,7 +229,7 @@ onBeforeUnmount(() => {
   }
 }
 
-/* HERO SECTION LAYOUT */
+// HERO SECTION LAYOUT
 .mobile-macbook-stage {
   display: none;
 }
@@ -250,7 +267,7 @@ onBeforeUnmount(() => {
   z-index: 10;
 }
 
-/* HERO HEADING AND CTA BUTTONS */
+// HERO HEADING AND CTA BUTTONS
 .flagship-head {
   display: flex;
   flex-direction: column;
@@ -358,7 +375,7 @@ onBeforeUnmount(() => {
   }
 }
 
-/* STATIC SILVER DIVIDER LINE */
+// STATIC SILVER DIVIDER LINE
 .silver-bar-stage {
   position: relative;
   width: 100%;
@@ -404,7 +421,7 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 18px rgba(255, 255, 255, 0.24);
 }
 
-/* DIRECT MESSENGER CONTACT BAR */
+// DIRECT MESSENGER CONTACT BAR
 .direct-contact-bar {
   position: relative;
   z-index: 12;
@@ -452,7 +469,6 @@ onBeforeUnmount(() => {
   gap: 7px;
   white-space: nowrap;
   cursor: pointer;
-  will-change: transform;
   transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1);
 
   svg {
@@ -474,7 +490,7 @@ onBeforeUnmount(() => {
   }
 }
 
-/* TABLET RESPONSIVE STYLES (768PX - 1023PX) */
+// TABLET RESPONSIVE STYLES (768PX - 1023PX)
 @media (min-width: 768px) and (max-width: 1023px) {
   .hero .container {
     padding: 0 24px;
@@ -500,7 +516,7 @@ onBeforeUnmount(() => {
   }
 }
 
-/* MOBILE RESPONSIVE STYLES (<= 767PX) */
+// MOBILE RESPONSIVE STYLES (<= 767PX)
 @media (max-width: 767px) {
   .silver-bar-stage,
   .direct-contact-bar {
@@ -508,14 +524,14 @@ onBeforeUnmount(() => {
   }
 
   .hero {
-    height: 100svh;
-    max-height: 960px;
-    padding: 118px 0 10px;
+    min-height: 100svh;
+    height: auto;
+    padding: 112px 0 28px;
     background: #000000;
   }
 
   .hero::after {
-    content: "";
+    content: '';
     position: absolute;
     left: 0;
     right: 0;
@@ -528,8 +544,7 @@ onBeforeUnmount(() => {
 
   .hero .container {
     padding: 0 20px;
-    height: 100%;
-    gap: 36px;
+    gap: 32px;
   }
 
   .brand-eyebrow {
@@ -564,6 +579,7 @@ onBeforeUnmount(() => {
     font-size: 13px;
   }
 
+  // LOCK MACBOOK SIZE TO WIDTH SO TELEGRAM TOOLBAR ANIMATIONS NEVER SCALE IT
   .mobile-macbook-stage {
     display: flex;
     align-items: center;
@@ -600,7 +616,7 @@ onBeforeUnmount(() => {
     position: relative;
     z-index: 2;
     width: 100%;
-    max-width: 440px;
+    max-width: 420px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -612,7 +628,7 @@ onBeforeUnmount(() => {
   .mobile-macbook-render {
     width: 100%;
     height: auto;
-    max-height: 35vh;
+    max-height: 265px;
     object-fit: contain;
     display: block;
     user-select: none;
@@ -643,15 +659,18 @@ onBeforeUnmount(() => {
   }
 }
 
-@media (max-width: 380px), (max-width: 767px) and (max-height: 700px) {
-  .hero { padding-top: 96px; }
-  .hero .container { gap: 24px; }
-  .mobile-macbook-render { max-height: 29vh; }
-}
+// COMPACT PHONE WIDTH ADJUSTMENTS (<= 380PX)
+@media (max-width: 380px) {
+  .hero {
+    padding-top: 96px;
+  }
 
-@media (max-width: 767px) and (min-height: 840px) {
-  .hero { padding-top: 132px; }
-  .hero .container { gap: 44px; }
-  .mobile-macbook-render { max-height: 38vh; }
+  .hero .container {
+    gap: 24px;
+  }
+
+  .mobile-macbook-render {
+    max-height: 220px;
+  }
 }
 </style>

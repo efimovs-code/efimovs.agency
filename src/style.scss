@@ -1,28 +1,29 @@
-/* --- LOCAL FONTS IMPORT (FONTSOURCE) */
-/* Montserrat */
+// LOCAL FONTS IMPORT (FONTSOURCE)
+// Montserrat
 @import '@fontsource/montserrat/300.css';
 @import '@fontsource/montserrat/400.css';
 @import '@fontsource/montserrat/500.css';
 @import '@fontsource/montserrat/700.css';
 @import '@fontsource/montserrat/900.css';
 
-/* Plus Jakarta Sans */
+// Plus Jakarta Sans
 @import '@fontsource/plus-jakarta-sans/400.css';
 @import '@fontsource/plus-jakarta-sans/500.css';
 @import '@fontsource/plus-jakarta-sans/600.css';
 @import '@fontsource/plus-jakarta-sans/700.css';
 @import '@fontsource/plus-jakarta-sans/800.css';
 
-/* --- THEME VARIABLES */
+// THEME VARIABLES
 $font-main: 'Montserrat', sans-serif;
 $color-text-main: #ffffff;
 $color-bg: #000000;
 
-/* --- DOCUMENT & RESET */
+// DOCUMENT & RESET
 html {
   background-color: $color-bg;
   scroll-behavior: auto !important;
   -webkit-text-size-adjust: 100%;
+  overflow-x: clip;
   overflow-y: scroll;
   scrollbar-gutter: stable;
   overscroll-behavior-y: none;
@@ -38,7 +39,7 @@ html {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* --- MEDIA & SVG DEFAULTS (PREVENT LAYOUT SHIFTS) */
+// MEDIA & SVG DEFAULTS (PREVENT LAYOUT SHIFTS)
 img,
 picture,
 video,
@@ -62,6 +63,8 @@ body {
   color: $color-text-main;
   font-family: $font-main;
   width: 100%;
+  min-height: 100svh;
+  overflow-x: clip;
   padding-bottom: env(safe-area-inset-bottom);
   touch-action: manipulation;
   overscroll-behavior-y: none;
@@ -70,7 +73,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* --- GLOBAL SECTION HEADERS & TYPOGRAPHY */
+// GLOBAL SECTION HEADERS & TYPOGRAPHY
 .section-header,
 .pricing-header,
 .faq-header {
@@ -121,22 +124,30 @@ body {
   }
 }
 
-/* --- PERFORMANCE & GPU HELPERS */
+// PERFORMANCE & GPU HELPERS
 .opt-contain {
   contain: paint layout;
 }
 
-/* Apply only to small interactive elements (cards, buttons), never to full sections */
+// APPLY ONLY TO SMALL INTERACTIVE ELEMENTS, NEVER TO FULL SECTIONS
 .opt-gpu {
-  transform: translateZ(0);
+  transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
 }
 
-/* --- GLOBAL MODAL SCROLL & INTERACTION LOCK */
+// GLOBAL MODAL SCROLL & INTERACTION LOCK (IOS TELEGRAM WEBVIEW SAFE)
+html.global-modal-open,
 body.global-modal-open {
   overflow: hidden !important;
   touch-action: none !important;
   overscroll-behavior: none !important;
+}
+
+body.global-modal-open {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
 }
 
 body.global-modal-open .app-shell {
