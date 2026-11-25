@@ -3,7 +3,7 @@
   <Teleport to="body">
     <header
       class="header"
-      :class="{ 'is-menu-open': isMenuOpen, 'is-ready': isHeaderReady }"
+      :class="{ 'is-menu-open': isMenuOpen }"
     >
       <div class="container header-top">
         <!-- STATIC GLASS LAYER -->
@@ -28,7 +28,6 @@
               :src="`https://flagcdn.com/${currentLang.flag}.svg`"
               class="lang-flag-trigger"
               alt=""
-              decoding="async"
             />
             {{ currentLang.code }}
             <svg
@@ -60,7 +59,6 @@
                       :src="`https://flagcdn.com/${lang.flag}.svg`"
                       class="lang-flag"
                       alt=""
-                      decoding="async"
                     />
                     <span class="lang-code-full">{{ lang.name }}</span>
                   </div>
@@ -77,14 +75,7 @@
           class="logo"
           @click="scrollToTopAndClose"
         >
-          <img
-            src="/icons/transparent.png"
-            alt="Efimovs Agency"
-            class="brand-logo-ea"
-            loading="eager"
-            fetchpriority="high"
-            decoding="sync"
-          />
+          <img src="/icons/transparent.png" alt="Efimovs Agency" class="brand-logo-ea" />
         </div>
 
         <!-- DESKTOP NAVIGATION -->
@@ -137,7 +128,6 @@
               :src="`https://flagcdn.com/${currentLang.flag}.svg`"
               class="lang-flag-trigger"
               alt=""
-              decoding="async"
             />
             {{ currentLang.code }}
             <svg
@@ -169,7 +159,6 @@
                       :src="`https://flagcdn.com/${lang.flag}.svg`"
                       class="lang-flag"
                       alt=""
-                      decoding="async"
                     />
                     <span class="lang-code-full">{{ lang.name }}</span>
                   </div>
@@ -268,7 +257,6 @@ const route = useRoute();
 const router = useRouter();
 
 // UI AND NAVIGATION STATE
-const isHeaderReady = ref(false);
 const isMenuOpen = ref(false);
 const isMobile = ref(false);
 const activeSection = ref('');
@@ -283,8 +271,6 @@ const isProgrammaticScrolling = ref(false);
 let mediaQuery = null;
 let programmaticScrollTimeout = null;
 let scrollRafId = null;
-let headerOuterRafId = null;
-let headerInnerRafId = null;
 let cancelActiveScroll = null;
 let savedMenuScrollY = 0;
 
@@ -557,12 +543,6 @@ onMounted(() => {
 
   window.addEventListener('scroll', handlePixelPerfectScroll, { passive: true });
   document.addEventListener('click', handleClickOutside);
-
-  headerOuterRafId = requestAnimationFrame(() => {
-    headerInnerRafId = requestAnimationFrame(() => {
-      isHeaderReady.value = true;
-    });
-  });
 });
 
 onBeforeUnmount(() => {
@@ -575,8 +555,6 @@ onBeforeUnmount(() => {
   window.removeEventListener('scroll', handlePixelPerfectScroll);
   document.removeEventListener('click', handleClickOutside);
   if (scrollRafId) cancelAnimationFrame(scrollRafId);
-  if (headerOuterRafId) cancelAnimationFrame(headerOuterRafId);
-  if (headerInnerRafId) cancelAnimationFrame(headerInnerRafId);
   if (programmaticScrollTimeout) clearTimeout(programmaticScrollTimeout);
 
   unlockBodyScroll(false);
@@ -860,6 +838,17 @@ onBeforeUnmount(() => {
 </style>
 
 <style scoped lang="scss">
+@keyframes headerEnter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -20px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
 .header {
   position: fixed;
   top: 0;
@@ -867,18 +856,10 @@ onBeforeUnmount(() => {
   width: 100%;
   padding: calc(15px + env(safe-area-inset-top)) 0 15px;
   z-index: 999999;
-  opacity: 0;
-  transform: translate3d(0, -14px, 0);
-  backface-visibility: hidden;
-  will-change: opacity, transform;
-  transition:
-    opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.header.is-ready {
-  opacity: 1;
+  animation: headerEnter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  will-change: transform;
 }
 
 .header-top {
