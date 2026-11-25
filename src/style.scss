@@ -135,21 +135,7 @@ body {
   backface-visibility: hidden;
 }
 
-// GLOBAL MODAL SCROLL & INTERACTION LOCK (IOS TELEGRAM WEBVIEW SAFE)
-html.global-modal-open,
-body.global-modal-open {
-  overflow: hidden !important;
-  touch-action: none !important;
-  overscroll-behavior: none !important;
-}
-
-body.global-modal-open {
-  position: fixed;
-  left: 0;
-  right: 0;
-  width: 100%;
-}
-
+// GLOBAL MODAL INTERACTION LOCK (NEVER USE position: fixed OR overflow: hidden HERE)
 body.global-modal-open .app-shell {
   pointer-events: none !important;
   user-select: none !important;

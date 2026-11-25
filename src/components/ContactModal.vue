@@ -343,7 +343,8 @@ const searchQuery = ref("");
 const selectedCountry = ref({ name: "Ukraine", dial_code: "+380", code: "UA" });
 const searchInput = ref(null);
 
-let unlockTimeout = null;
+let savedScrollY = 0;
+let isMobileLocked = false;
 
 // STATIC DATA OPTIONS
 const countries = [
@@ -516,45 +517,97 @@ const closeCountryDropdown = () => {
   isCountryOpen.value = false;
 };
 
-// SCROLL LOCK MANAGEMENT
+// SCROLL LOCK MANAGEMENT (NEVER SET overflow: hidden OR position: fixed ON DESKTOP)
+const isInsideModalScrollArea = (target) => {
+  if (!target || typeof target.closest !== "function") return false;
+  return Boolean(target.closest(".country-dropdown") || target.closest(".m-content"));
+};
+
 const lockTouch = (e) => {
-  if (isMobileViewport() && !e.target.closest(".country-dropdown") && !e.target.closest(".m-content")) {
+  if (!isInsideModalScrollArea(e.target)) {
     if (e.touches && e.touches.length > 1) return;
     e.preventDefault();
   }
 };
 
-const setMobileBackground = (isHidden) => {
-  if (!isMobileViewport()) return;
-  document.body.style.backgroundColor = isHidden ? "#000000" : "";
+const lockDesktopWheel = (e) => {
+  if (!isInsideModalScrollArea(e.target)) {
+    e.preventDefault();
+  }
+};
+
+const lockDesktopScrollKeys = (e) => {
+  const tag = e.target?.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA" || e.target?.isContentEditable) return;
+
+  const scrollKeys = ["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "];
+  if (scrollKeys.includes(e.key)) {
+    e.preventDefault();
+  }
+};
+
+const pinDesktopScroll = () => {
+  if (window.scrollY !== savedScrollY) {
+    window.scrollTo({ top: savedScrollY, behavior: "instant" });
+  }
+};
+
+const applyScrollLock = () => {
+  savedScrollY = window.lenis ? window.lenis.scroll : window.scrollY;
+
+  if (window.lenis) {
+    window.lenis.stop();
+  }
+
+  if (isMobileViewport()) {
+    isMobileLocked = true;
+    document.body.style.backgroundColor = "#000000";
+    document.body.style.setProperty("overflow", "hidden", "important");
+    document.body.style.setProperty("position", "fixed", "important");
+    document.body.style.setProperty("top", `-${savedScrollY}px`, "important");
+    document.body.style.setProperty("left", "0", "important");
+    document.body.style.setProperty("right", "0", "important");
+    document.body.style.setProperty("width", "100%", "important");
+    document.addEventListener("touchmove", lockTouch, { passive: false, capture: true });
+  } else {
+    isMobileLocked = false;
+    window.addEventListener("wheel", lockDesktopWheel, { passive: false, capture: true });
+    window.addEventListener("keydown", lockDesktopScrollKeys, { capture: true });
+    window.addEventListener("scroll", pinDesktopScroll, { passive: true });
+  }
 };
 
 const clearScrollLock = () => {
-  document.documentElement.style.removeProperty("overflow");
-  document.body.style.removeProperty("overflow");
-  document.documentElement.style.removeProperty("overscroll-behavior");
-  document.body.style.removeProperty("overscroll-behavior");
+  window.removeEventListener("wheel", lockDesktopWheel, { capture: true });
+  window.removeEventListener("keydown", lockDesktopScrollKeys, { capture: true });
+  window.removeEventListener("scroll", pinDesktopScroll);
+  document.removeEventListener("touchmove", lockTouch, { capture: true });
+
+  if (isMobileLocked) {
+    isMobileLocked = false;
+    document.body.style.backgroundColor = "";
+    document.body.style.removeProperty("overflow");
+    document.body.style.removeProperty("position");
+    document.body.style.removeProperty("top");
+    document.body.style.removeProperty("left");
+    document.body.style.removeProperty("right");
+    document.body.style.removeProperty("width");
+  }
+
+  window.scrollTo({ top: savedScrollY, behavior: "instant" });
+
+  if (window.lenis) {
+    window.lenis.start();
+    window.lenis.scrollTo(savedScrollY, { immediate: true, force: true });
+  }
 };
 
 // MODAL OPEN AND CLOSE WATCHER
 watch(
   () => props.isOpen,
-  (open) => {
-    if (unlockTimeout) {
-      clearTimeout(unlockTimeout);
-      unlockTimeout = null;
-    }
-
+  (open, wasOpen) => {
     if (open) {
-      if (window.lenis) window.lenis.stop();
-
-      document.documentElement.style.setProperty("overflow", "hidden", "important");
-      document.body.style.setProperty("overflow", "hidden", "important");
-      document.documentElement.style.setProperty("overscroll-behavior", "none", "important");
-      document.body.style.setProperty("overscroll-behavior", "none", "important");
-
-      setMobileBackground(true);
-      document.addEventListener("touchmove", lockTouch, { passive: false });
+      applyScrollLock();
 
       form.designType = "";
       form.plan = "";
@@ -572,13 +625,8 @@ watch(
         step.value = 1;
         startStep.value = 1;
       }
-    } else {
-      setMobileBackground(false);
-      unlockTimeout = setTimeout(() => {
-        clearScrollLock();
-        if (window.lenis) window.lenis.start();
-        document.removeEventListener("touchmove", lockTouch);
-      }, 200);
+    } else if (wasOpen) {
+      clearScrollLock();
     }
   },
   { immediate: true }
@@ -622,12 +670,10 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  if (unlockTimeout) clearTimeout(unlockTimeout);
   window.removeEventListener("click", closeCountryDropdown);
-  document.removeEventListener("touchmove", lockTouch);
-  if (window.lenis) window.lenis.start();
-  clearScrollLock();
-  setMobileBackground(false);
+  if (props.isOpen) {
+    clearScrollLock();
+  }
 });
 </script>
 

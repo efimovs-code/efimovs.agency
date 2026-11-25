@@ -31,15 +31,13 @@
       />
 
       <!-- GLOBAL CONTACT MODAL -->
-      <Teleport to="body">
-        <ContactModal
-          :isOpen="isModalOpen"
-          :initial-stack="selectedStack"
-          :initial-service="selectedService"
-          initial-plan=""
-          @close="isModalOpen = false"
-        />
-      </Teleport>
+      <ContactModal
+        :isOpen="isModalOpen"
+        :initial-stack="selectedStack"
+        :initial-service="selectedService"
+        initial-plan=""
+        @close="isModalOpen = false"
+      />
     </div>
 
     <!-- AMBIENT STARLIGHT BACKGROUND -->
@@ -99,7 +97,6 @@ const starLayerNear = ref(null);
 let lenis = null;
 let lastWidth = 0;
 let lastScrollY = -1;
-let savedModalScrollY = 0;
 let removeBeforeEach = null;
 let removeAfterEach = null;
 
@@ -140,24 +137,9 @@ removeAfterEach = router.afterEach((to, from) => {
   });
 });
 
-/* MODAL SCROLL LOCK (PREVENTS BACKGROUND SHIFT IN IOS TELEGRAM WEBVIEW) */
+/* HEADER VISIBILITY ON MODAL OPEN */
 watch(isModalOpen, (isOpen) => {
-  if (isOpen) {
-    savedModalScrollY = lenis ? lenis.scroll : window.scrollY;
-    document.documentElement.classList.add('global-modal-open');
-    document.body.classList.add('global-modal-open');
-    document.body.style.top = `-${savedModalScrollY}px`;
-    if (lenis) lenis.stop();
-  } else {
-    document.documentElement.classList.remove('global-modal-open');
-    document.body.classList.remove('global-modal-open');
-    document.body.style.top = '';
-    window.scrollTo({ top: savedModalScrollY, behavior: 'instant' });
-    if (lenis) {
-      lenis.start();
-      lenis.scrollTo(savedModalScrollY, { immediate: true, force: true });
-    }
-  }
+  document.body.classList.toggle('global-modal-open', isOpen);
 });
 
 const openWithStack = (stackName, serviceName = '') => {
@@ -263,27 +245,13 @@ onBeforeUnmount(() => {
   if (removeAfterEach) removeAfterEach();
 
   destroyLenis();
-  document.documentElement.classList.remove('global-modal-open');
   document.body.classList.remove('global-modal-open');
-  document.body.style.top = '';
   window.removeEventListener('resize', checkDevice);
 });
 </script>
 
 <style>
 /* GLOBAL HEADER & MODAL OVERRIDES */
-html.global-modal-open,
-body.global-modal-open {
-  overflow: hidden !important;
-}
-
-body.global-modal-open {
-  position: fixed !important;
-  left: 0 !important;
-  right: 0 !important;
-  width: 100% !important;
-}
-
 body.global-modal-open .header {
   opacity: 0 !important;
   pointer-events: none !important;
@@ -309,7 +277,7 @@ body.global-modal-open .header {
   width: 100%;
 }
 
-/* LENIS SCROLL HELPERS */
+/* LENIS SCROLL HELPERS (DO NOT SET overflow: hidden ON html — IT RESETS scrollTop TO 0) */
 html.lenis,
 html.lenis body {
   height: auto;
@@ -321,10 +289,6 @@ html.lenis body {
 
 .lenis.lenis-smooth [data-lenis-prevent] {
   overscroll-behavior: contain;
-}
-
-.lenis.lenis-stopped {
-  overflow: hidden !important;
 }
 
 .lenis.lenis-smooth iframe {

@@ -175,6 +175,8 @@
 
     <!-- --- CRITICAL ASSET PRELOAD -->
     <link rel="preload" href="/preloader-emblem.webp" as="image" fetchpriority="high" />
+    <link rel="preload" href="/icons/transparent.png" as="image" fetchpriority="high" />
+    <link rel="preload" href="/hero-macbook.jpg" as="image" media="(max-width: 767px)" fetchpriority="high" />
 
     <!-- --- FAVICONS & WEB MANIFEST -->
     <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48x48.png?v=3" />
@@ -185,9 +187,11 @@
 
     <!-- --- CRITICAL INITIAL STYLES -->
     <style>
+      html,
       body {
         margin: 0;
         background-color: #000000;
+        color-scheme: dark;
       }
 
       .font-preload-stage {

@@ -1,8 +1,8 @@
 <template>
-  <section ref="pageRef" class="portfolio-page opt-gpu">
+  <section ref="pageRef" class="portfolio-page">
 
     <!-- --- HERO SECTION -->
-    <div class="premium-hero opt-gpu-heavy">
+    <div class="premium-hero" :style="{ height: heroHeight }">
       <div class="hero-ambient-glow opt-gpu"></div>
       <div class="hero-ambient-core opt-gpu"></div>
 
@@ -26,7 +26,7 @@
         <p id="subtitle" class="cinematic-reveal">{{ t('port_subtitle') }}</p>
         <h1 class="hero-title cinematic-reveal delay-100">
           <span class="hero-line">{{ t('port_hero_1') }}</span>
-          <span class="hero-line">{{ t('port_hero_2') }}</span>
+          <span v-if="t('port_hero_2')" class="hero-line">{{ t('port_hero_2') }}</span>
         </h1>
       </div>
     </div>
@@ -224,6 +224,19 @@ import { t, currentLang } from '../composables/useLanguage';
 import ContactModal from '../components/ContactModal.vue';
 
 const route = useRoute();
+
+// --- STABLE FULL-SCREEN HERO HEIGHT (NO VIEWPORT UNIT JITTER ON MOBILE SCROLL)
+const initialViewportHeight = typeof window !== 'undefined' ? window.innerHeight : 850;
+const heroHeight = ref(`${initialViewportHeight}px`);
+let lastViewportWidth = typeof window !== 'undefined' ? window.innerWidth : 0;
+
+const handleViewportResize = () => {
+  const currentWidth = window.innerWidth;
+  if (currentWidth !== lastViewportWidth) {
+    lastViewportWidth = currentWidth;
+    heroHeight.value = `${window.innerHeight}px`;
+  }
+};
 
 // --- DOM REFS & MODAL STATE
 const pageRef = ref(null);
@@ -534,6 +547,7 @@ const scrollToTop = () => {
 // --- LIFECYCLE
 onMounted(() => {
   window.addEventListener('scroll', handleScroll, { passive: true });
+  window.addEventListener('resize', handleViewportResize, { passive: true });
 
   observer = new IntersectionObserver(
     (entries) => {
@@ -568,6 +582,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', handleScroll);
+  window.removeEventListener('resize', handleViewportResize);
   if (scrollRafId) cancelAnimationFrame(scrollRafId);
   if (observer) {
     observer.disconnect();
@@ -604,7 +619,6 @@ onBeforeUnmount(() => {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  contain: content;
 }
 
 .container {
@@ -644,16 +658,15 @@ onBeforeUnmount(() => {
 .premium-hero {
   position: relative;
   width: 100%;
-  height: 850px;
-  min-height: 700px;
+  min-height: 520px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   padding: 40px;
+  box-sizing: border-box;
   overflow: hidden;
   background: #000000;
-  contain: paint layout;
 }
 
 .hero-ambient-glow {
@@ -753,32 +766,30 @@ onBeforeUnmount(() => {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  max-width: 1200px;
-  margin-top: -60px;
+  max-width: 1400px;
+  margin-top: -20px;
   width: 100%;
-  padding: 0 20px;
+  padding: 0 24px;
+  box-sizing: border-box;
 }
 
 #subtitle {
   text-transform: uppercase;
   letter-spacing: 12px;
+  padding-left: 12px;
   font-size: 11px;
-  margin: 0 0 35px 0;
+  margin: 0 0 28px 0;
   font-weight: 800;
   color: #d4af37;
 }
 
 .hero-title {
-  font-size: clamp(32px, 6.5vw, 96px);
+  font-size: clamp(22px, 5.8vw, 88px);
   font-weight: 800;
   margin: 0 auto;
-  letter-spacing: -0.5px;
-  word-spacing: 0.12em;
-  line-height: 1.22;
-  background: linear-gradient(180deg, #ffffff 0, #c0c0c0 50%, #555555 100%);
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  color: transparent !important;
+  letter-spacing: -0.02em;
+  word-spacing: 0.08em;
+  line-height: 1.2;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -786,9 +797,15 @@ onBeforeUnmount(() => {
 }
 
 .hero-line {
-  display: block;
+  display: inline-block;
+  max-width: 100%;
   white-space: nowrap;
-  padding-bottom: 0.08em;
+  padding: 0 0.08em 0.1em;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #ffffff 0%, #c0c0c0 52%, #555555 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .cinematic-reveal {
@@ -822,7 +839,6 @@ onBeforeUnmount(() => {
   width: 100%;
   padding: 0;
   scroll-margin-top: 120px;
-  contain: content;
 }
 
 .editorial-case {
@@ -1287,14 +1303,13 @@ onBeforeUnmount(() => {
 
 @media (max-width: 768px) {
   .premium-hero {
-    height: auto;
-    min-height: 500px;
-    padding: 110px 15px 60px 15px;
+    min-height: 460px;
+    padding: 0 12px;
   }
 
   .hero-nav {
     left: 20px;
-    top: 20px;
+    top: calc(20px + env(safe-area-inset-top, 0px));
   }
 
   .hero-content {
@@ -1304,21 +1319,23 @@ onBeforeUnmount(() => {
   }
 
   .hero-title {
-    font-size: clamp(26px, 7vw, 44px);
-    letter-spacing: 0 !important;
-    word-spacing: 0.18em;
+    font-size: clamp(22px, 6.5vw, 48px);
+    letter-spacing: -0.02em !important;
+    word-spacing: 0.05em;
     line-height: 1.22;
   }
 
   .hero-line {
     white-space: nowrap;
-    display: block;
+    display: inline-block;
     text-align: center;
+    padding: 0 0.06em 0.08em;
   }
 
   #subtitle {
     font-size: 11px;
     letter-spacing: 6px;
+    padding-left: 6px;
     margin-bottom: 20px;
   }
 

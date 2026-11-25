@@ -3,12 +3,12 @@
   <section
     ref="heroSection"
     class="hero"
-    :class="{ 'is-paused': !isVisible }"
+    :class="{ 'is-paused': !isVisible, 'is-ready': isReady }"
     :style="{ '--hero-h': heroHeight }"
   >
     <div class="container">
       <!-- HERO HEADING AND PRIMARY ACTION BUTTONS -->
-      <div class="flagship-head">
+      <div class="flagship-head hero-reveal-item reveal-step-1">
         <span class="brand-eyebrow">EFIMOVS AGENCY</span>
 
         <h1 ref="titleRef" class="flagship-title">
@@ -38,13 +38,13 @@
       </div>
 
       <!-- STATIC SILVER DIVIDER LINE -->
-      <div class="silver-bar-stage" aria-hidden="true">
+      <div class="silver-bar-stage hero-reveal-item reveal-step-2" aria-hidden="true">
         <div class="silver-static-cast"></div>
         <div class="silver-single-line"></div>
       </div>
 
       <!-- DIRECT MESSENGER CONTACT BAR -->
-      <div class="direct-contact-bar">
+      <div class="direct-contact-bar hero-reveal-item reveal-step-3">
         <span class="direct-label">
           {{ t('hero_direct_label') }}
         </span>
@@ -88,7 +88,7 @@
       </div>
 
       <!-- MOBILE MACBOOK SHOWCASE (MOBILE ONLY <= 767PX) -->
-      <div class="mobile-macbook-stage" aria-hidden="true">
+      <div class="mobile-macbook-stage hero-reveal-item reveal-step-2" aria-hidden="true">
         <div class="mobile-macbook-glow"></div>
         <div class="mobile-macbook-float">
           <img
@@ -97,7 +97,7 @@
             class="mobile-macbook-render"
             loading="eager"
             fetchpriority="high"
-            decoding="async"
+            decoding="sync"
           />
           <div class="mobile-macbook-sheen"></div>
         </div>
@@ -116,6 +116,7 @@ defineEmits(['open-contact']);
 const heroSection = ref(null);
 const titleRef = ref(null);
 const isVisible = ref(true);
+const isReady = ref(false);
 
 // LOCK INITIAL VIEWPORT HEIGHT IN PIXELS SO TELEGRAM TOOLBAR COLLAPSE NEVER JUMPS THE HERO
 const heroHeight = ref(
@@ -124,6 +125,8 @@ const heroHeight = ref(
 
 let visibilityObserver = null;
 let lastWidth = 0;
+let outerRafId = null;
+let innerRafId = null;
 
 // FIT LONG HERO TITLES ON ONE LINE ACROSS ALL LANGUAGES
 const fitTitle = async () => {
@@ -163,14 +166,26 @@ const handleResize = () => {
 watch(() => t('mobile_hero_title'), fitTitle);
 
 // LIFECYCLE AND VISIBILITY OBSERVER
-onMounted(() => {
+onMounted(async () => {
   lastWidth = window.innerWidth;
   heroHeight.value = `${window.innerHeight}px`;
-  fitTitle();
 
+  // WAIT FOR FONTS (WITH 150MS FALLBACK) AND MEASURE TITLE BEFORE REVEALING FIRST FRAME
   if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(fitTitle);
+    await Promise.race([
+      document.fonts.ready,
+      new Promise((resolve) => setTimeout(resolve, 150)),
+    ]);
   }
+
+  await fitTitle();
+
+  // DOUBLE RAF GUARANTEES INITIAL PAINT IS COMMITTED BEFORE TRANSITION STARTS
+  outerRafId = requestAnimationFrame(() => {
+    innerRafId = requestAnimationFrame(() => {
+      isReady.value = true;
+    });
+  });
 
   window.addEventListener('resize', handleResize, { passive: true });
 
@@ -188,6 +203,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize);
+  if (outerRafId) cancelAnimationFrame(outerRafId);
+  if (innerRafId) cancelAnimationFrame(innerRafId);
   if (visibilityObserver) {
     visibilityObserver.disconnect();
     visibilityObserver = null;
@@ -197,17 +214,6 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 // KEYFRAME ANIMATIONS
-@keyframes fadeInUp {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, 22px, 0);
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
 @keyframes macbookLevitateMobile {
   0% {
     transform: perspective(900px) rotateX(2.2deg) rotateY(-2.2deg) translate3d(0, 0, 0) scale(1);
@@ -243,6 +249,33 @@ onBeforeUnmount(() => {
     transform: translateX(260%) skewX(-22deg);
     opacity: 0;
   }
+}
+
+// SYNCHRONIZED ENTRANCE TRANSITIONS (NO BLIND KEYFRAME SKIP ON FIRST PAINT)
+.hero-reveal-item {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  will-change: opacity, transform;
+  transition:
+    opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hero.is-ready .hero-reveal-item {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.hero.is-ready .reveal-step-1 {
+  transition-delay: 0.02s;
+}
+
+.hero.is-ready .reveal-step-2 {
+  transition-delay: 0.12s;
+}
+
+.hero.is-ready .reveal-step-3 {
+  transition-delay: 0.2s;
 }
 
 // HERO SECTION LAYOUT
@@ -292,7 +325,6 @@ onBeforeUnmount(() => {
   width: 100%;
   max-width: 1240px;
   z-index: 15;
-  animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.06s both;
 }
 
 .brand-eyebrow {
@@ -402,7 +434,6 @@ onBeforeUnmount(() => {
   justify-content: center;
   pointer-events: none;
   z-index: 6;
-  animation: fadeInUp 1.05s cubic-bezier(0.16, 1, 0.3, 1) 0.14s both;
 }
 
 .silver-static-cast {
@@ -451,7 +482,6 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  animation: fadeInUp 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.22s both;
 }
 
 .direct-label {
@@ -611,7 +641,6 @@ onBeforeUnmount(() => {
     flex: 0 0 auto;
     pointer-events: none;
     z-index: 5;
-    animation: fadeInUp 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.22s both;
   }
 
   .mobile-macbook-glow {
