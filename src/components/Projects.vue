@@ -1,13 +1,11 @@
 <template>
   <!-- Main featured projects section -->
   <section
-    ref="sectionRef"
     class="projects-section"
-    :class="{ 'is-paused': !isVisible }"
     id="projects"
   >
     <!-- Decorative ambient glow on desktop -->
-    <div class="ambient-glow" aria-hidden="true"></div>
+    <div v-if="isDesktop" class="ambient-glow" aria-hidden="true"></div>
 
     <div class="container">
       <!-- Section header -->
@@ -59,26 +57,30 @@
         </div>
       </div>
 
-      <!-- Mobile infinite marquee -->
-      <div class="marquee-wrapper mobile-marquee">
-        <div class="marquee-track">
+      <!-- Mobile & Tablet finger-swipe snap carousel (matches Pricing.vue) -->
+      <div class="projects-carousel">
+        <div
+          ref="scrollContainer"
+          class="cards-wrapper gpu-scroll"
+          @scroll="onCarouselScroll"
+        >
           <div
-            v-for="setIdx in 2"
-            :key="'set-' + setIdx"
-            class="marquee-set"
-            :aria-hidden="setIdx === 2"
+            v-for="(project, index) in featuredProjects"
+            :key="'mobile-' + project.id"
+            class="card-wrapper"
           >
             <router-link
-              v-for="project in featuredProjects"
-              :key="project.id + '-' + setIdx"
               :to="project.link"
-              :tabindex="setIdx === 2 ? -1 : 0"
-              class="project-item"
+              :class="[
+                'project-item gpu-layer',
+                { 'is-mobile-active': !isDesktop && index === activeMobileIndex }
+              ]"
             >
               <div class="image-box">
                 <img
                   :src="project.image"
                   :alt="project.title"
+                  loading="lazy"
                   decoding="async"
                 />
               </div>
@@ -106,9 +108,13 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { t } from '../composables/useLanguage';
 
-const sectionRef = ref(null);
-const isVisible = ref(true);
-let visibilityObserver = null;
+const scrollContainer = ref(null);
+const isDesktop = ref(true);
+const activeMobileIndex = ref(0);
+
+let rafId = null;
+let resizeTimer = null;
+let lastWidth = 0;
 
 // Combine two title parts into a single section heading
 const projectsTitle = computed(() => {
@@ -149,23 +155,55 @@ const featuredProjects = computed(() => [
   },
 ]);
 
+const onCarouselScroll = () => {
+  if (isDesktop.value || !scrollContainer.value) return;
+  if (rafId) cancelAnimationFrame(rafId);
+
+  rafId = requestAnimationFrame(() => {
+    const container = scrollContainer.value;
+    if (!container) return;
+
+    const firstCard = container.firstElementChild;
+    const cardWidth = firstCard ? firstCard.offsetWidth : window.innerWidth * 0.76;
+    const gap = 16;
+    const itemFullWidth = cardWidth + gap;
+
+    const rawIndex = Math.round(container.scrollLeft / itemFullWidth);
+    const maxIndex = featuredProjects.value.length - 1;
+    const safeIndex = Math.max(0, Math.min(rawIndex, maxIndex));
+
+    if (activeMobileIndex.value !== safeIndex) {
+      activeMobileIndex.value = safeIndex;
+    }
+  });
+};
+
+const syncViewport = () => {
+  isDesktop.value = window.innerWidth >= 1024;
+};
+
+// Ignore vertical resize events triggered by mobile browser toolbars
+const handleResize = () => {
+  const currentWidth = window.innerWidth;
+  if (currentWidth === lastWidth) return;
+
+  lastWidth = currentWidth;
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    isDesktop.value = currentWidth >= 1024;
+  }, 100);
+};
+
 onMounted(() => {
-  if (typeof IntersectionObserver !== 'undefined' && sectionRef.value) {
-    visibilityObserver = new IntersectionObserver(
-      (entries) => {
-        isVisible.value = entries[0].isIntersecting;
-      },
-      { rootMargin: '120px 0px 120px 0px', threshold: 0 }
-    );
-    visibilityObserver.observe(sectionRef.value);
-  }
+  lastWidth = window.innerWidth;
+  syncViewport();
+  window.addEventListener('resize', handleResize, { passive: true });
 });
 
 onBeforeUnmount(() => {
-  if (visibilityObserver) {
-    visibilityObserver.disconnect();
-    visibilityObserver = null;
-  }
+  window.removeEventListener('resize', handleResize);
+  if (rafId) cancelAnimationFrame(rafId);
+  clearTimeout(resizeTimer);
 });
 </script>
 
@@ -184,20 +222,17 @@ onBeforeUnmount(() => {
   isolation: isolate;
 }
 
-.projects-section.is-paused .marquee-set {
-  animation-play-state: paused !important;
-}
-
 .ambient-glow {
   position: absolute;
   top: 150px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateZ(0);
   width: 1400px;
   height: 600px;
   background: radial-gradient(ellipse closest-side, rgba(255, 255, 255, 0.04) 0, transparent 100%);
   z-index: -1;
   pointer-events: none;
+  will-change: transform;
 }
 
 .container {
@@ -448,11 +483,12 @@ onBeforeUnmount(() => {
   }
 }
 
-/* Bottom "All cases" button */
-.mobile-marquee {
+/* Mobile carousel hidden on desktop */
+.projects-carousel {
   display: none;
 }
 
+/* Bottom "All cases" button */
 .all-cases-action {
   display: flex;
   justify-content: center;
@@ -528,7 +564,7 @@ onBeforeUnmount(() => {
   }
 }
 
-/* Tablet and mobile layout */
+/* Tablet and mobile touch snap carousel (mirrors Pricing.vue) */
 @media (max-width: 1023px) {
   .ambient-glow,
   .desktop-grid,
@@ -538,54 +574,69 @@ onBeforeUnmount(() => {
     display: none !important;
   }
 
-  .mobile-marquee {
-    display: block !important;
-  }
-
-  .marquee-wrapper {
+  .projects-carousel {
+    display: block;
     width: calc(100% + 80px);
     margin-left: -40px;
     margin-right: -40px;
-    overflow: hidden;
-    position: relative;
-    touch-action: pan-y;
-    margin-top: clamp(36px, 6vw, 48px);
+    padding-top: 10px;
+    margin-top: clamp(28px, 5vw, 44px);
   }
 
-  .marquee-track {
+  .gpu-scroll {
     display: flex;
-    width: max-content;
+    flex-direction: row;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    gap: 16px;
+    padding: 0 20px;
+    scroll-padding-left: 20px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    will-change: scroll-position;
   }
 
-  .marquee-set {
-    display: flex;
-    gap: 20px;
-    padding-right: 20px;
-    animation: luxuryMarquee 25s linear infinite;
+  .gpu-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .projects-carousel .card-wrapper {
+    flex: 0 0 76vw;
+    width: 76vw;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    transform: translateZ(0);
+  }
+
+  .gpu-layer {
+    transform: translateZ(0);
+    backface-visibility: hidden;
     will-change: transform;
   }
 
-  .marquee-wrapper:hover .marquee-set,
-  .marquee-wrapper:active .marquee-set {
-    animation-play-state: paused;
-  }
-
-  @keyframes luxuryMarquee {
-    0% {
-      transform: translate3d(0, 0, 0);
-    }
-    100% {
-      transform: translate3d(-100%, 0, 0);
-    }
-  }
-
-  .mobile-marquee .project-item {
-    width: 360px;
-    flex-shrink: 0;
+  .projects-carousel .project-item {
+    display: block;
+    width: 100%;
     text-decoration: none;
+    outline: none;
+    transform: scale(0.85) translateZ(0);
+    transform-origin: center top;
+    filter: brightness(0.4);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                filter 0.4s ease;
   }
 
-  .mobile-marquee .image-box {
+  .projects-carousel .project-item.is-mobile-active {
+    transform: scale(1) translateZ(0);
+    filter: brightness(1);
+  }
+
+  .projects-carousel .project-item.is-mobile-active .image-box {
+    border-color: #ffffff;
+  }
+
+  .projects-carousel .image-box {
     aspect-ratio: 16 / 11;
   }
 
@@ -601,13 +652,13 @@ onBeforeUnmount(() => {
   }
 
   .container {
-    padding: 0 16px;
+    padding: 0 14px;
   }
 
-  .marquee-wrapper {
-    width: calc(100% + 32px);
-    margin-left: -16px;
-    margin-right: -16px;
+  .projects-carousel {
+    width: calc(100% + 28px);
+    margin-left: -14px;
+    margin-right: -14px;
   }
 
   .section-header {
@@ -646,14 +697,6 @@ onBeforeUnmount(() => {
     font-size: 13px;
     min-height: 56px;
   }
-
-  .marquee-set {
-    animation-duration: 20s;
-  }
-
-  .mobile-marquee .project-item {
-    width: 300px;
-  }
 }
 
 /* Touch device active feedback */
@@ -669,13 +712,6 @@ onBeforeUnmount(() => {
 
   .btn-outline-platinum:active .text {
     color: #000000 !important;
-  }
-}
-
-/* Respect reduced motion setting */
-@media (prefers-reduced-motion: reduce) {
-  .marquee-set {
-    animation: none !important;
   }
 }
 </style>

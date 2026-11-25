@@ -18,7 +18,6 @@
       class="ba-stage-full"
       :class="{ dragging: isDragging }"
       :style="{ '--split': split + '%' }"
-      @pointerdown="onPointerDown"
     >
       <!-- LAYER 1 (BASE): AFTER -->
       <div class="layer layer-after" aria-hidden="true">
@@ -45,6 +44,7 @@
       <!-- DIVIDER LINE AND DRAG HANDLE -->
       <div class="divider-line">
         <div
+          ref="handleRef"
           class="divider-handle"
           role="slider"
           tabindex="0"
@@ -52,6 +52,10 @@
           aria-valuemin="3"
           aria-valuemax="97"
           :aria-valuenow="Math.round(split)"
+          @pointerdown="onPointerDown"
+          @pointermove="onPointerMove"
+          @pointerup="stopDrag"
+          @pointercancel="stopDrag"
           @keydown="onSliderKeydown"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -91,11 +95,14 @@ defineEmits(['open-contact']);
 const headerRef = ref(null);
 const titleRef = ref(null);
 const stageRef = ref(null);
+const handleRef = ref(null);
 const split = ref(50);
 const isDragging = ref(false);
 
 let resizeObserver = null;
 let lastWidth = 0;
+let activePointerId = null;
+let dragOffsetX = 0;
 
 const baTitle = computed(() => t('ba_title'));
 
@@ -137,17 +144,36 @@ const updateFromClientX = (clientX) => {
   if (!stageRef.value) return;
   const rect = stageRef.value.getBoundingClientRect();
   if (!rect.width) return;
-  const pct = ((clientX - rect.left) / rect.width) * 100;
+  const adjustedX = clientX - dragOffsetX;
+  const pct = ((adjustedX - rect.left) / rect.width) * 100;
   split.value = clampSplit(pct);
 };
 
 const onPointerMove = (e) => {
   if (!isDragging.value) return;
+  if (activePointerId !== null && e.pointerId !== activePointerId) return;
   updateFromClientX(e.clientX);
 };
 
-const stopDrag = () => {
+const stopDrag = (e) => {
+  if (e && activePointerId !== null && e.pointerId !== undefined && e.pointerId !== activePointerId) {
+    return;
+  }
+
+  if (handleRef.value && activePointerId !== null) {
+    try {
+      if (handleRef.value.hasPointerCapture?.(activePointerId)) {
+        handleRef.value.releasePointerCapture(activePointerId);
+      }
+    } catch {
+      // Ignore if pointer capture was already released by browser
+    }
+  }
+
   isDragging.value = false;
+  activePointerId = null;
+  dragOffsetX = 0;
+
   window.removeEventListener('pointermove', onPointerMove);
   window.removeEventListener('pointerup', stopDrag);
   window.removeEventListener('pointercancel', stopDrag);
@@ -155,8 +181,28 @@ const stopDrag = () => {
 
 const onPointerDown = (e) => {
   if (e.button !== undefined && e.button !== 0) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  activePointerId = e.pointerId ?? null;
   isDragging.value = true;
-  updateFromClientX(e.clientX);
+
+  // Keep relative finger offset inside the handle so it never jumps on initial touch
+  if (handleRef.value) {
+    const handleRect = handleRef.value.getBoundingClientRect();
+    const handleCenterX = handleRect.left + handleRect.width / 2;
+    dragOffsetX = e.clientX - handleCenterX;
+
+    if (activePointerId !== null) {
+      try {
+        handleRef.value.setPointerCapture?.(activePointerId);
+      } catch {
+        // Fallback to window listeners below
+      }
+    }
+  }
+
   window.addEventListener('pointermove', onPointerMove);
   window.addEventListener('pointerup', stopDrag);
   window.addEventListener('pointercancel', stopDrag);
@@ -258,8 +304,12 @@ onBeforeUnmount(() => {
   user-select: none;
   -webkit-user-select: none;
   touch-action: pan-y;
-  cursor: ew-resize;
+  cursor: default;
   background: #050505;
+}
+
+.ba-stage-full.dragging {
+  cursor: grabbing;
 }
 
 .layer-after {
@@ -318,11 +368,22 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   pointer-events: auto;
+  touch-action: none;
+  cursor: grab;
   outline: none;
+  -webkit-tap-highlight-color: transparent;
   box-shadow:
     0 8px 30px rgba(0, 0, 0, 0.8),
     0 0 0 6px rgba(255, 255, 255, 0.2);
   transition: transform 0.15s ease;
+
+  /* Slightly expanded invisible hit area strictly around the handle */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    border-radius: 50%;
+  }
 
   &:focus-visible {
     box-shadow:
@@ -332,6 +393,7 @@ onBeforeUnmount(() => {
 }
 
 .ba-stage-full.dragging .divider-handle {
+  cursor: grabbing;
   transform: translate(-50%, -50%) scale(1.1);
 }
 
@@ -426,4 +488,4 @@ onBeforeUnmount(() => {
     font-size: 14px;
   }
 }
-</style>
+</style>  
