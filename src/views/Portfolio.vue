@@ -1313,7 +1313,7 @@ onBeforeUnmount(() => {
   }
 
   .hero-content {
-    margin-top: 0;
+    margin-top: -16vh;
     padding: 0;
     width: 100%;
   }
