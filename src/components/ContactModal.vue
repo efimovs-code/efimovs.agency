@@ -808,16 +808,19 @@ onUnmounted(() => {
 }
 
 .m-headline {
-  font-size: 34px;
+  font-size: clamp(20px, 5.4vw, 34px);
   color: #ffffff;
   font-weight: 700;
-  letter-spacing: -1.2px;
-  line-height: 1.1;
+  letter-spacing: -0.03em;
+  word-spacing: 0.14em;
+  line-height: 1.15;
   text-align: center;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .m-headline.small {
-  font-size: 28px;
+  font-size: clamp(20px, 5.2vw, 28px);
   margin-bottom: 15px;
 }
 
@@ -1713,7 +1716,8 @@ onUnmounted(() => {
     padding-top: 0 !important;
   }
   .m-headline {
-    font-size: 26px !important;
+    font-size: clamp(19px, 5.6vw, 26px) !important;
+    white-space: nowrap !important;
   }
   .sub-text {
     font-size: 14px !important;
@@ -1866,7 +1870,7 @@ onUnmounted(() => {
     margin-bottom: 10px !important;
   }
   .m-headline {
-    font-size: 22px !important;
+    font-size: clamp(18px, 5.2vw, 22px) !important;
   }
   .m-grid-cards {
     gap: 8px !important;
