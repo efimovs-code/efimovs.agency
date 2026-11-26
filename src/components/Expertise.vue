@@ -127,6 +127,12 @@ onBeforeUnmount(() => {
   z-index: 2;
 }
 
+.section-header {
+  .gradient-title {
+    word-spacing: 0.14em;
+  }
+}
+
 .expertise-body {
   margin-top: clamp(36px, 6vw, 88px);
 }

@@ -328,7 +328,7 @@ const caseTranslations = {
       title: 'Shortlyst',
       category: 'Web Development',
       challenge: 'Recruiters spent 70% of their time manually sourcing candidates with <strong class="text-glow">no automated way to track engagement</strong>.',
-      solution: 'Built a full-stack SaaS platform featuring <strong class="text-glow">AI-driven LinkedIn analysis</strong> for precise candidate matching.',
+      solution: 'Web service for <strong class="text-glow">precise employee matching on LinkedIn</strong>.',
     },
   },
   RU: {
@@ -354,7 +354,7 @@ const caseTranslations = {
       title: 'Shortlyst',
       category: 'Веб-разработка',
       challenge: 'Рекрутеры тратили 70% времени на ручной поиск, <strong class="text-glow">не имея автоматизации отслеживания откликов</strong>.',
-      solution: 'Разработали full-stack SaaS-платформу с <strong class="text-glow">ИИ-анализом LinkedIn</strong> для точного подбора кандидатов.',
+      solution: 'Веб-сервис для <strong class="text-glow">точного подбора сотрудников в LinkedIn</strong>.',
     },
   },
   UA: {
@@ -380,7 +380,7 @@ const caseTranslations = {
       title: 'Shortlyst',
       category: 'Веб-розробка',
       challenge: 'Рекрутери витрачали 70% часу на ручний пошук, <strong class="text-glow">не маючи автоматизації відстеження відгуків</strong>.',
-      solution: 'Розробили full-stack SaaS-платформу з <strong class="text-glow">ШІ-аналізом LinkedIn</strong> для точного підбору кандидатів.',
+      solution: 'Веб-сервіс для <strong class="text-glow">точного підбору співробітників у LinkedIn</strong>.',
     },
   },
   TR: {
@@ -406,7 +406,7 @@ const caseTranslations = {
       title: 'Shortlyst',
       category: 'Web Geliştirme',
       challenge: 'İnsan kaynakları uzmanları, adayları manuel olarak aramak için zamanlarının %70\'ini harcıyordu ve <strong class="text-glow">yanıtları takip edecek otomatik bir sistemleri yoktu</strong>.',
-      solution: 'Hassas aday eşleştirmesi için <strong class="text-glow">Yapay Zeka destekli LinkedIn analizine</strong> sahip full-stack bir SaaS platformu inşa ettik.',
+      solution: 'LinkedIn üzerinde <strong class="text-glow">hassas çalışan eşleştirmesi</strong> yapan web servisi.',
     },
   },
   DE: {
@@ -432,7 +432,7 @@ const caseTranslations = {
       title: 'Shortlyst',
       category: 'Webentwicklung',
       challenge: 'Personalvermittler verbrachten 70 % ihrer Zeit mit der manuellen Kandidatensuche, ohne <strong class="text-glow">automatisierte Möglichkeit, das Engagement zu verfolgen</strong>.',
-      solution: 'Wir entwickelten eine Full-Stack-SaaS-Plattform mit <strong class="text-glow">KI-gesteuerter LinkedIn-Analyse</strong> für präzises Kandidaten-Matching.',
+      solution: 'Webservice für die <strong class="text-glow">präzise Mitarbeitersuche auf LinkedIn</strong>.',
     },
   },
   FR: {
@@ -458,7 +458,7 @@ const caseTranslations = {
       title: 'Shortlyst',
       category: 'Développement Web',
       challenge: 'Les recruteurs passaient 70 % de leur temps à rechercher manuellement des candidats <strong class="text-glow">sans moyen automatisé de suivre l\'engagement</strong>.',
-      solution: 'Création d\'une plateforme SaaS Full-stack avec <strong class="text-glow">analyse LinkedIn pilotée par l\'IA</strong> pour un recrutement précis.',
+      solution: 'Service web pour une <strong class="text-glow">recherche précise d\'employés sur LinkedIn</strong>.',
     },
   },
   ES: {
@@ -484,7 +484,7 @@ const caseTranslations = {
       title: 'Shortlyst',
       category: 'Desarrollo Web',
       challenge: 'Los reclutadores pasaban el 70% de su tiempo buscando candidatos manualmente <strong class="text-glow">sin una forma automatizada de seguimiento</strong>.',
-      solution: 'Se creó una plataforma SaaS full-stack con <strong class="text-glow">análisis de LinkedIn impulsado por IA</strong> para una selección precisa.',
+      solution: 'Servicio web para la <strong class="text-glow">búsqueda precisa de empleados en LinkedIn</strong>.',
     },
   },
 };

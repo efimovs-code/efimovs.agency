@@ -430,7 +430,7 @@ const fitHeaderTexts = () => {
   if (!maxWidth) return;
 
   fitSingleLine(titleRef.value, maxWidth, 18);
-  fitSingleLine(subtitleRef.value, maxWidth, 12);
+  fitSingleLine(subtitleRef.value, maxWidth, 10);
 };
 
 // IGNORE VERTICAL RESIZE EVENTS TRIGGERED BY TELEGRAM TOOLBARS
@@ -527,6 +527,7 @@ onBeforeUnmount(() => {
   font-weight: 500;
   line-height: 1.2;
   letter-spacing: -0.04em;
+  word-spacing: 0.14em;
   padding-bottom: 0.08em;
   padding-inline: 4px;
   max-width: 100%;
@@ -546,6 +547,7 @@ onBeforeUnmount(() => {
   font-weight: 400;
   line-height: 1.4;
   letter-spacing: 0.005em;
+  word-spacing: 0.12em;
   color: #8e8e93;
   white-space: nowrap;
 }

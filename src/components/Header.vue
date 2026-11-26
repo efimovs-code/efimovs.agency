@@ -81,6 +81,14 @@
         <!-- DESKTOP NAVIGATION -->
         <nav class="nav desktop-nav">
           <a
+            href="#projects"
+            class="nav-link"
+            :class="{ 'is-active': activeSection === 'projects' }"
+            @click.prevent="scrollToSection('projects')"
+          >
+            <span>{{ t('projects') }}</span>
+          </a>
+          <a
             href="#services"
             class="nav-link"
             :class="{ 'is-active': activeSection === 'services' }"
@@ -95,14 +103,6 @@
             @click.prevent="scrollToSection('plans')"
           >
             <span>{{ t('packages') }}</span>
-          </a>
-          <a
-            href="#projects"
-            class="nav-link"
-            :class="{ 'is-active': activeSection === 'projects' }"
-            @click.prevent="scrollToSection('projects')"
-          >
-            <span>{{ t('projects') }}</span>
           </a>
           <a
             href="#contacts"
@@ -203,6 +203,16 @@
                   class="mobile-nav-item"
                   role="button"
                   tabindex="0"
+                  @click.prevent="handleMobileNav('projects')"
+                  @keydown.enter.prevent="handleMobileNav('projects')"
+                >
+                  <span class="nav-text">{{ t('projects') }}</span>
+                  <div class="nav-line"><div class="line-fill"></div></div>
+                </div>
+                <div
+                  class="mobile-nav-item"
+                  role="button"
+                  tabindex="0"
                   @click.prevent="handleMobileNav('services')"
                   @keydown.enter.prevent="handleMobileNav('services')"
                 >
@@ -217,16 +227,6 @@
                   @keydown.enter.prevent="handleMobileNav('plans')"
                 >
                   <span class="nav-text">{{ t('packages') }}</span>
-                  <div class="nav-line"><div class="line-fill"></div></div>
-                </div>
-                <div
-                  class="mobile-nav-item"
-                  role="button"
-                  tabindex="0"
-                  @click.prevent="handleMobileNav('projects')"
-                  @keydown.enter.prevent="handleMobileNav('projects')"
-                >
-                  <span class="nav-text">{{ t('projects') }}</span>
                   <div class="nav-line"><div class="line-fill"></div></div>
                 </div>
                 <div
@@ -274,7 +274,7 @@ let scrollRafId = null;
 let cancelActiveScroll = null;
 let savedMenuScrollY = 0;
 
-const sections = ['services', 'plans', 'projects', 'contacts'];
+const sections = ['projects', 'services', 'plans', 'contacts'];
 
 // LANGUAGE SELECTION
 const setLang = (lang) => {

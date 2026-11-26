@@ -375,6 +375,7 @@ onBeforeUnmount(() => {
   font-weight: 500;
   margin: 0;
   letter-spacing: -0.04em;
+  word-spacing: 0.14em;
   line-height: 1.2;
   padding: 0 4px 0.15em;
   max-width: 100%;

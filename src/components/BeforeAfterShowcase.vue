@@ -6,8 +6,13 @@
         <h2 ref="titleRef" class="gradient-title ba-single-title">
           {{ baTitle }}
         </h2>
-        <p class="section-sub">
-          {{ t('ba_sub_before') }}<span class="sub-highlight">{{ t('ba_sub_accent') }}</span>{{ t('ba_sub_after') }}
+        <p ref="subRef" class="section-sub">
+          <span class="sub-line">
+            {{ t('ba_sub_before') }}<span class="sub-highlight">{{ t('ba_sub_accent') }}</span>{{ subParts.line1End }}
+          </span>
+          <span v-if="subParts.line2" class="sub-line">
+            {{ subParts.line2 }}
+          </span>
         </p>
       </div>
     </div>
@@ -94,6 +99,7 @@ defineEmits(['open-contact']);
 
 const headerRef = ref(null);
 const titleRef = ref(null);
+const subRef = ref(null);
 const stageRef = ref(null);
 const handleRef = ref(null);
 const split = ref(50);
@@ -106,23 +112,45 @@ let dragOffsetX = 0;
 
 const baTitle = computed(() => t('ba_title'));
 
-// AUTO-SCALE HEADING FONT SIZE TO PREVENT LINE WRAPPING
-const fitTitle = () => {
-  const el = titleRef.value;
-  const wrap = headerRef.value;
-  if (!el || !wrap) return;
+// SPLIT SUBTITLE INTO TWO STRICT LINES ACROSS ALL LANGUAGES
+const subParts = computed(() => {
+  const after = t('ba_sub_after') || '';
+  const dotIndex = after.indexOf('. ');
 
+  if (dotIndex !== -1) {
+    return {
+      line1End: after.slice(0, dotIndex + 1),
+      line2: after.slice(dotIndex + 2).trim(),
+    };
+  }
+
+  return {
+    line1End: after,
+    line2: '',
+  };
+});
+
+// AUTO-SCALE FONT SIZE TO PREVENT LINE WRAPPING
+const fitElementToWidth = (el, maxWidth, minSize) => {
+  if (!el) return;
   el.style.fontSize = '';
-  const maxWidth = wrap.clientWidth;
-  if (!maxWidth) return;
-
   let currentSize = parseFloat(window.getComputedStyle(el).fontSize);
-  const minSize = 18;
 
   while (el.scrollWidth > maxWidth && currentSize > minSize) {
     currentSize -= 0.5;
     el.style.fontSize = `${currentSize}px`;
   }
+};
+
+const fitTypography = () => {
+  const wrap = headerRef.value;
+  if (!wrap) return;
+
+  const maxWidth = wrap.clientWidth;
+  if (!maxWidth) return;
+
+  fitElementToWidth(titleRef.value, maxWidth, 18);
+  fitElementToWidth(subRef.value, maxWidth, 10);
 };
 
 // IGNORE VERTICAL RESIZE EVENTS TRIGGERED BY TELEGRAM TOOLBARS
@@ -131,11 +159,11 @@ const handleResize = () => {
   if (currentWidth === lastWidth) return;
 
   lastWidth = currentWidth;
-  fitTitle();
+  fitTypography();
 };
 
-watch([baTitle, () => currentLang.value.code], () => {
-  nextTick(fitTitle);
+watch([baTitle, subParts, () => currentLang.value.code], () => {
+  nextTick(fitTypography);
 });
 
 const clampSplit = (val) => Math.min(97, Math.max(3, val));
@@ -220,12 +248,12 @@ const onSliderKeydown = (e) => {
 
 onMounted(() => {
   lastWidth = window.innerWidth;
-  fitTitle();
+  fitTypography();
   if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(fitTitle);
+    document.fonts.ready.then(fitTypography);
   }
   if (typeof ResizeObserver !== 'undefined' && headerRef.value) {
-    resizeObserver = new ResizeObserver(fitTitle);
+    resizeObserver = new ResizeObserver(fitTypography);
     resizeObserver.observe(headerRef.value);
   }
   window.addEventListener('resize', handleResize, { passive: true });
@@ -275,15 +303,24 @@ onBeforeUnmount(() => {
   max-width: 100%;
   padding-inline: 4px;
   letter-spacing: -0.03em;
+  word-spacing: 0.14em;
 }
 
 .section-sub {
   margin: 14px 0 0;
-  max-width: 680px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   font-size: 18px;
   font-weight: 400;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.55);
+}
+
+.sub-line {
+  display: block;
+  white-space: nowrap;
 }
 
 .sub-highlight {
@@ -467,7 +504,7 @@ onBeforeUnmount(() => {
   }
 
   .section-sub {
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.45;
     margin-top: 10px;
   }
@@ -488,4 +525,4 @@ onBeforeUnmount(() => {
     font-size: 14px;
   }
 }
-</style>  
+</style>

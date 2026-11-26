@@ -57,12 +57,13 @@
         </div>
       </div>
 
-      <!-- Mobile & Tablet finger-swipe snap carousel (matches Pricing.vue) -->
+      <!-- Mobile & Tablet finger-swipe snap carousel -->
       <div class="projects-carousel">
         <div
           ref="scrollContainer"
           class="cards-wrapper gpu-scroll"
-          @scroll="onCarouselScroll"
+          @scroll.passive="onCarouselScroll"
+          @scrollend="onCarouselScrollEnd"
         >
           <div
             v-for="(project, index) in featuredProjects"
@@ -72,7 +73,7 @@
             <router-link
               :to="project.link"
               :class="[
-                'project-item gpu-layer',
+                'project-item',
                 { 'is-mobile-active': !isDesktop && index === activeMobileIndex }
               ]"
             >
@@ -113,6 +114,7 @@ const isDesktop = ref(true);
 const activeMobileIndex = ref(0);
 
 let rafId = null;
+let scrollSettleTimer = null;
 let resizeTimer = null;
 let lastWidth = 0;
 
@@ -155,27 +157,76 @@ const featuredProjects = computed(() => [
   },
 ]);
 
+const updateActiveCard = (useHysteresis = true) => {
+  if (isDesktop.value || !scrollContainer.value) return;
+
+  const container = scrollContainer.value;
+  const cards = container.children;
+  if (!cards || !cards.length) return;
+
+  const scrollLeft = container.scrollLeft;
+  const maxScroll = container.scrollWidth - container.clientWidth;
+
+  // Guarantee last card becomes active at the end of scroll
+  if (maxScroll > 0 && scrollLeft >= maxScroll - 4) {
+    activeMobileIndex.value = cards.length - 1;
+    return;
+  }
+
+  const baseOffset = cards[0].offsetLeft;
+  let closestIndex = 0;
+  let minDistance = Infinity;
+
+  for (let i = 0; i < cards.length; i++) {
+    const targetScroll = cards[i].offsetLeft - baseOffset;
+    const distance = Math.abs(scrollLeft - targetScroll);
+    if (distance < minDistance) {
+      minDistance = distance;
+      closestIndex = i;
+    }
+  }
+
+  if (!useHysteresis) {
+    if (activeMobileIndex.value !== closestIndex) {
+      activeMobileIndex.value = closestIndex;
+    }
+    return;
+  }
+
+  if (closestIndex !== activeMobileIndex.value) {
+    const currentCard = cards[activeMobileIndex.value];
+    const currentTarget = currentCard ? currentCard.offsetLeft - baseOffset : 0;
+    const step = cards.length > 1
+      ? Math.max(1, cards[1].offsetLeft - baseOffset)
+      : Math.max(1, container.clientWidth * 0.76);
+
+    const progressFromCurrent = Math.abs(scrollLeft - currentTarget) / step;
+    if (progressFromCurrent > 0.62) {
+      activeMobileIndex.value = closestIndex;
+    }
+  }
+};
+
 const onCarouselScroll = () => {
   if (isDesktop.value || !scrollContainer.value) return;
-  if (rafId) cancelAnimationFrame(rafId);
 
-  rafId = requestAnimationFrame(() => {
-    const container = scrollContainer.value;
-    if (!container) return;
+  if (!rafId) {
+    rafId = requestAnimationFrame(() => {
+      rafId = null;
+      updateActiveCard(true);
+    });
+  }
 
-    const firstCard = container.firstElementChild;
-    const cardWidth = firstCard ? firstCard.offsetWidth : window.innerWidth * 0.76;
-    const gap = 16;
-    const itemFullWidth = cardWidth + gap;
+  // Fallback for iOS Safari versions without scrollend event
+  clearTimeout(scrollSettleTimer);
+  scrollSettleTimer = setTimeout(() => {
+    updateActiveCard(false);
+  }, 120);
+};
 
-    const rawIndex = Math.round(container.scrollLeft / itemFullWidth);
-    const maxIndex = featuredProjects.value.length - 1;
-    const safeIndex = Math.max(0, Math.min(rawIndex, maxIndex));
-
-    if (activeMobileIndex.value !== safeIndex) {
-      activeMobileIndex.value = safeIndex;
-    }
-  });
+const onCarouselScrollEnd = () => {
+  clearTimeout(scrollSettleTimer);
+  updateActiveCard(false);
 };
 
 const syncViewport = () => {
@@ -191,6 +242,9 @@ const handleResize = () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     isDesktop.value = currentWidth >= 1024;
+    if (!isDesktop.value) {
+      updateActiveCard(false);
+    }
   }, 100);
 };
 
@@ -203,6 +257,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize);
   if (rafId) cancelAnimationFrame(rafId);
+  clearTimeout(scrollSettleTimer);
   clearTimeout(resizeTimer);
 });
 </script>
@@ -218,7 +273,6 @@ onBeforeUnmount(() => {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   overflow-x: clip;
-  contain: style;
   isolation: isolate;
 }
 
@@ -265,7 +319,9 @@ onBeforeUnmount(() => {
   font-size: clamp(32px, 4.5vw, 64px);
   font-weight: 500;
   letter-spacing: -0.04em;
+  word-spacing: 0.14em;
   line-height: 1.2;
+  white-space: nowrap;
   padding-bottom: 0.15em;
   padding-left: 0.25em;
   padding-right: 4px;
@@ -564,7 +620,7 @@ onBeforeUnmount(() => {
   }
 }
 
-/* Tablet and mobile touch snap carousel (mirrors Pricing.vue) */
+/* Tablet and mobile touch snap carousel */
 @media (max-width: 1023px) {
   .ambient-glow,
   .desktop-grid,
@@ -583,18 +639,19 @@ onBeforeUnmount(() => {
     margin-top: clamp(28px, 5vw, 44px);
   }
 
+  /* Do NOT use scroll-behavior: smooth with touch scroll-snap on iOS WebKit */
   .gpu-scroll {
     display: flex;
     flex-direction: row;
     overflow-x: auto;
+    overflow-y: hidden;
     scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
     gap: 16px;
     padding: 0 20px;
     scroll-padding-left: 20px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    will-change: scroll-position;
+    overscroll-behavior-x: contain;
   }
 
   .gpu-scroll::-webkit-scrollbar {
@@ -606,38 +663,40 @@ onBeforeUnmount(() => {
     width: 76vw;
     scroll-snap-align: start;
     scroll-snap-stop: always;
-    transform: translateZ(0);
   }
 
-  .gpu-layer {
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    will-change: transform;
-  }
-
+  /* Use GPU-composited opacity + transform instead of filter: brightness() */
   .projects-carousel .project-item {
     display: block;
     width: 100%;
     text-decoration: none;
     outline: none;
-    transform: scale(0.85) translateZ(0);
+    opacity: 0.4;
+    transform: scale(0.9) translateZ(0);
     transform-origin: center top;
-    filter: brightness(0.4);
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-                filter 0.4s ease;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.35s ease;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .projects-carousel .project-item.is-mobile-active {
+    opacity: 1;
     transform: scale(1) translateZ(0);
-    filter: brightness(1);
-  }
-
-  .projects-carousel .project-item.is-mobile-active .image-box {
-    border-color: #ffffff;
   }
 
   .projects-carousel .image-box {
     aspect-ratio: 16 / 11;
+    transform: translateZ(0);
+    transition: border-color 0.35s ease;
+  }
+
+  .projects-carousel .project-item.is-mobile-active .image-box {
+    border-color: rgba(255, 255, 255, 0.9);
+  }
+
+  .projects-carousel .image-box img {
+    filter: none !important;
+    transition: none;
   }
 
   .all-cases-action {
@@ -675,7 +734,9 @@ onBeforeUnmount(() => {
 
   .gradient-title {
     font-size: clamp(28px, 8.2vw, 40px);
-    padding: 0 4px 0.15em calc(4px + 0.25em);
+    letter-spacing: -0.055em;
+    word-spacing: 0.04em;
+    padding: 0 2px 0.15em;
   }
 
   .project-info {
@@ -701,10 +762,6 @@ onBeforeUnmount(() => {
 
 /* Touch device active feedback */
 @media (hover: none) {
-  .image-box img {
-    filter: brightness(0.95) !important;
-  }
-
   .btn-outline-platinum:active {
     background: #e5e4e2;
     border-color: #e5e4e2;
